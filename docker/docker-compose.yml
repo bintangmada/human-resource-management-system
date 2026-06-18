@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL (Transactional Database)
+  postgres:
+    image: postgres:16-alpine
+    container_name: hris-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hris_main
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hris-network
+    restart: always
+
+  # 2. TimescaleDB (Time-series for Attendance Logs)
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: hris-timescaledb
+    ports:
+      - "5433:5432" # Bind to 5433 to avoid port conflict with standard PostgreSQL
+    environment:
+      POSTGRES_DB: hris_timeseries
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    networks:
+      - hris-network
+    restart: always
+
+  # 3. Redis (Caching Cluster Session & Rate Limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: hris-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - hris-network
+    restart: always
+
+  # 4. Keycloak (IAM / Identity & Access Management)
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.2
+    container_name: hris-keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    networks:
+      - hris-network
+    restart: always
+
+  # 5. Apache Kafka (Event Broker - KRaft Mode, No Zookeeper needed)
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: hris-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      # Generated UUID for Kraft cluster identifier
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - hris-network
+    restart: always
+
+volumes:
+  postgres_data:
+    driver: local
+  timescaledb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  hris-network:
+    driver: bridge
