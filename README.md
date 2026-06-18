@@ -6,6 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Caching-Redis%20Cluster-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![Apache Kafka](https://img.shields.io/badge/Messaging-Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
+[![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![CI/CD](https://img.shields.io/badge/Pipeline-Jenkins%20Declarative-D24939?logo=jenkins&logoColor=white)](https://www.jenkins.io/)
 
