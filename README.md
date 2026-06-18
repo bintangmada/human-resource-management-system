@@ -173,7 +173,7 @@ erDiagram
 This project uses a clean monorepo architecture to keep backend services, web portals, mobile application, and deployments synchronized.
 
 ```text
-enterprise-hris-architecture/
+human-resource-management-system/
 ├── backend/                        # Java Spring Boot Microservices
 │   ├── pom.xml                     # Maven Parent configuration
 │   ├── api-gateway/                # Spring Cloud API Gateway (Port 8000)
@@ -205,8 +205,8 @@ enterprise-hris-architecture/
 Initialize all microservices, databases (PostgreSQL, TimescaleDB), Redis, and Apache Kafka in one command:
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/enterprise-hris-architecture.git
-cd enterprise-hris-architecture
+git clone https://github.com/bintangmada/human-resource-management-system.git
+cd human-resource-management-system
 
 # Start database, cache, broker, and microservices
 docker compose -f docker/docker-compose.yml up -d
