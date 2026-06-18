@@ -2,17 +2,19 @@ package com.hrms.enterprise.employee.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Entitas ini memetakan tabel 'jobs' untuk menyimpan posisi/jabatan karyawan (misal: Software Engineer, HR Manager).
  * Di sini kita juga menyimpan grade (golongan) untuk menentukan struktur karir dan base salary range nantinya.
+ * Mewarisi BaseEntity untuk audit trail & soft delete otomatis.
  */
 @Entity
 @Table(name = "jobs")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-@Builder
-public class Job {
+@SuperBuilder
+public class Job extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +32,4 @@ public class Job {
     // Grade atau golongan pangkat. Berguna untuk standarisasi tunjangan dan matriks gaji.
     @Column(length = 50)
     private String grade;
-
-    // Menandai apakah lowongan jabatan ini masih aktif atau sudah tidak digunakan (e.g. "ACTIVE", "INACTIVE")
-    @Column(nullable = false, length = 20)
-    private String status;
 }
