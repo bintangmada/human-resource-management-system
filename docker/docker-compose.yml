@@ -4,52 +4,52 @@ services:
   # 1. PostgreSQL (Transactional Database)
   postgres:
     image: postgres:16-alpine
-    container_name: hris-postgres
+    container_name: hrms-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: hris_main
+      POSTGRES_DB: hrms_main
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - hris-network
+      - hrms-network
     restart: always
 
   # 2. TimescaleDB (Time-series for Attendance Logs)
   timescaledb:
     image: timescale/timescaledb:latest-pg16
-    container_name: hris-timescaledb
+    container_name: hrms-timescaledb
     ports:
       - "5433:5432" # Bind to 5433 to avoid port conflict with standard PostgreSQL
     environment:
-      POSTGRES_DB: hris_timeseries
+      POSTGRES_DB: hrms_timeseries
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
     networks:
-      - hris-network
+      - hrms-network
     restart: always
 
   # 3. Redis (Caching Cluster Session & Rate Limiting)
   redis:
     image: redis:7-alpine
-    container_name: hris-redis
+    container_name: hrms-redis
     ports:
       - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redis_data:/data
     networks:
-      - hris-network
+      - hrms-network
     restart: always
 
   # 4. Keycloak (IAM / Identity & Access Management)
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.2
-    container_name: hris-keycloak
+    container_name: hrms-keycloak
     ports:
       - "8080:8080"
     environment:
@@ -57,13 +57,13 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     command: start-dev
     networks:
-      - hris-network
+      - hrms-network
     restart: always
 
   # 5. Apache Kafka (Event Broker - KRaft Mode, No Zookeeper needed)
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: hris-kafka
+    container_name: hrms-kafka
     ports:
       - "9092:9092"
     environment:
@@ -83,7 +83,7 @@ services:
       # Generated UUID for Kraft cluster identifier
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     networks:
-      - hris-network
+      - hrms-network
     restart: always
 
 volumes:
@@ -95,5 +95,5 @@ volumes:
     driver: local
 
 networks:
-  hris-network:
+  hrms-network:
     driver: bridge

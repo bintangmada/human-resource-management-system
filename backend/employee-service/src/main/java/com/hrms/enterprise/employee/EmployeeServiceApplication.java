@@ -1,4 +1,4 @@
-package com.hris.enterprise.employee;
+package com.hrms.enterprise.employee;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
