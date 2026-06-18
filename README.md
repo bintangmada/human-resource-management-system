@@ -178,6 +178,7 @@ human-resource-management-system/
 ├── backend/                        # Java Spring Boot Microservices
 │   ├── pom.xml                     # Maven Parent configuration
 │   ├── api-gateway/                # Spring Cloud API Gateway (Port 8000)
+│   ├── tenant-service/             # SaaS Control Plane & Subscription Management (Port 8005)
 │   ├── auth-service/               # Keycloak Security Integration (Port 8010)
 │   ├── employee-service/           # Core Employee & Org service (Port 8020)
 │   ├── attendance-service/         # Geofencing Clock-in/out engine (Port 8030)
