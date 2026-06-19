@@ -1,0 +1,113 @@
+package com.hrms.enterprise.employee.controller;
+
+import com.hrms.enterprise.employee.dto.ApiResponse;
+import com.hrms.enterprise.employee.dto.EmployeeRequest;
+import com.hrms.enterprise.employee.dto.EmployeeResponse;
+import com.hrms.enterprise.employee.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
+
+/**
+ * REST Controller untuk mengelola data Karyawan (Employee).
+ * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi output ApiResponse.
+ */
+@RestController
+@RequestMapping("/api/v1/employees")
+@Validated
+public class EmployeeController {
+
+    private final EmployeeService employeeService;
+    private final MessageSource messageSource;
+
+    public EmployeeController(EmployeeService employeeService, MessageSource messageSource) {
+        this.employeeService = employeeService;
+        this.messageSource = messageSource;
+    }
+
+    /**
+     * Mendaftarkan Karyawan Baru.
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse<EmployeeResponse>> createEmployee(
+            @Valid @RequestBody EmployeeRequest request,
+            @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestHeader(value = "X-User-Email", defaultValue = "system@hrms.com") String actor,
+            Locale locale) {
+
+        EmployeeResponse response = employeeService.createEmployee(request, tenantId, actor);
+        String message = messageSource.getMessage("employee.created", null, locale);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(message, response));
+    }
+
+    /**
+     * Memperbarui Biodata Karyawan.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> updateEmployee(
+            @PathVariable Long id,
+            @Valid @RequestBody EmployeeRequest request,
+            @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestHeader(value = "X-User-Email", defaultValue = "system@hrms.com") String actor,
+            Locale locale) {
+
+        EmployeeResponse response = employeeService.updateEmployee(id, request, tenantId, actor);
+        String message = messageSource.getMessage("employee.updated", null, locale);
+        return ResponseEntity.ok(ApiResponse.success(message, response));
+    }
+
+    /**
+     * Menarik Semua Karyawan dengan Paginasi.
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<EmployeeResponse>>> getAllEmployees(
+            @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            Pageable pageable) {
+
+        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, pageable);
+
+        ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
+                .page(pageResult.getNumber())
+                .size(pageResult.getSize())
+                .totalElements(pageResult.getTotalElements())
+                .totalPages(pageResult.getTotalPages())
+                .isLast(pageResult.isLast())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success("success", pageResult.getContent(), pagination));
+    }
+
+    /**
+     * Mengambil Detail Karyawan Berdasarkan ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> getEmployeeById(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId) {
+
+        EmployeeResponse response = employeeService.getEmployeeById(id, tenantId);
+        return ResponseEntity.ok(ApiResponse.success("success", response));
+    }
+
+    /**
+     * Melakukan Soft Delete pada Karyawan Berdasarkan ID.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteEmployee(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestHeader(value = "X-User-Email", defaultValue = "system@hrms.com") String actor,
+            Locale locale) {
+
+        employeeService.deleteEmployee(id, tenantId, actor);
+        String message = messageSource.getMessage("employee.deleted", null, locale);
+        return ResponseEntity.ok(ApiResponse.success(message));
+    }
+}
