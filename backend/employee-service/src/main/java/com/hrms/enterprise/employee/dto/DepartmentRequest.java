@@ -13,13 +13,12 @@ import lombok.*;
 @Builder
 public class DepartmentRequest {
 
-    // Validasi memastikan nama tidak kosong atau berisi spasi saja
-    @NotBlank(message = "Nama departemen tidak boleh kosong")
-    @Size(max = 100, message = "Nama departemen maksimal 100 karakter")
+    @NotBlank(message = "{validation.department.name.required}")
+    @Size(max = 100, message = "{validation.department.name.size}")
     private String name;
 
     // Kode singkatan unik (e.g. "HRD", "ENG")
-    @NotBlank(message = "Kode departemen tidak boleh kosong")
-    @Size(max = 20, message = "Kode departemen maksimal 20 karakter")
+    @NotBlank(message = "{validation.department.code.required}")
+    @Size(max = 20, message = "{validation.department.code.size}")
     private String code;
 }

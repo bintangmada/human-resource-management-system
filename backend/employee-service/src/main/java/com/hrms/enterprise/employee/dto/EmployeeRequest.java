@@ -17,28 +17,28 @@ import java.time.LocalDate;
 @Builder
 public class EmployeeRequest {
 
-    @NotBlank(message = "Nomor Induk Karyawan tidak boleh kosong")
-    @Size(max = 50, message = "Nomor Induk Karyawan maksimal 50 karakter")
+    @NotBlank(message = "{validation.employee.number.required}")
+    @Size(max = 50, message = "{validation.employee.number.size}")
     private String employeeNumber;
 
-    @NotBlank(message = "Nama lengkap karyawan tidak boleh kosong")
-    @Size(max = 150, message = "Nama lengkap maksimal 150 karakter")
+    @NotBlank(message = "{validation.employee.name.required}")
+    @Size(max = 150, message = "{validation.employee.name.size}")
     private String fullName;
 
-    @NotBlank(message = "Email tidak boleh kosong")
-    @Email(message = "Format email tidak valid")
-    @Size(max = 100, message = "Email maksimal 100 karakter")
+    @NotBlank(message = "{validation.employee.email.required}")
+    @Email(message = "{validation.employee.email.invalid}")
+    @Size(max = 100, message = "{validation.employee.email.size}")
     private String email;
 
-    @Size(max = 20, message = "Nomor telepon maksimal 20 karakter")
+    @Size(max = 20, message = "{validation.employee.phone.size}")
     private String phoneNumber;
 
-    @NotNull(message = "ID departemen tidak boleh kosong")
+    @NotNull(message = "{validation.employee.department.required}")
     private Long departmentId;
 
-    @NotNull(message = "ID posisi jabatan tidak boleh kosong")
+    @NotNull(message = "{validation.employee.job.required}")
     private Long jobId;
 
-    @NotNull(message = "Tanggal bergabung tidak boleh kosong")
+    @NotNull(message = "{validation.employee.joined.required}")
     private LocalDate joinedAt;
 }
