@@ -6,7 +6,10 @@ import com.hrms.enterprise.employee.entity.Job;
 import com.hrms.enterprise.employee.exception.BadRequestException;
 import com.hrms.enterprise.employee.exception.ResourceNotFoundException;
 import com.hrms.enterprise.employee.repository.JobRepository;
+import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.service.JobService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +26,11 @@ import java.util.stream.Collectors;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public JobServiceImpl(JobRepository jobRepository) {
+    public JobServiceImpl(JobRepository jobRepository, EmployeeRepository employeeRepository) {
         this.jobRepository = jobRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     /**
@@ -79,11 +84,9 @@ public class JobServiceImpl implements JobService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<JobResponse> getAllJobs(Long tenantId) {
-        return jobRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<JobResponse> getAllJobs(Long tenantId, String search, Pageable pageable) {
+        return jobRepository.findAllByTenantIdAndDeletedStatusAndSearch(tenantId, 0, search, pageable)
+                .map(this::mapToResponse);
     }
 
     /**
@@ -105,6 +108,11 @@ public class JobServiceImpl implements JobService {
     public void deleteJob(Long id, Long tenantId, String actor) {
         Job job = jobRepository.findByIdAndTenantIdAndDeletedStatus(id, tenantId, 0)
                 .orElseThrow(() -> new ResourceNotFoundException("job.not.found", id));
+
+        // Validasi Relasional: Pastikan tidak ada karyawan aktif yang memiliki posisi jabatan ini
+        if (employeeRepository.existsByJobIdAndTenantIdAndDeletedStatus(id, tenantId, 0)) {
+            throw new BadRequestException("job.has.employees", id);
+        }
 
         // Melakukan pembaruan status soft-delete daripada menghapus baris SQL secara fisik.
         job.setDeletedStatus(1);

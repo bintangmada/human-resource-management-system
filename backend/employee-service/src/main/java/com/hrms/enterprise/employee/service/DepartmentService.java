@@ -2,8 +2,8 @@ package com.hrms.enterprise.employee.service;
 
 import com.hrms.enterprise.employee.dto.DepartmentRequest;
 import com.hrms.enterprise.employee.dto.DepartmentResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface yang mendefinisikan kontrak logika bisnis untuk modul Departemen.
@@ -32,11 +32,13 @@ public interface DepartmentService {
     DepartmentResponse updateDepartment(Long id, DepartmentRequest request, Long tenantId, String actor);
 
     /**
-     * Mendapatkan daftar semua departemen aktif (belum di-soft delete) dalam satu perusahaan.
+     * Mendapatkan daftar semua departemen aktif dalam satu perusahaan dengan paginasi dan pencarian.
      * @param tenantId ID perusahaan penyewa
-     * @return List departemen
+     * @param search Kata kunci pencarian
+     * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
+     * @return Halaman (Page) departemen
      */
-    List<DepartmentResponse> getAllDepartments(Long tenantId);
+    Page<DepartmentResponse> getAllDepartments(Long tenantId, String search, Pageable pageable);
 
     /**
      * Mendapatkan detail satu departemen berdasarkan ID dengan validasi kepemilikan tenant.

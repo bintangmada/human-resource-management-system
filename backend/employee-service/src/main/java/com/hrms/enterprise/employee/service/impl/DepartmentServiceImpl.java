@@ -6,7 +6,10 @@ import com.hrms.enterprise.employee.entity.Department;
 import com.hrms.enterprise.employee.exception.BadRequestException;
 import com.hrms.enterprise.employee.exception.ResourceNotFoundException;
 import com.hrms.enterprise.employee.repository.DepartmentRepository;
+import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.service.DepartmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +26,11 @@ import java.util.stream.Collectors;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, EmployeeRepository employeeRepository) {
         this.departmentRepository = departmentRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     /**
@@ -82,12 +87,10 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<DepartmentResponse> getAllDepartments(Long tenantId) {
-        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete)
-        return departmentRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<DepartmentResponse> getAllDepartments(Long tenantId, String search, Pageable pageable) {
+        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete) dengan paginasi dan pencarian
+        return departmentRepository.findAllByTenantIdAndDeletedStatusAndSearch(tenantId, 0, search, pageable)
+                .map(this::mapToResponse);
     }
 
     /**
@@ -110,6 +113,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         // Mengambil data departemen yang ingin dihapus
         Department department = departmentRepository.findByIdAndTenantIdAndDeletedStatus(id, tenantId, 0)
                 .orElseThrow(() -> new ResourceNotFoundException("department.not.found", id));
+
+        // Validasi Relasional: Pastikan tidak ada karyawan aktif yang ditugaskan pada departemen ini
+        if (employeeRepository.existsByDepartmentIdAndTenantIdAndDeletedStatus(id, tenantId, 0)) {
+            throw new BadRequestException("department.has.employees", id);
+        }
 
         // IMPLEMENTASI SOFT DELETE:
         // Dibandingkan menggunakan 'departmentRepository.delete(department)' yang akan menghapus baris fisik SQL secara permanen,
