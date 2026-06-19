@@ -9,6 +9,8 @@ import com.hrms.enterprise.employee.repository.DepartmentRepository;
 import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.repository.JobRepository;
 import com.hrms.enterprise.employee.service.EmployeeService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,11 +129,9 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<EmployeeResponse> getAllEmployees(Long tenantId) {
-        return employeeRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<EmployeeResponse> getAllEmployees(Long tenantId, Pageable pageable) {
+        return employeeRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0, pageable)
+                .map(this::mapToResponse);
     }
 
     /**

@@ -2,8 +2,8 @@ package com.hrms.enterprise.employee.service;
 
 import com.hrms.enterprise.employee.dto.JobRequest;
 import com.hrms.enterprise.employee.dto.JobResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface untuk mendefinisikan kontrak operasi bisnis pada posisi/jabatan (Job).
@@ -31,11 +31,12 @@ public interface JobService {
     JobResponse updateJob(Long id, JobRequest request, Long tenantId, String actor);
 
     /**
-     * Mendapatkan daftar semua posisi jabatan aktif dalam satu perusahaan.
+     * Mendapatkan daftar semua posisi jabatan aktif dalam satu perusahaan dengan paginasi.
      * @param tenantId ID perusahaan penyewa
-     * @return List posisi jabatan
+     * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
+     * @return Halaman (Page) posisi jabatan
      */
-    List<JobResponse> getAllJobs(Long tenantId);
+    Page<JobResponse> getAllJobs(Long tenantId, Pageable pageable);
 
     /**
      * Mendapatkan detail satu posisi jabatan berdasarkan ID.

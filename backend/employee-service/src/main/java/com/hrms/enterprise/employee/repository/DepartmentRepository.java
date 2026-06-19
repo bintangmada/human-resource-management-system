@@ -1,10 +1,11 @@
 package com.hrms.enterprise.employee.repository;
 
 import com.hrms.enterprise.employee.entity.Department;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -16,12 +17,13 @@ import java.util.Optional;
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     /**
-     * Mengambil daftar semua departemen milik satu tenant/perusahaan tertentu yang masih aktif (belum dihapus).
+     * Mengambil daftar semua departemen milik satu tenant/perusahaan tertentu yang masih aktif (belum dihapus) dengan paginasi.
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (bernilai 0 untuk data yang tidak dihapus)
-     * @return List departemen yang aktif
+     * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
+     * @return Halaman (Page) departemen yang aktif
      */
-    List<Department> findAllByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus);
+    Page<Department> findAllByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus, Pageable pageable);
 
     /**
      * Mengambil detail satu departemen berdasarkan ID. Validasi keamanan menyertakan tenantId

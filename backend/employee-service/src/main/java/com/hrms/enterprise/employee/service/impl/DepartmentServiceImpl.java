@@ -8,6 +8,8 @@ import com.hrms.enterprise.employee.exception.ResourceNotFoundException;
 import com.hrms.enterprise.employee.repository.DepartmentRepository;
 import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.service.DepartmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,12 +87,10 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<DepartmentResponse> getAllDepartments(Long tenantId) {
-        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete)
-        return departmentRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<DepartmentResponse> getAllDepartments(Long tenantId, Pageable pageable) {
+        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete) dengan paginasi
+        return departmentRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0, pageable)
+                .map(this::mapToResponse);
     }
 
     /**

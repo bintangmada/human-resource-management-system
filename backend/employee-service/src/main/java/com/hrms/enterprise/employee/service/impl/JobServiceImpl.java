@@ -8,6 +8,8 @@ import com.hrms.enterprise.employee.exception.ResourceNotFoundException;
 import com.hrms.enterprise.employee.repository.JobRepository;
 import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.service.JobService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,11 +84,9 @@ public class JobServiceImpl implements JobService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<JobResponse> getAllJobs(Long tenantId) {
-        return jobRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<JobResponse> getAllJobs(Long tenantId, Pageable pageable) {
+        return jobRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0, pageable)
+                .map(this::mapToResponse);
     }
 
     /**

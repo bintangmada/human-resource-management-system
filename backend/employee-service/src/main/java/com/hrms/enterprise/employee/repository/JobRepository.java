@@ -1,10 +1,11 @@
 package com.hrms.enterprise.employee.repository;
 
 import com.hrms.enterprise.employee.entity.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,12 +16,13 @@ import java.util.Optional;
 public interface JobRepository extends JpaRepository<Job, Long> {
 
     /**
-     * Mengambil semua posisi jabatan yang ada di suatu tenant perusahaan dan belum dihapus.
+     * Mengambil semua posisi jabatan yang ada di suatu tenant perusahaan dan belum dihapus dengan paginasi.
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (0 = aktif)
-     * @return List posisi jabatan
+     * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
+     * @return Halaman (Page) posisi jabatan
      */
-    List<Job> findAllByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus);
+    Page<Job> findAllByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus, Pageable pageable);
 
     /**
      * Mengambil detail satu posisi jabatan dengan validasi kepemilikan tenantId.
