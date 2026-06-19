@@ -31,12 +31,13 @@ public interface JobService {
     JobResponse updateJob(Long id, JobRequest request, Long tenantId, String actor);
 
     /**
-     * Mendapatkan daftar semua posisi jabatan aktif dalam satu perusahaan dengan paginasi.
+     * Mendapatkan daftar semua posisi jabatan aktif dalam satu perusahaan dengan paginasi dan pencarian.
      * @param tenantId ID perusahaan penyewa
+     * @param search Kata kunci pencarian
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) posisi jabatan
      */
-    Page<JobResponse> getAllJobs(Long tenantId, Pageable pageable);
+    Page<JobResponse> getAllJobs(Long tenantId, String search, Pageable pageable);
 
     /**
      * Mendapatkan detail satu posisi jabatan berdasarkan ID.

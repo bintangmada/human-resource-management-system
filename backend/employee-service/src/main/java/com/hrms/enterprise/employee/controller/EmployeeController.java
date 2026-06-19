@@ -64,14 +64,15 @@ public class EmployeeController {
     }
 
     /**
-     * Menarik Semua Karyawan dengan Paginasi.
+     * Menarik Semua Karyawan dengan Paginasi dan Pencarian Multi-Kolom.
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<EmployeeResponse>>> getAllEmployees(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
 
-        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, pageable);
+        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, search, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

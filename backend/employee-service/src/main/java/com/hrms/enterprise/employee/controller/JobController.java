@@ -64,14 +64,15 @@ public class JobController {
     }
 
     /**
-     * Menarik Semua Posisi Jabatan dengan Paginasi.
+     * Menarik Semua Posisi Jabatan dengan Paginasi dan Pencarian Multi-Kolom.
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<JobResponse>>> getAllJobs(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
 
-        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, pageable);
+        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, search, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

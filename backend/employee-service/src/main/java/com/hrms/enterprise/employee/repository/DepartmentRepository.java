@@ -3,7 +3,8 @@ package com.hrms.enterprise.employee.repository;
 import com.hrms.enterprise.employee.entity.Department;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -17,13 +18,20 @@ import java.util.Optional;
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     /**
-     * Mengambil daftar semua departemen milik satu tenant/perusahaan tertentu yang masih aktif (belum dihapus) dengan paginasi.
+     * Mengambil daftar departemen milik satu tenant/perusahaan tertentu yang aktif dengan paginasi dan pencarian multi-kolom (nama dan kode).
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (bernilai 0 untuk data yang tidak dihapus)
+     * @param search Kata kunci pencarian (nama atau kode departemen)
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) departemen yang aktif
      */
-    Page<Department> findAllByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus, Pageable pageable);
+    @Query("SELECT d FROM Department d WHERE d.tenantId = :tenantId AND d.deletedStatus = :deletedStatus " +
+           "AND (:search IS NULL OR TRIM(:search) = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(d.code) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Department> findAllByTenantIdAndDeletedStatusAndSearch(
+            @Param("tenantId") Long tenantId,
+            @Param("deletedStatus") Integer deletedStatus,
+            @Param("search") String search,
+            Pageable pageable);
 
     /**
      * Mengambil detail satu departemen berdasarkan ID. Validasi keamanan menyertakan tenantId

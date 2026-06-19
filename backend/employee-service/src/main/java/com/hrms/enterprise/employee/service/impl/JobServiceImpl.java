@@ -84,8 +84,8 @@ public class JobServiceImpl implements JobService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<JobResponse> getAllJobs(Long tenantId, Pageable pageable) {
-        return jobRepository.findAllByTenantIdAndDeletedStatus(tenantId, 0, pageable)
+    public Page<JobResponse> getAllJobs(Long tenantId, String search, Pageable pageable) {
+        return jobRepository.findAllByTenantIdAndDeletedStatusAndSearch(tenantId, 0, search, pageable)
                 .map(this::mapToResponse);
     }
 
