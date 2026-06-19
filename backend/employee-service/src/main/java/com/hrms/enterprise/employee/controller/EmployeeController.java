@@ -64,15 +64,17 @@ public class EmployeeController {
     }
 
     /**
-     * Menarik Semua Karyawan dengan Paginasi dan Pencarian Multi-Kolom.
+     * Menarik Semua Karyawan dengan Paginasi dan Filter Kolom (Nama, NIK, & Email).
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<EmployeeResponse>>> getAllEmployees(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
-            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "fullName", required = false) String fullName,
+            @RequestParam(value = "employeeNumber", required = false) String employeeNumber,
+            @RequestParam(value = "email", required = false) String email,
             Pageable pageable) {
 
-        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, search, pageable);
+        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, fullName, employeeNumber, email, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

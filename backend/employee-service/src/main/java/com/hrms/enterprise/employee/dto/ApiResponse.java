@@ -103,5 +103,6 @@ public class ApiResponse<T> {
         private int size;            // Jumlah maksimal data per halaman
         private long totalElements;  // Total seluruh baris data di database
         private int totalPages;      // Total halaman yang tersedia
+        private boolean isLast;      // Apakah ini halaman terakhir
     }
 }

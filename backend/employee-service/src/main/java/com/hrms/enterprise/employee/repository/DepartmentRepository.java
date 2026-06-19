@@ -19,19 +19,22 @@ import java.util.Optional;
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     /**
-     * Mengambil daftar departemen milik satu tenant/perusahaan tertentu yang aktif dengan paginasi dan pencarian multi-kolom (nama dan kode).
+     * Mengambil daftar departemen milik satu tenant/perusahaan tertentu yang aktif dengan paginasi dan filter per kolom (nama dan kode).
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (bernilai 0 untuk data yang tidak dihapus)
-     * @param search Kata kunci pencarian (nama atau kode departemen)
+     * @param name Filter pencarian nama departemen (opsional)
+     * @param code Filter pencarian kode departemen (opsional)
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) departemen yang aktif
      */
     @Query("SELECT d FROM Department d WHERE d.tenantId = :tenantId AND d.deletedStatus = :deletedStatus " +
-           "AND (:search IS NULL OR TRIM(:search) = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(d.code) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Department> findAllByTenantIdAndDeletedStatusAndSearch(
+           "AND (:name IS NULL OR TRIM(:name) = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+           "AND (:code IS NULL OR TRIM(:code) = '' OR LOWER(d.code) LIKE LOWER(CONCAT('%', :code, '%')))")
+    Page<Department> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
-            @Param("search") String search,
+            @Param("name") String name,
+            @Param("code") String code,
             Pageable pageable);
 
     /**

@@ -64,15 +64,16 @@ public class DepartmentController {
     }
 
     /**
-     * Menarik Semua Departemen dengan Dukungan Paginasi dan Pencarian Multi-Kolom.
+     * Menarik Semua Departemen dengan Dukungan Paginasi dan Filter Kolom (Nama & Kode).
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<DepartmentResponse>>> getAllDepartments(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
-            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "code", required = false) String code,
             Pageable pageable) {
 
-        Page<DepartmentResponse> pageResult = departmentService.getAllDepartments(tenantId, search, pageable);
+        Page<DepartmentResponse> pageResult = departmentService.getAllDepartments(tenantId, name, code, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

@@ -13,10 +13,10 @@ import lombok.*;
 @Builder
 public class JobRequest {
 
-    @NotBlank(message = "Nama jabatan tidak boleh kosong")
-    @Size(max = 100, message = "Nama jabatan maksimal 100 karakter")
+    @NotBlank(message = "{validation.job.title.required}")
+    @Size(max = 100, message = "{validation.job.title.size}")
     private String title;
 
-    @Size(max = 50, message = "Grade golongan maksimal 50 karakter")
+    @Size(max = 50, message = "{validation.job.grade.size}")
     private String grade;
 }

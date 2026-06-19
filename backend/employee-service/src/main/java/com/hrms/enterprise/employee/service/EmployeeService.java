@@ -31,13 +31,15 @@ public interface EmployeeService {
     EmployeeResponse updateEmployee(Long id, EmployeeRequest request, Long tenantId, String actor);
 
     /**
-     * Mendapatkan daftar semua karyawan aktif dalam satu perusahaan dengan paginasi dan pencarian.
+     * Mendapatkan daftar semua karyawan aktif dalam satu perusahaan dengan paginasi dan filter per kolom.
      * @param tenantId ID perusahaan penyewa
-     * @param search Kata kunci pencarian
+     * @param fullName Filter pencarian nama karyawan
+     * @param employeeNumber Filter pencarian NIK
+     * @param email Filter pencarian email
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) data karyawan
      */
-    Page<EmployeeResponse> getAllEmployees(Long tenantId, String search, Pageable pageable);
+    Page<EmployeeResponse> getAllEmployees(Long tenantId, String fullName, String employeeNumber, String email, Pageable pageable);
 
     /**
      * Mendapatkan detail satu karyawan berdasarkan ID.
