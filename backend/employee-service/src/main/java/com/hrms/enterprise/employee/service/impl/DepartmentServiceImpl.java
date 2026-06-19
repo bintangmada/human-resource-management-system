@@ -87,9 +87,9 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<DepartmentResponse> getAllDepartments(Long tenantId, String search, Pageable pageable) {
-        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete) dengan paginasi dan pencarian
-        return departmentRepository.findAllByTenantIdAndDeletedStatusAndSearch(tenantId, 0, search, pageable)
+    public Page<DepartmentResponse> getAllDepartments(Long tenantId, String name, String code, Pageable pageable) {
+        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete) dengan paginasi dan filter per kolom
+        return departmentRepository.findAllByTenantIdAndDeletedStatusAndFilters(tenantId, 0, name, code, pageable)
                 .map(this::mapToResponse);
     }
 

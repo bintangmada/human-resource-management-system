@@ -18,19 +18,22 @@ import java.util.Optional;
 public interface JobRepository extends JpaRepository<Job, Long> {
 
     /**
-     * Mengambil semua posisi jabatan aktif di tenant tertentu dengan paginasi dan pencarian multi-kolom (nama jabatan dan golongan/grade).
+     * Mengambil semua posisi jabatan aktif di tenant tertentu dengan paginasi dan filter per kolom (nama jabatan dan golongan/grade).
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (0 = aktif)
-     * @param search Kata kunci pencarian (nama jabatan atau grade)
+     * @param title Filter pencarian nama jabatan (opsional)
+     * @param grade Filter pencarian grade golongan (opsional)
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) posisi jabatan
      */
     @Query("SELECT j FROM Job j WHERE j.tenantId = :tenantId AND j.deletedStatus = :deletedStatus " +
-           "AND (:search IS NULL OR TRIM(:search) = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(j.grade) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Job> findAllByTenantIdAndDeletedStatusAndSearch(
+           "AND (:title IS NULL OR TRIM(:title) = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%'))) " +
+           "AND (:grade IS NULL OR TRIM(:grade) = '' OR LOWER(j.grade) LIKE LOWER(CONCAT('%', :grade, '%')))")
+    Page<Job> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
-            @Param("search") String search,
+            @Param("title") String title,
+            @Param("grade") String grade,
             Pageable pageable);
 
     /**

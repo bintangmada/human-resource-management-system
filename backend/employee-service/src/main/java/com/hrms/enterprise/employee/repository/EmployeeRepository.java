@@ -18,21 +18,25 @@ import java.util.Optional;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     /**
-     * Mengambil daftar semua karyawan aktif yang terdaftar di suatu tenant perusahaan dengan paginasi dan pencarian multi-kolom (nama, NIK, dan email).
+     * Mengambil daftar semua karyawan aktif yang terdaftar di suatu tenant perusahaan dengan paginasi dan filter per kolom (nama, NIK, dan email).
      * @param tenantId ID penyewa/klien perusahaan
      * @param deletedStatus Status hapus (0 = aktif)
-     * @param search Kata kunci pencarian (nama, NIK, atau email)
+     * @param fullName Filter pencarian nama karyawan (opsional)
+     * @param employeeNumber Filter pencarian NIK (opsional)
+     * @param email Filter pencarian email (opsional)
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) data karyawan
      */
     @Query("SELECT e FROM Employee e WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
-           "AND (:search IS NULL OR TRIM(:search) = '' OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(e.employeeNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Employee> findAllByTenantIdAndDeletedStatusAndSearch(
+           "AND (:fullName IS NULL OR TRIM(:fullName) = '' OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :fullName, '%'))) " +
+           "AND (:employeeNumber IS NULL OR TRIM(:employeeNumber) = '' OR LOWER(e.employeeNumber) LIKE LOWER(CONCAT('%', :employeeNumber, '%'))) " +
+           "AND (:email IS NULL OR TRIM(:email) = '' OR LOWER(e.email) LIKE LOWER(CONCAT('%', :email, '%')))")
+    Page<Employee> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
-            @Param("search") String search,
+            @Param("fullName") String fullName,
+            @Param("employeeNumber") String employeeNumber,
+            @Param("email") String email,
             Pageable pageable);
 
     /**

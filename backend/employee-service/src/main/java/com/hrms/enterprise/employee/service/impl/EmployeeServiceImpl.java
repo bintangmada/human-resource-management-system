@@ -129,8 +129,8 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<EmployeeResponse> getAllEmployees(Long tenantId, String search, Pageable pageable) {
-        return employeeRepository.findAllByTenantIdAndDeletedStatusAndSearch(tenantId, 0, search, pageable)
+    public Page<EmployeeResponse> getAllEmployees(Long tenantId, String fullName, String employeeNumber, String email, Pageable pageable) {
+        return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(tenantId, 0, fullName, employeeNumber, email, pageable)
                 .map(this::mapToResponse);
     }
 
