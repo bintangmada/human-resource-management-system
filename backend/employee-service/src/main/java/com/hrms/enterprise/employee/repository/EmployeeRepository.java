@@ -59,4 +59,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return boolean true jika email sudah terpakai
      */
     boolean existsByEmailAndTenantIdAndDeletedStatus(String email, Long tenantId, Integer deletedStatus);
+
+    /**
+     * Memeriksa apakah masih ada karyawan aktif yang ditugaskan pada departemen tertentu.
+     * Digunakan untuk mencegah penghapusan departemen yang masih memiliki karyawan (Relational Integrity).
+     */
+    boolean existsByDepartmentIdAndTenantIdAndDeletedStatus(Long departmentId, Long tenantId, Integer deletedStatus);
+
+    /**
+     * Memeriksa apakah masih ada karyawan aktif yang memiliki posisi jabatan tertentu.
+     * Digunakan untuk mencegah penghapusan jabatan yang masih digunakan oleh karyawan (Relational Integrity).
+     */
+    boolean existsByJobIdAndTenantIdAndDeletedStatus(Long jobId, Long tenantId, Integer deletedStatus);
 }
