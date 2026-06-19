@@ -18,7 +18,7 @@ spring:
   # JPA & Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate} # Uses 'validate' in production, can be set to 'update' locally
+      ddl-auto: ${JPA_DDL_AUTO:update} # Secara default menggunakan 'update' untuk mempermudah development lokal, dapat di-override ke 'validate' di production
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
