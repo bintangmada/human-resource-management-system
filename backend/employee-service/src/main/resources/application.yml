@@ -52,3 +52,14 @@ server:
   port: 8020
   error:
     include-message: always
+
+# Springdoc OpenAPI Swagger Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    # Hides the Schemas/Entities section completely from the bottom of the page
+    default-models-expand-depth: -1
+  api-docs:
+    path: /v3/api-docs
+  # Shows only our actual rest endpoints and excludes spring default ones (like /error)
+  paths-to-match: /api/v1/**
