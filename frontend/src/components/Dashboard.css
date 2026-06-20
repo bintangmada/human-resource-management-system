@@ -536,8 +536,25 @@
 }
 
 .page-size-select {
-  width: 140px;
+  width: 145px;
   padding: 8px 12px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 1.25em 1.25em;
+  padding-right: 28px;
+  transition: var(--transition-smooth);
+}
+
+.page-size-select option {
+  background-color: var(--select-option-bg);
+  color: var(--select-option-color);
 }
 
 /* FLOATING TOAST NOTIFICATIONS */
