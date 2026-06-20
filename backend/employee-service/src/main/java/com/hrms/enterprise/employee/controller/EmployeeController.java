@@ -19,7 +19,8 @@ import java.util.Locale;
 
 /**
  * REST Controller untuk mengelola data Karyawan (Employee).
- * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi output ApiResponse.
+ * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi
+ * output ApiResponse.
  */
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -84,7 +85,8 @@ public class EmployeeController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, fullName, employeeNumber, email, pageable);
+        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, fullName, employeeNumber, email,
+                pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

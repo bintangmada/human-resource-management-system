@@ -32,14 +32,7 @@ public interface DepartmentService {
     DepartmentResponse updateDepartment(Long id, DepartmentRequest request, Long tenantId, String actor);
 
     /**
-     * Mendapatkan daftar semua departemen aktif dalam satu perusahaan dengan paginasi dan filter per kolom.
-     * @param tenantId ID perusahaan penyewa
-     * @param name Filter pencarian nama departemen
-     * @param code Filter pencarian kode departemen
-     * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
-     * @return Halaman (Page) departemen
-     */
-    Page<DepartmentResponse> getAllDepartments(Long tenantId, String name, String code, Pageable pageable);
+    Page<DepartmentResponse> getAllDepartments(Long tenantId, String id, String name, String code, Pageable pageable);
 
     /**
      * Mendapatkan detail satu departemen berdasarkan ID dengan validasi kepemilikan tenant.

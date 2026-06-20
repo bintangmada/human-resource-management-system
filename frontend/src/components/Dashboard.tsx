@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
-import { 
-  EmployeeResponse, 
-  DepartmentResponse, 
-  JobResponse, 
-  ApiResponse, 
-  PaginationMetadata 
+import {
+  EmployeeResponse,
+  DepartmentResponse,
+  JobResponse,
+  ApiResponse,
+  PaginationMetadata
 } from '../types';
 import './Dashboard.css';
 
@@ -120,16 +120,16 @@ interface DashboardProps {
 type ActiveTab = 'employees' | 'departments' | 'jobs';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout }) => {
-  
+
   // 1. STATE UNTUK TAB AKTIF
   // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
   const [activeTab, setActiveTab] = useState<ActiveTab>('employees');
-  
+
   // 2. STATE UNTUK DATA LIST DARI BACKEND
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
-  
+
   // State untuk menyimpan metadata paginasi (halaman aktif, total halaman, total data, dll.)
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
@@ -148,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [isModalOpen, setIsModalOpen] = useState(false);              // Penanda modal terbuka/tertutup
   const [modalType, setModalType] = useState<'employee' | 'department' | 'job'>('employee'); // Jenis form modal
   const [editingId, setEditingId] = useState<number | null>(null);    // ID record yang sedang diedit (null jika mode Tambah Baru)
-  
+
   // 6. STATE UNTUK FORM INPUT (Binding values)
   const [empForm, setEmpForm] = useState({
     employeeNumber: '',
@@ -324,7 +324,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setErrorMsg('');
     setEditingId(null);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
-    
+
     // Reset isian form ke nilai awal
     setEmpForm({
       employeeNumber: '',
@@ -337,7 +337,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     });
     setDeptForm({ name: '', code: '' });
     setJobForm({ title: '', grade: '' });
-    
+
     setIsModalOpen(true);
   };
 
@@ -349,7 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setErrorMsg('');
     setEditingId(item.id);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
-    
+
     // Pindahkan isi baris tabel terpilih ke dalam state form input
     if (activeTab === 'employees') {
       setEmpForm({
@@ -366,7 +366,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     } else if (activeTab === 'jobs') {
       setJobForm({ title: item.title, grade: item.grade || '' });
     }
-    
+
     setIsModalOpen(true);
   };
 
@@ -380,7 +380,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     try {
       let endpoint = `/${activeTab}`;
       const method = 'POST'; // Hanya menggunakan metode POST (tidak menggunakan PUT)
-      
+
       // Jika mode edit, tambahkan ID dan path /update di ujung endpoint URL
       if (editingId) endpoint += `/${editingId}/update`;
 
@@ -437,21 +437,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         <div className="sidebar-brand">
           <BrandIcon />
           {!isSidebarCollapsed && <span className="brand-title">HRMS Portal</span>}
-          <button 
-            type="button" 
-            className="toggle-sidebar-btn" 
+          <button
+            type="button"
+            className="toggle-sidebar-btn"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             title={isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
           >
             {isSidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </button>
         </div>
-        
+
         <div className="sidebar-menu">
           {/* Kelompok Menu: Konfigurasi Data Master */}
           <div className="menu-group">
             <div className="menu-group-title">KONFIGURASI DATA MASTER</div>
-            <button 
+            <button
               type="button"
               className={`menu-item-btn ${activeTab === 'departments' ? 'active' : ''}`}
               onClick={() => handleTabChange('departments')}
@@ -460,7 +460,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <span className="menu-icon"><FolderIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">Departemen</span>}
             </button>
-            <button 
+            <button
               type="button"
               className={`menu-item-btn ${activeTab === 'jobs' ? 'active' : ''}`}
               onClick={() => handleTabChange('jobs')}
@@ -474,7 +474,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           {/* Kelompok Menu: Data Transaksi */}
           <div className="menu-group">
             <div className="menu-group-title">DATA TRANSAKSI</div>
-            <button 
+            <button
               type="button"
               className={`menu-item-btn ${activeTab === 'employees' ? 'active' : ''}`}
               onClick={() => handleTabChange('employees')}
@@ -509,9 +509,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             </>
           ) : (
             <div className="sidebar-actions-collapsed">
-              <button 
-                type="button" 
-                className="action-icon-btn logout-icon-btn" 
+              <button
+                type="button"
+                className="action-icon-btn logout-icon-btn"
                 onClick={() => setIsLogoutConfirmOpen(true)}
                 title="Logout / Keluar"
               >
@@ -524,7 +524,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
       {/* 2. AREA UTAMA KONTEN (KANAN) */}
       <div className="dashboard-content">
-        
+
         {/* FLOATING TOAST NOTIFICATIONS (Notifikasi Melayang) */}
         <div className="toast-container">
           {successMsg && (
@@ -537,7 +537,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <button className="toast-close" onClick={(e) => { e.stopPropagation(); setSuccessMsg(''); }}>×</button>
             </div>
           )}
-          
+
           {errorMsg && (
             <div className="toast toast-error" onClick={() => setErrorMsg('')}>
               <div className="toast-icon">✗</div>
@@ -560,7 +560,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} multi-tenant.
             </p>
           </div>
-          
+
           <button className="btn-primary" onClick={openCreateModal}>
             + Tambah {activeTab === 'employees' ? 'Karyawan' : activeTab === 'departments' ? 'Departemen' : 'Jabatan'}
           </button>
@@ -587,29 +587,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <tr className="table-filter-row">
                     <th></th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={empFilters.employeeNumber}
-                        onChange={(e) => setEmpFilters({...empFilters, employeeNumber: e.target.value})}
+                        onChange={(e) => setEmpFilters({ ...empFilters, employeeNumber: e.target.value })}
                         placeholder="Filter NIK..."
                       />
                     </th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={empFilters.fullName}
-                        onChange={(e) => setEmpFilters({...empFilters, fullName: e.target.value})}
+                        onChange={(e) => setEmpFilters({ ...empFilters, fullName: e.target.value })}
                         placeholder="Filter nama..."
                       />
                     </th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={empFilters.email}
-                        onChange={(e) => setEmpFilters({...empFilters, email: e.target.value})}
+                        onChange={(e) => setEmpFilters({ ...empFilters, email: e.target.value })}
                         placeholder="Filter email..."
                       />
                     </th>
@@ -618,8 +618,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th></th>
                     <th></th>
                     <th>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="clear-filters-btn"
                         onClick={() => setEmpFilters({ fullName: '', employeeNumber: '', email: '' })}
                         title="Clear Filters"
@@ -643,26 +643,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <tr className="table-filter-row">
                     <th></th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={deptFilters.name}
-                        onChange={(e) => setDeptFilters({...deptFilters, name: e.target.value})}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, name: e.target.value })}
                         placeholder="Filter nama..."
                       />
                     </th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={deptFilters.code}
-                        onChange={(e) => setDeptFilters({...deptFilters, code: e.target.value})}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, code: e.target.value })}
                         placeholder="Filter kode..."
                       />
                     </th>
                     <th>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="clear-filters-btn"
                         onClick={() => setDeptFilters({ name: '', code: '' })}
                         title="Clear Filters"
@@ -686,26 +686,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <tr className="table-filter-row">
                     <th></th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={jobFilters.title}
-                        onChange={(e) => setJobFilters({...jobFilters, title: e.target.value})}
+                        onChange={(e) => setJobFilters({ ...jobFilters, title: e.target.value })}
                         placeholder="Filter jabatan..."
                       />
                     </th>
                     <th>
-                      <input 
-                        type="text" 
-                        className="table-filter-input" 
+                      <input
+                        type="text"
+                        className="table-filter-input"
                         value={jobFilters.grade}
-                        onChange={(e) => setJobFilters({...jobFilters, grade: e.target.value})}
+                        onChange={(e) => setJobFilters({ ...jobFilters, grade: e.target.value })}
                         placeholder="Filter grade..."
                       />
                     </th>
                     <th>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="clear-filters-btn"
                         onClick={() => setJobFilters({ title: '', grade: '' })}
                         title="Clear Filters"
@@ -780,12 +780,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {((activeTab === 'employees' && employees.length === 0) ||
                 (activeTab === 'departments' && departments.length === 0) ||
                 (activeTab === 'jobs' && jobs.length === 0)) && (
-                <tr>
-                  <td colSpan={10} className="empty-row">
-                    Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
-                  </td>
-                </tr>
-              )}
+                  <tr>
+                    <td colSpan={10} className="empty-row">
+                      Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>
@@ -797,22 +797,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               Menampilkan Halaman <strong>{pagination.page + 1}</strong> dari <strong>{pagination.totalPages || 1}</strong> ({pagination.totalElements} data)
             </div>
             <div className="pagination-actions">
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
                 ◀ Sebelumnya
               </button>
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 disabled={pagination.isLast || pagination.totalPages <= currentPage + 1}
                 onClick={() => setCurrentPage(currentPage + 1)}
               >
                 Berikutnya ▶
               </button>
               {/* Dropdown Ukuran/Batas Baris per Halaman */}
-              <select 
+              <select
                 className="custom-input page-size-select"
                 value={pageSize}
                 onChange={(e) => {
@@ -837,60 +837,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <h2>{editingId ? 'Edit' : 'Tambah'} {modalType === 'employee' ? 'Karyawan' : modalType === 'department' ? 'Departemen' : 'Jabatan'}</h2>
               <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>×</button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="modal-form">
               {/* Form Khusus Karyawan */}
               {modalType === 'employee' && (
                 <div className="form-grid-2col">
                   <div className="form-group">
                     <label className="form-label">NIK / Nomor Karyawan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.employeeNumber}
-                      onChange={(e) => setEmpForm({...empForm, employeeNumber: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, employeeNumber: e.target.value })}
                       placeholder="e.g. EMP-2026-001"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nama Lengkap</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.fullName}
-                      onChange={(e) => setEmpForm({...empForm, fullName: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, fullName: e.target.value })}
                       placeholder="e.g. Ahmad Fauzi"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       className="custom-input"
                       value={empForm.email}
-                      onChange={(e) => setEmpForm({...empForm, email: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })}
                       placeholder="e.g. ahmad@company.com"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">No. Telepon</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.phoneNumber}
-                      onChange={(e) => setEmpForm({...empForm, phoneNumber: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, phoneNumber: e.target.value })}
                       placeholder="e.g. 08123456789"
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Departemen</label>
-                    <select 
+                    <select
                       className="custom-input"
                       value={empForm.departmentId}
-                      onChange={(e) => setEmpForm({...empForm, departmentId: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, departmentId: e.target.value })}
                       required
                     >
                       <option value="">-- Pilih Departemen --</option>
@@ -901,10 +901,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </div>
                   <div className="form-group">
                     <label className="form-label">Jabatan (Grade)</label>
-                    <select 
+                    <select
                       className="custom-input"
                       value={empForm.jobId}
-                      onChange={(e) => setEmpForm({...empForm, jobId: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, jobId: e.target.value })}
                       required
                     >
                       <option value="">-- Pilih Jabatan --</option>
@@ -915,11 +915,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </div>
                   <div className="form-group full-width">
                     <label className="form-label">Tanggal Bergabung</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       className="custom-input"
                       value={empForm.joinedAt}
-                      onChange={(e) => setEmpForm({...empForm, joinedAt: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, joinedAt: e.target.value })}
                       required
                     />
                   </div>
@@ -931,22 +931,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <div className="form-group">
                     <label className="form-label">Nama Departemen</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={deptForm.name}
-                      onChange={(e) => setDeptForm({...deptForm, name: e.target.value})}
+                      onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })}
                       placeholder="e.g. Information Technology"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Kode Singkatan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={deptForm.code}
-                      onChange={(e) => setDeptForm({...deptForm, code: e.target.value})}
+                      onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value })}
                       placeholder="e.g. IT"
                       required
                     />
@@ -959,22 +959,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <div className="form-group">
                     <label className="form-label">Nama Posisi / Jabatan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={jobForm.title}
-                      onChange={(e) => setJobForm({...jobForm, title: e.target.value})}
+                      onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
                       placeholder="e.g. Senior Backend Engineer"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Golongan (Grade)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={jobForm.grade}
-                      onChange={(e) => setJobForm({...jobForm, grade: e.target.value})}
+                      onChange={(e) => setJobForm({ ...jobForm, grade: e.target.value })}
                       placeholder="e.g. SE3"
                       required
                     />
@@ -1004,9 +1004,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <span className="confirm-subtext">Tindakan ini tidak dapat dibatalkan.</span>
             </div>
             <div className="modal-actions confirm-actions">
-              <button 
-                type="button" 
-                className="btn-secondary" 
+              <button
+                type="button"
+                className="btn-secondary"
                 onClick={() => {
                   setIsConfirmOpen(false);
                   setDeleteTargetId(null);
@@ -1014,9 +1014,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               >
                 Batal
               </button>
-              <button 
-                type="button" 
-                className="btn-danger" 
+              <button
+                type="button"
+                className="btn-danger"
                 onClick={executeDelete}
               >
                 Ya, Hapus Data
@@ -1039,16 +1039,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <span className="confirm-subtext">Anda perlu login kembali untuk mengakses data dashboard.</span>
             </div>
             <div className="modal-actions confirm-actions">
-              <button 
-                type="button" 
-                className="btn-secondary" 
+              <button
+                type="button"
+                className="btn-secondary"
                 onClick={() => setIsLogoutConfirmOpen(false)}
               >
                 Batal
               </button>
-              <button 
-                type="button" 
-                className="btn-danger" 
+              <button
+                type="button"
+                className="btn-danger"
                 onClick={onLogout}
               >
                 Ya, Keluar

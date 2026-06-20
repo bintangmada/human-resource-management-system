@@ -19,7 +19,8 @@ import java.util.Locale;
 
 /**
  * REST Controller untuk mengelola data Departemen.
- * Mendukung multi-tenancy via header 'X-Tenant-ID' dan lokalisasi pesan via header 'Accept-Language'.
+ * Mendukung multi-tenancy via header 'X-Tenant-ID' dan lokalisasi pesan via
+ * header 'Accept-Language'.
  */
 @RestController
 @RequestMapping("/api/v1/departments")
@@ -66,7 +67,8 @@ public class DepartmentController {
     }
 
     /**
-     * Menarik Semua Departemen dengan Dukungan Paginasi dan Filter Kolom (Nama & Kode).
+     * Menarik Semua Departemen dengan Dukungan Paginasi dan Filter Kolom (Nama &
+     * Kode).
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<DepartmentResponse>>> getAllDepartments(

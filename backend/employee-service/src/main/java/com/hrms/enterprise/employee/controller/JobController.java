@@ -19,7 +19,8 @@ import java.util.Locale;
 
 /**
  * REST Controller untuk mengelola data Posisi Jabatan (Job).
- * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi output ApiResponse.
+ * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi
+ * output ApiResponse.
  */
 @RestController
 @RequestMapping("/api/v1/jobs")
@@ -66,7 +67,8 @@ public class JobController {
     }
 
     /**
-     * Menarik Semua Posisi Jabatan dengan Paginasi dan Filter Kolom (Nama Jabatan & Golongan).
+     * Menarik Semua Posisi Jabatan dengan Paginasi dan Filter Kolom (Nama Jabatan &
+     * Golongan).
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<JobResponse>>> getAllJobs(

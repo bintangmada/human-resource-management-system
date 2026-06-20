@@ -126,13 +126,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EmployeeResponse> getAllEmployees(Long tenantId, String fullName, String employeeNumber, String email, Pageable pageable) {
+    public Page<EmployeeResponse> getAllEmployees(
+            Long tenantId,
+            String id,
+            String fullName,
+            String employeeNumber,
+            String email,
+            String phoneNumber,
+            String departmentName,
+            String jobTitle,
+            String joinedAt,
+            Pageable pageable) {
+
+        String cleanId = (id == null || id.trim().isEmpty()) ? null : "%" + id.trim() + "%";
         String cleanFullName = (fullName == null || fullName.trim().isEmpty()) ? null : "%" + fullName.trim().toLowerCase() + "%";
         String cleanEmployeeNumber = (employeeNumber == null || employeeNumber.trim().isEmpty()) ? null : "%" + employeeNumber.trim().toLowerCase() + "%";
         String cleanEmail = (email == null || email.trim().isEmpty()) ? null : "%" + email.trim().toLowerCase() + "%";
+        String cleanPhoneNumber = (phoneNumber == null || phoneNumber.trim().isEmpty()) ? null : "%" + phoneNumber.trim().toLowerCase() + "%";
+        String cleanDepartmentName = (departmentName == null || departmentName.trim().isEmpty()) ? null : "%" + departmentName.trim().toLowerCase() + "%";
+        String cleanJobTitle = (jobTitle == null || jobTitle.trim().isEmpty()) ? null : "%" + jobTitle.trim().toLowerCase() + "%";
+        String cleanJoinedAt = (joinedAt == null || joinedAt.trim().isEmpty()) ? null : "%" + joinedAt.trim().toLowerCase() + "%";
 
         return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanFullName, cleanEmployeeNumber, cleanEmail, pageable
+                tenantId, 0, cleanId, cleanFullName, cleanEmployeeNumber, cleanEmail,
+                cleanPhoneNumber, cleanDepartmentName, cleanJobTitle, cleanJoinedAt, pageable
         ).map(this::mapToResponse);
     }
 
