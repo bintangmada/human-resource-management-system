@@ -1170,6 +1170,14 @@
   gap: 8px;
 }
 
+.column-selector-trigger svg:last-child {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.column-selector-trigger.open svg:last-child {
+  transform: rotate(180deg);
+}
+
 .column-selector-menu {
   position: absolute;
   top: calc(100% + 8px);
