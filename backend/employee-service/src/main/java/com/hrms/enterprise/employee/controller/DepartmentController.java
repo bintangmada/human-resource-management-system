@@ -52,7 +52,7 @@ public class DepartmentController {
     /**
      * Memperbarui Data Departemen.
      */
-    @PutMapping("/{id}")
+    @PostMapping("/{id}/update")
     public ResponseEntity<ApiResponse<DepartmentResponse>> updateDepartment(
             @PathVariable Long id,
             @Valid @RequestBody DepartmentRequest request,
@@ -111,7 +111,7 @@ public class DepartmentController {
     /**
      * Melakukan Soft Delete pada Departemen Berdasarkan ID.
      */
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public ResponseEntity<ApiResponse<Void>> deleteDepartment(
             @PathVariable Long id,
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,

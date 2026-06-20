@@ -169,7 +169,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const handleDelete = async (id: number) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
     try {
-      await apiRequest(`/${activeTab}/${id}`, { method: 'DELETE' });
+      await apiRequest(`/${activeTab}/${id}/delete`, { method: 'POST' });
       setSuccessMsg('Data berhasil dihapus secara aman!');
       fetchData(); // Muat ulang data tabel
     } catch (err: any) {
@@ -240,10 +240,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     e.preventDefault();
     try {
       let endpoint = `/${activeTab}`;
-      const method = editingId ? 'PUT' : 'POST';
+      const method = 'POST'; // Hanya menggunakan metode POST (tidak menggunakan PUT)
       
-      // Jika mode edit, tambahkan ID di ujung endpoint URL
-      if (editingId) endpoint += `/${editingId}`;
+      // Jika mode edit, tambahkan ID dan path /update di ujung endpoint URL
+      if (editingId) endpoint += `/${editingId}/update`;
 
       let body: any = {};
       if (activeTab === 'employees') {

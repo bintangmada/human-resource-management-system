@@ -10,7 +10,7 @@ const BASE_URL = 'http://localhost:8020/api/v1';
  */
 export interface RequestOptions {
   // Metode request HTTP yang diperbolehkan
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST';
   
   // Data payload yang akan dikirim ke backend (misal: JSON request body)
   body?: any;
