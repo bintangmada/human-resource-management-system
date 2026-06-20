@@ -1511,7 +1511,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <div className="confirm-body">
               <h3>Konfirmasi Penghapusan</h3>
               <p>Apakah Anda benar-benar yakin ingin menghapus data ini secara permanen?</p>
-              <span className="confirm-subtext">Tindakan ini tidak dapat dibatalkan.</span>
+              <span className="confirm-subtext">Data yang dihapus tidak dapat dikembalikan.</span>
             </div>
             <div className="modal-actions confirm-actions">
               <button
