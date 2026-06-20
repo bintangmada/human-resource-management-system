@@ -74,6 +74,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
   const [successMsg, setSuccessMsg] = useState('');                   // Menyimpan pesan sukses operasional
 
+  // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
   /**
    * Fungsi fetchData:
    * Mengambil data dari backend secara asinkron berdasarkan Tab aktif.
@@ -354,19 +369,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       {/* 2. AREA UTAMA KONTEN (KANAN) */}
       <div className="dashboard-content">
         
-        {/* Notifikasi Alert Sukses */}
-        {successMsg && (
-          <div className="alert alert-success" onClick={() => setSuccessMsg('')}>
-            ✓ {successMsg}
-          </div>
-        )}
-        
-        {/* Notifikasi Alert Error */}
-        {errorMsg && (
-          <div className="alert alert-error" onClick={() => setErrorMsg('')}>
-            ✗ {errorMsg}
-          </div>
-        )}
+        {/* FLOATING TOAST NOTIFICATIONS (Notifikasi Melayang) */}
+        <div className="toast-container">
+          {successMsg && (
+            <div className="toast toast-success" onClick={() => setSuccessMsg('')}>
+              <div className="toast-icon">✓</div>
+              <div className="toast-body">
+                <div className="toast-title">Sukses</div>
+                <div className="toast-desc">{successMsg}</div>
+              </div>
+              <button className="toast-close" onClick={(e) => { e.stopPropagation(); setSuccessMsg(''); }}>×</button>
+            </div>
+          )}
+          
+          {errorMsg && (
+            <div className="toast toast-error" onClick={() => setErrorMsg('')}>
+              <div className="toast-icon">✗</div>
+              <div className="toast-body">
+                <div className="toast-title">Kesalahan</div>
+                <div className="toast-desc">{errorMsg}</div>
+              </div>
+              <button className="toast-close" onClick={(e) => { e.stopPropagation(); setErrorMsg(''); }}>×</button>
+            </div>
+          )}
+        </div>
 
         {/* Header Halaman Aktif */}
         <div className="content-header">
@@ -656,7 +682,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <form onSubmit={handleSubmit} className="modal-form">
               {/* Form Khusus Karyawan */}
               {modalType === 'employee' && (
-                <>
+                <div className="form-grid-2col">
                   <div className="form-group">
                     <label className="form-label">NIK / Nomor Karyawan</label>
                     <input 
@@ -728,7 +754,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       ))}
                     </select>
                   </div>
-                  <div className="form-group">
+                  <div className="form-group full-width">
                     <label className="form-label">Tanggal Bergabung</label>
                     <input 
                       type="date" 
@@ -738,7 +764,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       required
                     />
                   </div>
-                </>
+                </div>
               )}
 
               {/* Form Khusus Departemen */}

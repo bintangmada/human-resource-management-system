@@ -415,51 +415,144 @@
   padding: 8px 12px;
 }
 
-/* Alerts */
-.alert {
-  padding: 14px 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  animation: slideIn 0.3s ease-out;
+/* FLOATING TOAST NOTIFICATIONS */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
 }
 
-.alert-success {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+.toast {
+  pointer-events: auto;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 320px;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: slideInRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-left: 5px solid var(--secondary);
+}
+
+.toast-error {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  border-left: 5px solid var(--error);
+}
+
+.toast-icon {
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+  background: rgba(16, 185, 129, 0.2);
   color: #34d399;
 }
 
-.alert-error {
-  background: rgba(244, 63, 94, 0.1);
-  border: 1px solid rgba(244, 63, 94, 0.2);
+.toast-error .toast-icon {
+  background: rgba(244, 63, 94, 0.2);
   color: #f87171;
 }
 
-/* Modal Dialog */
+.toast-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toast-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.toast-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.toast-close:hover {
+  color: #ffffff;
+}
+
+/* PREMIUM MODAL DIALOG */
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 6, 10, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.25s ease-out;
 }
 
 .modal-content {
-  width: 100%;
-  max-width: 540px;
-  padding: 32px;
+  width: 90%;
+  max-width: 600px;
+  padding: 36px;
+  border-radius: 20px;
+  background: rgba(17, 24, 39, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 100px rgba(99, 102, 241, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 28px;
+  animation: scaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
 }
 
 .modal-header {
@@ -469,7 +562,8 @@
 }
 
 .modal-header h2 {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
   background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -482,23 +576,49 @@
   color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
+  transition: var(--transition-smooth);
 }
 
 .close-modal-btn:hover {
-  color: var(--text-main);
+  color: #ffffff;
+  transform: rotate(90deg);
 }
 
 .modal-form {
   display: flex;
   flex-direction: column;
+  gap: 24px;
+}
+
+/* 2-Column Responsive Grid inside Form */
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+@media (max-width: 580px) {
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+@media (max-width: 580px) {
+  .full-width {
+    grid-column: span 1;
+  }
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 12px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 20px;
 }
 
 /* Keyframes */
