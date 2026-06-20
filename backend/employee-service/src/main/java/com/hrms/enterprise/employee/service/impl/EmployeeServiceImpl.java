@@ -168,6 +168,26 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Helper Mapper manual dari Entity ke Response DTO.
      */
     private EmployeeResponse mapToResponse(Employee employee) {
+        String deptName = null;
+        String deptCode = null;
+        if (employee.getDepartmentId() != null) {
+            var deptOpt = departmentRepository.findById(employee.getDepartmentId());
+            if (deptOpt.isPresent()) {
+                deptName = deptOpt.get().getName();
+                deptCode = deptOpt.get().getCode();
+            }
+        }
+
+        String jobTitle = null;
+        String jobGrade = null;
+        if (employee.getJobId() != null) {
+            var jobOpt = jobRepository.findById(employee.getJobId());
+            if (jobOpt.isPresent()) {
+                jobTitle = jobOpt.get().getTitle();
+                jobGrade = jobOpt.get().getGrade();
+            }
+        }
+
         return EmployeeResponse.builder()
                 .id(employee.getId())
                 .tenantId(employee.getTenantId())
@@ -176,7 +196,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .email(employee.getEmail())
                 .phoneNumber(employee.getPhoneNumber())
                 .departmentId(employee.getDepartmentId())
+                .departmentName(deptName)
+                .departmentCode(deptCode)
                 .jobId(employee.getJobId())
+                .jobTitle(jobTitle)
+                .jobGrade(jobGrade)
                 .joinedAt(employee.getJoinedAt())
                 .status(employee.getStatus())
                 .createdBy(employee.getCreatedBy())
