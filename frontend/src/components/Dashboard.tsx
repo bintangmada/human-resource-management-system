@@ -134,9 +134,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
   // 3. STATE UNTUK FILTER PENCARIAN (Input User)
-  const [empFilters, setEmpFilters] = useState({ fullName: '', employeeNumber: '', email: '' });
-  const [deptFilters, setDeptFilters] = useState({ name: '', code: '' });
-  const [jobFilters, setJobFilters] = useState({ title: '', grade: '' });
+  const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '' });
+  const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '' });
+  const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '' });
 
   // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
   const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
@@ -585,7 +585,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
-                    <th></th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.id}
+                        onChange={(e) => setEmpFilters({ ...empFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
                     <th>
                       <input
                         type="text"
@@ -613,15 +621,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter email..."
                       />
                     </th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.phoneNumber}
+                        onChange={(e) => setEmpFilters({ ...empFilters, phoneNumber: e.target.value })}
+                        placeholder="Filter telepon..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.departmentName}
+                        onChange={(e) => setEmpFilters({ ...empFilters, departmentName: e.target.value })}
+                        placeholder="Filter divisi..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.jobTitle}
+                        onChange={(e) => setEmpFilters({ ...empFilters, jobTitle: e.target.value })}
+                        placeholder="Filter jabatan..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.joinedAt}
+                        onChange={(e) => setEmpFilters({ ...empFilters, joinedAt: e.target.value })}
+                        placeholder="Filter tanggal..."
+                      />
+                    </th>
                     <th>
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setEmpFilters({ fullName: '', employeeNumber: '', email: '' })}
+                        onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '' })}
                         title="Clear Filters"
                       >
                         ✕
@@ -641,7 +681,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
-                    <th></th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={deptFilters.id}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
                     <th>
                       <input
                         type="text"
@@ -664,7 +712,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setDeptFilters({ name: '', code: '' })}
+                        onClick={() => setDeptFilters({ id: '', name: '', code: '' })}
                         title="Clear Filters"
                       >
                         ✕
@@ -684,7 +732,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
-                    <th></th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={jobFilters.id}
+                        onChange={(e) => setJobFilters({ ...jobFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
                     <th>
                       <input
                         type="text"
@@ -707,7 +763,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setJobFilters({ title: '', grade: '' })}
+                        onClick={() => setJobFilters({ id: '', title: '', grade: '' })}
                         title="Clear Filters"
                       >
                         ✕
