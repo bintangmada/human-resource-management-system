@@ -74,6 +74,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
   const [successMsg, setSuccessMsg] = useState('');                   // Menyimpan pesan sukses operasional
 
+  // State untuk dialog konfirmasi hapus kustom
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
   // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
   useEffect(() => {
     if (successMsg) {
@@ -178,17 +182,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   };
 
   /**
-   * Fungsi handleDelete:
-   * Menghapus record secara aman (Soft Delete) melalui pemanggilan HTTP DELETE ke backend.
+   * Fungsi confirmDelete:
+   * Membuka modal konfirmasi hapus kustom untuk ID yang dipilih.
    */
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+  const confirmDelete = (id: number) => {
+    setDeleteTargetId(id);
+    setIsConfirmOpen(true);
+  };
+
+  /**
+   * Fungsi executeDelete:
+   * Menghapus record secara aman (Soft Delete) setelah konfirmasi disetujui.
+   */
+  const executeDelete = async () => {
+    if (deleteTargetId === null) return;
+    setIsConfirmOpen(false);
     try {
-      await apiRequest(`/${activeTab}/${id}/delete`, { method: 'POST' });
+      await apiRequest(`/${activeTab}/${deleteTargetId}/delete`, { method: 'POST' });
       setSuccessMsg('Data berhasil dihapus secara aman!');
+      setDeleteTargetId(null);
       fetchData(); // Muat ulang data tabel
     } catch (err: any) {
       setErrorMsg(err.message || 'Gagal menghapus data!');
+      setDeleteTargetId(null);
     }
   };
 
@@ -577,7 +593,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <td>
                     <div className="action-buttons">
                       <button className="action-btn edit-btn" onClick={() => openEditModal(emp)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(emp.id)}>🗑️</button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)}>🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -594,7 +610,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <td>
                     <div className="action-buttons">
                       <button className="action-btn edit-btn" onClick={() => openEditModal(dept)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(dept.id)}>🗑️</button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)}>🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -611,7 +627,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <td>
                     <div className="action-buttons">
                       <button className="action-btn edit-btn" onClick={() => openEditModal(job)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(job.id)}>🗑️</button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)}>🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -828,6 +844,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <button type="submit" className="btn-primary">Simpan</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. DIALOG KONFIRMASI HAPUS KUSTOM */}
+      {isConfirmOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-content confirm-modal glass-panel">
+            <div className="confirm-icon-wrapper">
+              <span className="confirm-warning-icon">⚠️</span>
+            </div>
+            <div className="confirm-body">
+              <h3>Konfirmasi Penghapusan</h3>
+              <p>Apakah Anda benar-benar yakin ingin menghapus data ini secara permanen?</p>
+              <span className="confirm-subtext">Tindakan ini tidak dapat dibatalkan.</span>
+            </div>
+            <div className="modal-actions confirm-actions">
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => {
+                  setIsConfirmOpen(false);
+                  setDeleteTargetId(null);
+                }}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className="btn-danger" 
+                onClick={executeDelete}
+              >
+                Ya, Hapus Data
+              </button>
+            </div>
           </div>
         </div>
       )}
