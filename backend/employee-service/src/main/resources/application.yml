@@ -30,7 +30,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:} # Blank by default locally, injected on VPS
+      password: ${REDIS_PASSWORD:hrms_redis_secret} # Default password locally, can be overridden via env
       timeout: 60000
 
   # Messaging / Event Broker Configuration (Apache Kafka)
