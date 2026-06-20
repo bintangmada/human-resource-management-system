@@ -83,12 +83,13 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<JobResponse> getAllJobs(Long tenantId, String title, String grade, Pageable pageable) {
+    public Page<JobResponse> getAllJobs(Long tenantId, String id, String title, String grade, Pageable pageable) {
+        String cleanId = (id == null || id.trim().isEmpty()) ? null : "%" + id.trim() + "%";
         String cleanTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.trim().toLowerCase() + "%";
         String cleanGrade = (grade == null || grade.trim().isEmpty()) ? null : "%" + grade.trim().toLowerCase() + "%";
 
         return jobRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanTitle, cleanGrade, pageable).map(this::mapToResponse);
+                tenantId, 0, cleanId, cleanTitle, cleanGrade, pageable).map(this::mapToResponse);
     }
 
     /**

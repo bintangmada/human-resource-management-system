@@ -73,6 +73,7 @@ public class JobController {
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<JobResponse>>> getAllJobs(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "grade", required = false) String grade,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -85,7 +86,7 @@ public class JobController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, title, grade, pageable);
+        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, id, title, grade, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

@@ -72,9 +72,14 @@ public class EmployeeController {
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<EmployeeResponse>>> getAllEmployees(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "fullName", required = false) String fullName,
             @RequestParam(value = "employeeNumber", required = false) String employeeNumber,
             @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(value = "departmentName", required = false) String departmentName,
+            @RequestParam(value = "jobTitle", required = false) String jobTitle,
+            @RequestParam(value = "joinedAt", required = false) String joinedAt,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
@@ -85,8 +90,8 @@ public class EmployeeController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, fullName, employeeNumber, email,
-                pageable);
+        Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(
+                tenantId, id, fullName, employeeNumber, email, phoneNumber, departmentName, jobTitle, joinedAt, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())
