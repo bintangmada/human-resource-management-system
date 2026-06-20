@@ -157,3 +157,23 @@ mvn -f backend/employee-service/pom.xml spring-boot:run
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 mvn -f backend/employee-service/pom.xml clean package -DskipTests
 ```
+
+---
+
+## 📖 6. Swagger & OpenAPI Documentation (Uji Coba API)
+
+Setelah aplikasi Spring Boot berhasil berjalan (`EMPLOYEE BACKEND IS RUNNING`):
+
+### A. Alamat URL Akses
+*   **Swagger UI (Interaktif)**:
+    👉 [http://localhost:8020/swagger-ui.html](http://localhost:8020/swagger-ui.html)
+*   **OpenAPI Specification (JSON Raw Data)**:
+    👉 [http://localhost:8020/v3/api-docs](http://localhost:8020/v3/api-docs)
+
+### B. Catatan Penting Penggunaan di Swagger UI (Multi-Tenancy)
+Aplikasi HRMS ini dirancang dengan isolasi multi-tenant yang ketat. Oleh karena itu, setiap kali Anda memanggil endpoint API melalui tombol **"Try it out"** di Swagger UI:
+1.  Anda **wajib** mengisi kolom parameter header **`X-Tenant-ID`**.
+2.  Gunakan nilai sampel berikut untuk melakukan pengetesan:
+    *   `X-Tenant-ID`: `1` (untuk Perusahaan/Tenant A)
+    *   `X-Tenant-ID`: `2` (untuk Perusahaan/Tenant B)
+3.  Jika parameter header ini kosong atau tidak disertakan, server akan membalas dengan status error **`400 Bad Request`** atau **`401 Unauthorized`**.
