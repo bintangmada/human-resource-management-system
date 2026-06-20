@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,12 +57,14 @@ public abstract class BaseEntity {
     // Status keaktifan operasional data:
     // 1 = ACTIVE (Aktif dan bisa digunakan dalam proses bisnis)
     // 0 = INACTIVE (Dinonaktifkan sementara oleh admin)
+    @Builder.Default
     @Column(name = "status", nullable = false)
     private Integer status = 1;
 
     // Status soft delete data:
     // 0 = NOT DELETED (Data aman dan aktif di sistem)
     // 1 = DELETED (Data dianggap terhapus secara logis dan tidak boleh muncul di kueri normal)
+    @Builder.Default
     @Column(name = "deleted_status", nullable = false)
     private Integer deletedStatus = 0;
 
