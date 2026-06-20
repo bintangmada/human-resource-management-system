@@ -9,40 +9,54 @@ import {
 } from '../types';
 import './Dashboard.css';
 
+/**
+ * Interface DashboardProps:
+ * Menentukan props yang harus dikirim oleh App.tsx ke Dashboard.
+ * Di sini kita memerlukan:
+ * - tenantId: ID tenant aktif saat ini.
+ * - actorEmail: Email aktor yang sedang login.
+ * - onLogout: Fungsi callback untuk keluar/kembali ke halaman login simulator.
+ */
 interface DashboardProps {
   tenantId: string;
   actorEmail: string;
   onLogout: () => void;
 }
 
+// Menentukan tipe data tab yang didukung
 type ActiveTab = 'employees' | 'departments' | 'jobs';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout }) => {
+  
+  // 1. STATE UNTUK TAB AKTIF
+  // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
   const [activeTab, setActiveTab] = useState<ActiveTab>('employees');
   
-  // Data States
+  // 2. STATE UNTUK DATA LIST DARI BACKEND
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
+  
+  // State untuk menyimpan metadata paginasi (halaman aktif, total halaman, total data, dll.)
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
-  // Filter States
+  // 3. STATE UNTUK FILTER PENCARIAN (Input User)
   const [empFilters, setEmpFilters] = useState({ fullName: '', employeeNumber: '', email: '' });
   const [deptFilters, setDeptFilters] = useState({ name: '', code: '' });
   const [jobFilters, setJobFilters] = useState({ title: '', grade: '' });
 
-  // Pagination & Sort States
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const [sortBy, setSortBy] = useState<string>('id');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
+  const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
+  const [pageSize, setPageSize] = useState<number>(10);               // Jumlah item per halaman (default 10)
+  const [sortBy, setSortBy] = useState<string>('id');                 // Kolom basis pengurutan (default: id)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');      // Arah pengurutan (asc: A-Z, desc: Z-A)
 
-  // Modal States
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'employee' | 'department' | 'job'>('employee');
-  const [editingId, setEditingId] = useState<number | null>(null);
+  // 5. STATE UNTUK MODAL DIALOG (Tambah & Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);              // Penanda modal terbuka/tertutup
+  const [modalType, setModalType] = useState<'employee' | 'department' | 'job'>('employee'); // Jenis form modal
+  const [editingId, setEditingId] = useState<number | null>(null);    // ID record yang sedang diedit (null jika mode Tambah Baru)
   
-  // Form States
+  // 6. STATE UNTUK FORM INPUT (Binding values)
   const [empForm, setEmpForm] = useState({
     employeeNumber: '',
     fullName: '',
@@ -50,16 +64,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     phoneNumber: '',
     departmentId: '',
     jobId: '',
-    joinedAt: new Date().toISOString().split('T')[0]
+    joinedAt: new Date().toISOString().split('T')[0]                  // Default tanggal hari ini (format YYYY-MM-DD)
   });
 
   const [deptForm, setDeptForm] = useState({ name: '', code: '' });
   const [jobForm, setJobForm] = useState({ title: '', grade: '' });
 
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  // 7. STATE UNTUK NOTIFIKASI
+  const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
+  const [successMsg, setSuccessMsg] = useState('');                   // Menyimpan pesan sukses operasional
 
-  // Fetch lists based on active tab
+  /**
+   * Fungsi fetchData:
+   * Mengambil data dari backend secara asinkron berdasarkan Tab aktif.
+   * Parameter pencarian, paginasi, dan sorting digabungkan menjadi URL query parameters.
+   */
   const fetchData = async () => {
     try {
       if (activeTab === 'employees') {
@@ -105,12 +124,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     }
   };
 
-  // Trigger fetch when tab, filters, page, sorting, or tenant changes
+  /**
+   * React hook `useEffect`:
+   * Fungsi ini akan dipicu secara otomatis setiap kali ada perubahan pada:
+   * activeTab, currentPage, pageSize, sortBy, sortDir, atau tenantId.
+   * Hal ini memastikan data tabel selalu selaras (sync) secara realtime.
+   */
   useEffect(() => {
     fetchData();
   }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId]);
 
-  // Handle Tab Switch (reset page & sorting)
+  /**
+   * Fungsi handleTabChange:
+   * Dipanggil ketika user berpindah tab. 
+   * Reset halaman ke 0 dan sort ke mode default untuk menghindari bug filter antar tabel.
+   */
   const handleTabChange = (tab: ActiveTab) => {
     setActiveTab(tab);
     setCurrentPage(0);
@@ -120,7 +148,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setSuccessMsg('');
   };
 
-  // Helper for toggle sort direction
+  /**
+   * Fungsi handleSort:
+   * Mengaktifkan fitur pengurutan data tabel secara dinamis.
+   * Jika kolom yang sama diklik lagi, arah urutan akan dibalik (asc <-> desc).
+   */
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -130,25 +162,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     }
   };
 
-  // Handle Delete (Soft Delete)
+  /**
+   * Fungsi handleDelete:
+   * Menghapus record secara aman (Soft Delete) melalui pemanggilan HTTP DELETE ke backend.
+   */
   const handleDelete = async (id: number) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
     try {
       await apiRequest(`/${activeTab}/${id}`, { method: 'DELETE' });
       setSuccessMsg('Data berhasil dihapus secara aman!');
-      fetchData();
+      fetchData(); // Muat ulang data tabel
     } catch (err: any) {
       setErrorMsg(err.message || 'Gagal menghapus data!');
     }
   };
 
-  // Open Create Modal
+  /**
+   * Fungsi openCreateModal:
+   * Membuka form modal kosong untuk menginputkan data baru.
+   */
   const openCreateModal = () => {
     setErrorMsg('');
     setEditingId(null);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
     
-    // Reset forms
+    // Reset isian form ke nilai awal
     setEmpForm({
       employeeNumber: '',
       fullName: '',
@@ -164,12 +202,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setIsModalOpen(true);
   };
 
-  // Open Edit Modal
+  /**
+   * Fungsi openEditModal:
+   * Membuka form modal yang telah terisi data item terpilih untuk dilakukan pembaruan (update).
+   */
   const openEditModal = async (item: any) => {
     setErrorMsg('');
     setEditingId(item.id);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
     
+    // Pindahkan isi baris tabel terpilih ke dalam state form input
     if (activeTab === 'employees') {
       setEmpForm({
         employeeNumber: item.employeeNumber,
@@ -189,12 +231,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setIsModalOpen(true);
   };
 
-  // Handle Form Submit (Create & Update)
+  /**
+   * Fungsi handleSubmit:
+   * Menangani pengiriman data form (Insert/Update) ke backend.
+   * Metode HTTP ditentukan secara dinamis (POST untuk data baru, PUT untuk update data lama).
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       let endpoint = `/${activeTab}`;
       const method = editingId ? 'PUT' : 'POST';
+      
+      // Jika mode edit, tambahkan ID di ujung endpoint URL
       if (editingId) endpoint += `/${editingId}`;
 
       let body: any = {};
@@ -212,14 +260,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
       await apiRequest(endpoint, { method, body });
       setSuccessMsg(editingId ? 'Data berhasil diperbarui!' : 'Data baru berhasil ditambahkan!');
-      setIsModalOpen(false);
-      fetchData();
+      setIsModalOpen(false); // Tutup dialog modal
+      fetchData();          // Muat ulang tabel data
     } catch (err: any) {
       setErrorMsg(err.message || 'Gagal menyimpan data!');
     }
   };
 
-  // Fetch departments & jobs for employee form selectors
+  /**
+   * Fungsi loadSelectors:
+   * Mengambil seluruh opsi departemen & jabatan tanpa paginasi ketat 
+   * untuk ditampilkan di menu dropdown form tambah/edit karyawan.
+   */
   const loadSelectors = async () => {
     try {
       const deptRes = await apiRequest<ApiResponse<DepartmentResponse[]>>('/departments?size=100');
@@ -231,6 +283,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     }
   };
 
+  // Muat opsi dropdown tepat saat form modal Karyawan dibuka
   useEffect(() => {
     if (isModalOpen && modalType === 'employee') {
       loadSelectors();
@@ -239,40 +292,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
   return (
     <div className="dashboard-layout">
-      {/* Top Navigation Bar */}
+      {/* 1. TOP NAVIGATION BAR */}
       <nav className="navbar glass-panel">
         <div className="nav-brand">
           <span className="brand-logo">🏢</span>
           <span className="brand-title">HRMS Enterprise</span>
         </div>
         <div className="nav-actions">
+          {/* Badge Multi-Tenant */}
           <div className="tenant-badge">
             <span className="badge-dot"></span>
             Tenant: <strong>{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</strong>
           </div>
+          {/* Info Aktor Log */}
           <div className="actor-info">
             👤 <span>{actorEmail}</span>
           </div>
+          {/* Tombol Logout Simulator */}
           <button className="logout-btn" onClick={onLogout}>
             Switch Tenant ⇄
           </button>
         </div>
       </nav>
 
+      {/* 2. AREA UTAMA KONTEN */}
       <div className="dashboard-content">
-        {/* Alerts */}
+        
+        {/* Notifikasi Alert Sukses */}
         {successMsg && (
           <div className="alert alert-success" onClick={() => setSuccessMsg('')}>
             ✓ {successMsg}
           </div>
         )}
+        
+        {/* Notifikasi Alert Error */}
         {errorMsg && (
           <div className="alert alert-error" onClick={() => setErrorMsg('')}>
             ✗ {errorMsg}
           </div>
         )}
 
-        {/* Tab Switcher & Action buttons */}
+        {/* Tab Switcher & Tombol Tambah Baru */}
         <div className="content-header">
           <div className="tab-buttons">
             <button 
@@ -300,10 +360,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           </button>
         </div>
 
-        {/* Filters Panel */}
+        {/* 3. PANEL FILTER PENCARIAN (Berdasarkan Tab Aktif) */}
         <div className="filters-panel glass-panel">
           <h3>🔍 Filter Pencarian</h3>
           <div className="filters-grid">
+            
+            {/* Filter Khusus Tab Karyawan */}
             {activeTab === 'employees' && (
               <>
                 <div className="filter-input-group">
@@ -317,7 +379,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   />
                 </div>
                 <div className="filter-input-group">
-                  <label>NIK / Employee Number</label>
+                  <label>NIK / Nomor Karyawan</label>
                   <input 
                     type="text" 
                     className="custom-input"
@@ -339,6 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               </>
             )}
 
+            {/* Filter Khusus Tab Departemen */}
             {activeTab === 'departments' && (
               <>
                 <div className="filter-input-group">
@@ -364,6 +427,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               </>
             )}
 
+            {/* Filter Khusus Tab Jabatan */}
             {activeTab === 'jobs' && (
               <>
                 <div className="filter-input-group">
@@ -389,8 +453,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               </>
             )}
           </div>
+          
           <div className="filter-actions">
             <button className="btn-secondary" onClick={() => {
+              // Bersihkan seluruh isian kolom filter
               setEmpFilters({ fullName: '', employeeNumber: '', email: '' });
               setDeptFilters({ name: '', code: '' });
               setJobFilters({ title: '', grade: '' });
@@ -403,10 +469,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           </div>
         </div>
 
-        {/* Data Table */}
+        {/* 4. TABEL UTAMA DATA */}
         <div className="table-container glass-panel">
           <table className="custom-table">
             <thead>
+              {/* Header Kolom Karyawan */}
               {activeTab === 'employees' && (
                 <tr>
                   <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
@@ -421,6 +488,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </tr>
               )}
 
+              {/* Header Kolom Departemen */}
               {activeTab === 'departments' && (
                 <tr>
                   <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
@@ -430,6 +498,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </tr>
               )}
 
+              {/* Header Kolom Jabatan */}
               {activeTab === 'jobs' && (
                 <tr>
                   <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
@@ -440,6 +509,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               )}
             </thead>
             <tbody>
+              {/* Loop Baris Karyawan */}
               {activeTab === 'employees' && employees.map((emp) => (
                 <tr key={emp.id}>
                   <td>{emp.id}</td>
@@ -463,6 +533,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </tr>
               ))}
 
+              {/* Loop Baris Departemen */}
               {activeTab === 'departments' && departments.map((dept) => (
                 <tr key={dept.id}>
                   <td>{dept.id}</td>
@@ -479,6 +550,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </tr>
               ))}
 
+              {/* Loop Baris Jabatan */}
               {activeTab === 'jobs' && jobs.map((job) => (
                 <tr key={job.id}>
                   <td>{job.id}</td>
@@ -495,6 +567,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </tr>
               ))}
 
+              {/* Menampilkan pesan jika array data kosong */}
               {((activeTab === 'employees' && employees.length === 0) ||
                 (activeTab === 'departments' && departments.length === 0) ||
                 (activeTab === 'jobs' && jobs.length === 0)) && (
@@ -508,7 +581,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           </table>
         </div>
 
-        {/* Pagination Controls */}
+        {/* 5. PANEL PAGINASI TABEL */}
         {pagination && (
           <div className="pagination-panel glass-panel">
             <div className="pagination-info">
@@ -529,12 +602,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               >
                 Berikutnya ▶
               </button>
+              {/* Dropdown Ukuran/Batas Baris per Halaman */}
               <select 
                 className="custom-input page-size-select"
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(parseInt(e.target.value));
-                  setCurrentPage(0);
+                  setCurrentPage(0); // Reset ke halaman pertama saat ukuran diubah
                 }}
               >
                 <option value="5">5 data / hal</option>
@@ -546,7 +620,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         )}
       </div>
 
-      {/* Modal Dialog Form */}
+      {/* 6. MODAL FORM DIALOG (Tambah / Edit Data) */}
       {isModalOpen && (
         <div className="modal-backdrop">
           <div className="modal-content glass-panel">
@@ -556,6 +630,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             </div>
             
             <form onSubmit={handleSubmit} className="modal-form">
+              {/* Form Khusus Karyawan */}
               {modalType === 'employee' && (
                 <>
                   <div className="form-group">
@@ -642,6 +717,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </>
               )}
 
+              {/* Form Khusus Departemen */}
               {modalType === 'department' && (
                 <>
                   <div className="form-group">
@@ -669,6 +745,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 </>
               )}
 
+              {/* Form Khusus Jabatan */}
               {modalType === 'job' && (
                 <>
                   <div className="form-group">

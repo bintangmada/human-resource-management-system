@@ -1,15 +1,37 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Pengaturan set karakter standar untuk mendukung berbagai simbol internasional -->
     <meta charset="UTF-8" />
+    
+    <!-- Logo Icon kecil (Favicon) yang muncul di tab browser -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- Tag penting untuk memastikan tampilan web responsif di layar HP/Tablet (viewport scaling) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Judul Halaman Web yang muncul di tab browser -->
     <title>HRMS Enterprise - Multi-Tenant Portal</title>
-    <!-- Local Fonts (No CDN dependency) -->
+    
+    <!-- 
+      Local Fonts (Tidak Bergantung pada CDN Internet):
+      Menyambungkan file fonts.css buatan kita yang memuat font Outfit & Inter secara lokal.
+    -->
     <link rel="stylesheet" href="/fonts/fonts.css">
   </head>
   <body>
+    <!-- 
+      Titik Kait Utama React (#root):
+      Div kosong ini adalah wadah tempat React JS menyisipkan (mount) seluruh struktur 
+      halaman web yang dibuat menggunakan kode TypeScript/JSX secara dinamis.
+    -->
     <div id="root"></div>
+    
+    <!-- 
+      Entry Point Script (Type Module):
+      Menghubungkan ke berkas /src/main.tsx yang bertugas memicu React untuk merender 
+      komponen App.tsx ke dalam div id="root" di atas.
+    -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
