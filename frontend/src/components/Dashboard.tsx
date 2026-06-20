@@ -78,6 +78,12 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
+const ChevronDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <circle cx="12" cy="12" r="5"></circle>
@@ -205,6 +211,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // State & Effect untuk Dropdown Kustom (Page Size & Status Filters)
+  const [activeDropdown, setActiveDropdown] = useState<'empStatus' | 'deptStatus' | 'jobStatus' | 'pageSize' | null>(null);
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleClose = () => setActiveDropdown(null);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, [activeDropdown]);
 
   // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
   useEffect(() => {
@@ -726,16 +742,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       />
                     </th>
                     <th>
-                      <select
-                        className="table-filter-input"
-                        value={empFilters.status}
-                        onChange={(e) => setEmpFilters({ ...empFilters, status: e.target.value })}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <option value="">Semua</option>
-                        <option value="1">Aktif</option>
-                        <option value="0">Tidak Aktif</option>
-                      </select>
+                      <div className="table-dropdown-container">
+                        <button
+                          type="button"
+                          className={`table-dropdown-trigger ${activeDropdown === 'empStatus' ? 'open' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdown(activeDropdown === 'empStatus' ? null : 'empStatus');
+                          }}
+                        >
+                          <span>
+                            {empFilters.status === '1' ? 'Aktif' : empFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                          </span>
+                          <ChevronDownIcon />
+                        </button>
+                        {activeDropdown === 'empStatus' && (
+                          <ul className="table-dropdown-menu">
+                            {[
+                              { value: '', label: 'Semua' },
+                              { value: '1', label: 'Aktif' },
+                              { value: '0', label: 'Tidak Aktif' }
+                            ].map((opt) => (
+                              <li
+                                key={opt.value}
+                                className={empFilters.status === opt.value ? 'active' : ''}
+                                onClick={() => {
+                                  setEmpFilters({ ...empFilters, status: opt.value });
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                {opt.label}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </th>
                     <th>
                       <button
@@ -790,16 +831,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       />
                     </th>
                     <th>
-                      <select
-                        className="table-filter-input"
-                        value={deptFilters.status}
-                        onChange={(e) => setDeptFilters({ ...deptFilters, status: e.target.value })}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <option value="">Semua</option>
-                        <option value="1">Aktif</option>
-                        <option value="0">Tidak Aktif</option>
-                      </select>
+                      <div className="table-dropdown-container">
+                        <button
+                          type="button"
+                          className={`table-dropdown-trigger ${activeDropdown === 'deptStatus' ? 'open' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdown(activeDropdown === 'deptStatus' ? null : 'deptStatus');
+                          }}
+                        >
+                          <span>
+                            {deptFilters.status === '1' ? 'Aktif' : deptFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                          </span>
+                          <ChevronDownIcon />
+                        </button>
+                        {activeDropdown === 'deptStatus' && (
+                          <ul className="table-dropdown-menu">
+                            {[
+                              { value: '', label: 'Semua' },
+                              { value: '1', label: 'Aktif' },
+                              { value: '0', label: 'Tidak Aktif' }
+                            ].map((opt) => (
+                              <li
+                                key={opt.value}
+                                className={deptFilters.status === opt.value ? 'active' : ''}
+                                onClick={() => {
+                                  setDeptFilters({ ...deptFilters, status: opt.value });
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                {opt.label}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </th>
                     <th>
                       <button
@@ -854,16 +920,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       />
                     </th>
                     <th>
-                      <select
-                        className="table-filter-input"
-                        value={jobFilters.status}
-                        onChange={(e) => setJobFilters({ ...jobFilters, status: e.target.value })}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <option value="">Semua</option>
-                        <option value="1">Aktif</option>
-                        <option value="0">Tidak Aktif</option>
-                      </select>
+                      <div className="table-dropdown-container">
+                        <button
+                          type="button"
+                          className={`table-dropdown-trigger ${activeDropdown === 'jobStatus' ? 'open' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdown(activeDropdown === 'jobStatus' ? null : 'jobStatus');
+                          }}
+                        >
+                          <span>
+                            {jobFilters.status === '1' ? 'Aktif' : jobFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                          </span>
+                          <ChevronDownIcon />
+                        </button>
+                        {activeDropdown === 'jobStatus' && (
+                          <ul className="table-dropdown-menu">
+                            {[
+                              { value: '', label: 'Semua' },
+                              { value: '1', label: 'Aktif' },
+                              { value: '0', label: 'Tidak Aktif' }
+                            ].map((opt) => (
+                              <li
+                                key={opt.value}
+                                className={jobFilters.status === opt.value ? 'active' : ''}
+                                onClick={() => {
+                                  setJobFilters({ ...jobFilters, status: opt.value });
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                {opt.label}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </th>
                     <th>
                       <button
@@ -988,19 +1079,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               >
                 Berikutnya ▶
               </button>
-              {/* Dropdown Ukuran/Batas Baris per Halaman */}
-              <select
-                className="custom-input page-size-select"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(parseInt(e.target.value));
-                  setCurrentPage(0); // Reset ke halaman pertama saat ukuran diubah
-                }}
-              >
-                <option value="5">5 data / hal</option>
-                <option value="10">10 data / hal</option>
-                <option value="20">20 data / hal</option>
-              </select>
+              {/* Dropdown Ukuran/Batas Baris per Halaman (Desain Kustom Modern) */}
+              <div className="custom-dropdown-container">
+                <button
+                  type="button"
+                  className={`custom-dropdown-trigger ${activeDropdown === 'pageSize' ? 'open' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveDropdown(activeDropdown === 'pageSize' ? null : 'pageSize');
+                  }}
+                  title="Pilih jumlah baris data per halaman"
+                >
+                  <span>{pageSize} data / hal</span>
+                  <ChevronDownIcon />
+                </button>
+                {activeDropdown === 'pageSize' && (
+                  <ul className="custom-dropdown-menu">
+                    {[5, 10, 20].map((size) => (
+                      <li
+                        key={size}
+                        className={pageSize === size ? 'active' : ''}
+                        onClick={() => {
+                          setPageSize(size);
+                          setCurrentPage(0);
+                          setActiveDropdown(null);
+                        }}
+                      >
+                        {size} data / hal
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         )}
