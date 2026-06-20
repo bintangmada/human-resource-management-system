@@ -52,7 +52,7 @@ public class EmployeeController {
     /**
      * Memperbarui Biodata Karyawan.
      */
-    @PutMapping("/{id}")
+    @PostMapping("/{id}/update")
     public ResponseEntity<ApiResponse<EmployeeResponse>> updateEmployee(
             @PathVariable Long id,
             @Valid @RequestBody EmployeeRequest request,
@@ -112,7 +112,7 @@ public class EmployeeController {
     /**
      * Melakukan Soft Delete pada Karyawan Berdasarkan ID.
      */
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public ResponseEntity<ApiResponse<Void>> deleteEmployee(
             @PathVariable Long id,
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,

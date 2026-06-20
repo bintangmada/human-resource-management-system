@@ -52,7 +52,7 @@ public class JobController {
     /**
      * Memperbarui Data Posisi Jabatan.
      */
-    @PutMapping("/{id}")
+    @PostMapping("/{id}/update")
     public ResponseEntity<ApiResponse<JobResponse>> updateJob(
             @PathVariable Long id,
             @Valid @RequestBody JobRequest request,
@@ -111,7 +111,7 @@ public class JobController {
     /**
      * Melakukan Soft Delete pada Posisi Jabatan Berdasarkan ID.
      */
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public ResponseEntity<ApiResponse<Void>> deleteJob(
             @PathVariable Long id,
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,

@@ -113,6 +113,21 @@ services:
       - hrms-network
     restart: always
 
+  # 7. Frontend Admin Portal (Vite + React)
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: hrms-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - employee-service
+    networks:
+      - hrms-network
+    restart: always
+
+
 
 volumes:
   postgres_data:

@@ -54,7 +54,7 @@
 				{
 					"name": "Update Department",
 					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -78,7 +78,7 @@
 							"raw": "{\n  \"name\": \"Software Engineering & DevOps\",\n  \"code\": \"ENG\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/departments/1",
+							"raw": "{{baseUrl}}/api/v1/departments/1/update",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -86,7 +86,8 @@
 								"api",
 								"v1",
 								"departments",
-								"1"
+								"1",
+								"update"
 							]
 						}
 					},
@@ -176,7 +177,7 @@
 				{
 					"name": "Delete Department (Soft Delete)",
 					"request": {
-						"method": "DELETE",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-Tenant-ID",
@@ -192,7 +193,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/departments/1",
+							"raw": "{{baseUrl}}/api/v1/departments/1/delete",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -200,7 +201,8 @@
 								"api",
 								"v1",
 								"departments",
-								"1"
+								"1",
+								"delete"
 							]
 						}
 					},
@@ -254,7 +256,7 @@
 				{
 					"name": "Update Job",
 					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -278,7 +280,7 @@
 							"raw": "{\n  \"title\": \"Lead Software Engineer\",\n  \"grade\": \"G-6\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/jobs/1",
+							"raw": "{{baseUrl}}/api/v1/jobs/1/update",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -286,7 +288,8 @@
 								"api",
 								"v1",
 								"jobs",
-								"1"
+								"1",
+								"update"
 							]
 						}
 					},
@@ -372,7 +375,7 @@
 				{
 					"name": "Delete Job (Soft Delete)",
 					"request": {
-						"method": "DELETE",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-Tenant-ID",
@@ -388,7 +391,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/jobs/1",
+							"raw": "{{baseUrl}}/api/v1/jobs/1/delete",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -396,7 +399,8 @@
 								"api",
 								"v1",
 								"jobs",
-								"1"
+								"1",
+								"delete"
 							]
 						}
 					},
@@ -450,7 +454,7 @@
 				{
 					"name": "Update Employee",
 					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -474,7 +478,7 @@
 							"raw": "{\n  \"employeeNumber\": \"EMP-20260620-001\",\n  \"fullName\": \"Bintang Mada Wibowo\",\n  \"email\": \"bintang.mada@enterprise.com\",\n  \"phoneNumber\": \"081234567899\",\n  \"departmentId\": 1,\n  \"jobId\": 1,\n  \"joinedAt\": \"2026-06-20\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/employees/1",
+							"raw": "{{baseUrl}}/api/v1/employees/1/update",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -482,7 +486,8 @@
 								"api",
 								"v1",
 								"employees",
-								"1"
+								"1",
+								"update"
 							]
 						}
 					},
@@ -573,7 +578,7 @@
 				{
 					"name": "Delete Employee (Soft Delete)",
 					"request": {
-						"method": "DELETE",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-Tenant-ID",
@@ -589,7 +594,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/employees/1",
+							"raw": "{{baseUrl}}/api/v1/employees/1/delete",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -597,7 +602,8 @@
 								"api",
 								"v1",
 								"employees",
-								"1"
+								"1",
+								"delete"
 							]
 						}
 					},
