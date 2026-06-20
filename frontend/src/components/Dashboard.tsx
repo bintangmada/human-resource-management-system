@@ -11,7 +11,7 @@ import './Dashboard.css';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
 const BrandIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', flexShrink: 0 }}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} className="brand-icon-svg">
     <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
     <path d="M7 22V14h10v8"></path>
     <path d="M17 18h1"></path>
