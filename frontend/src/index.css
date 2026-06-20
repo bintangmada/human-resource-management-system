@@ -157,6 +157,11 @@ a:hover {
   transition: var(--transition-smooth);
 }
 
+.custom-input option {
+  background-color: var(--select-option-bg);
+  color: var(--select-option-color);
+}
+
 /* Efek saat kolom input diklik/aktif */
 .custom-input:focus {
   outline: none;
