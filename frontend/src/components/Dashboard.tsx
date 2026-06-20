@@ -90,6 +90,12 @@ const ResetIcon = () => (
   </svg>
 );
 
+const ColumnsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', flexShrink: 0 }}>
+    <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"/>
+  </svg>
+);
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <circle cx="12" cy="12" r="5"></circle>
@@ -175,6 +181,75 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const isDeptFiltered = Object.values(deptFilters).some(val => val !== '');
   const isJobFiltered = Object.values(jobFilters).some(val => val !== '');
 
+  // State untuk visibilitas kolom tabel
+  const [visibleColumns, setVisibleColumns] = useState<{
+    employees: string[];
+    departments: string[];
+    jobs: string[];
+  }>({
+    employees: ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions'],
+    departments: ['id', 'name', 'code', 'status', 'actions'],
+    jobs: ['id', 'title', 'grade', 'status', 'actions']
+  });
+
+  const getTabColumnDefinitions = () => {
+    if (activeTab === 'employees') {
+      return [
+        { key: 'id', label: 'ID' },
+        { key: 'nik', label: 'NIK' },
+        { key: 'fullName', label: 'Nama Lengkap' },
+        { key: 'email', label: 'Email' },
+        { key: 'phoneNumber', label: 'No. Telepon' },
+        { key: 'departmentName', label: 'Departemen' },
+        { key: 'jobTitle', label: 'Jabatan (Grade)' },
+        { key: 'joinedAt', label: 'Bergabung' },
+        { key: 'status', label: 'Status' }
+      ];
+    } else if (activeTab === 'departments') {
+      return [
+        { key: 'id', label: 'ID' },
+        { key: 'name', label: 'Nama Departemen' },
+        { key: 'code', label: 'Kode Singkatan' },
+        { key: 'status', label: 'Status' }
+      ];
+    } else {
+      return [
+        { key: 'id', label: 'ID' },
+        { key: 'title', label: 'Nama Jabatan' },
+        { key: 'grade', label: 'Golongan (Grade)' },
+        { key: 'status', label: 'Status' }
+      ];
+    }
+  };
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const currentList = prev[activeTab];
+      const isVisible = currentList.includes(columnKey);
+      
+      // Prevent hiding all columns (must keep at least one column besides actions)
+      if (isVisible && currentList.filter(k => k !== 'actions').length <= 1) {
+        return prev;
+      }
+
+      // Original orders
+      const originalOrder = activeTab === 'employees' 
+        ? ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions']
+        : activeTab === 'departments'
+          ? ['id', 'name', 'code', 'status', 'actions']
+          : ['id', 'title', 'grade', 'status', 'actions'];
+
+      const nextList = isVisible
+        ? currentList.filter((k) => k !== columnKey)
+        : originalOrder.filter((k) => currentList.includes(k) || k === columnKey);
+
+      return {
+        ...prev,
+        [activeTab]: nextList
+      };
+    });
+  };
+
   // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
   const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
   const [pageSize, setPageSize] = useState<number>(10);               // Jumlah item per halaman (default 10)
@@ -224,7 +299,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   }, [theme]);
 
   // State & Effect untuk Dropdown Kustom (Page Size & Status Filters)
-  const [activeDropdown, setActiveDropdown] = useState<'empStatus' | 'deptStatus' | 'jobStatus' | 'pageSize' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'empStatus' | 'deptStatus' | 'jobStatus' | 'pageSize' | 'columnSelector' | null>(null);
 
   useEffect(() => {
     if (!activeDropdown) return;
@@ -655,9 +730,45 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             </p>
           </div>
 
-          <button className="btn-primary" onClick={openCreateModal}>
-            + Tambah {activeTab === 'employees' ? 'Karyawan' : activeTab === 'departments' ? 'Departemen' : 'Jabatan'}
-          </button>
+          <div className="page-header-actions">
+            {/* Column Visibility Selector Dropdown */}
+            <div className="column-selector-container">
+              <button
+                type="button"
+                className={`btn-secondary column-selector-trigger ${activeDropdown === 'columnSelector' ? 'open' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveDropdown(activeDropdown === 'columnSelector' ? null : 'columnSelector');
+                }}
+              >
+                <ColumnsIcon />
+                <span>Kolom</span>
+                <ChevronDownIcon />
+              </button>
+              {activeDropdown === 'columnSelector' && (
+                <div className="column-selector-menu">
+                  <div className="column-selector-header">Tampilkan Kolom</div>
+                  <ul className="column-selector-list">
+                    {getTabColumnDefinitions().map((col) => (
+                      <li key={col.key} onClick={(e) => { e.stopPropagation(); toggleColumnVisibility(col.key); }}>
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns[activeTab].includes(col.key)}
+                          onChange={() => {}} // Controlled via onClick on <li> for better hit area
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span>{col.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <button className="btn-primary" onClick={openCreateModal}>
+              + Tambah {activeTab === 'employees' ? 'Karyawan' : activeTab === 'departments' ? 'Departemen' : 'Jabatan'}
+            </button>
+          </div>
         </div>
 
         {/* 4. TABEL UTAMA DATA */}
@@ -668,140 +779,159 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {activeTab === 'employees' && (
                 <>
                   <tr>
-                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th>No. Telepon</th>
-                    <th>Departemen</th>
-                    <th>Jabatan (Grade)</th>
-                    <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    {visibleColumns.employees.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('nik') && <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('fullName') && <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('email') && <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('phoneNumber') && <th>No. Telepon</th>}
+                    {visibleColumns.employees.includes('departmentName') && <th>Departemen</th>}
+                    {visibleColumns.employees.includes('jobTitle') && <th>Jabatan (Grade)</th>}
+                    {visibleColumns.employees.includes('joinedAt') && <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('status') && <th>Status</th>}
+                    {visibleColumns.employees.includes('actions') && <th>Aksi</th>}
                   </tr>
                   <tr className="table-filter-row">
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.id}
-                        onChange={(e) => setEmpFilters({ ...empFilters, id: e.target.value })}
-                        placeholder="Filter ID..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.employeeNumber}
-                        onChange={(e) => setEmpFilters({ ...empFilters, employeeNumber: e.target.value })}
-                        placeholder="Filter NIK..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.fullName}
-                        onChange={(e) => setEmpFilters({ ...empFilters, fullName: e.target.value })}
-                        placeholder="Filter nama..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.email}
-                        onChange={(e) => setEmpFilters({ ...empFilters, email: e.target.value })}
-                        placeholder="Filter email..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.phoneNumber}
-                        onChange={(e) => setEmpFilters({ ...empFilters, phoneNumber: e.target.value })}
-                        placeholder="Filter telepon..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.departmentName}
-                        onChange={(e) => setEmpFilters({ ...empFilters, departmentName: e.target.value })}
-                        placeholder="Filter divisi..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.jobTitle}
-                        onChange={(e) => setEmpFilters({ ...empFilters, jobTitle: e.target.value })}
-                        placeholder="Filter jabatan..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={empFilters.joinedAt}
-                        onChange={(e) => setEmpFilters({ ...empFilters, joinedAt: e.target.value })}
-                        placeholder="Filter tanggal..."
-                      />
-                    </th>
-                    <th>
-                      <div className="table-dropdown-container">
-                        <button
-                          type="button"
-                          className={`table-dropdown-trigger ${activeDropdown === 'empStatus' ? 'open' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveDropdown(activeDropdown === 'empStatus' ? null : 'empStatus');
-                          }}
-                        >
-                          <span>
-                            {empFilters.status === '1' ? 'Aktif' : empFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
-                          </span>
-                          <ChevronDownIcon />
-                        </button>
-                        {activeDropdown === 'empStatus' && (
-                          <ul className="table-dropdown-menu">
-                            {[
-                              { value: '', label: 'Semua' },
-                              { value: '1', label: 'Aktif' },
-                              { value: '0', label: 'Tidak Aktif' }
-                            ].map((opt) => (
-                              <li
-                                key={opt.value}
-                                className={empFilters.status === opt.value ? 'active' : ''}
-                                onClick={() => {
-                                  setEmpFilters({ ...empFilters, status: opt.value });
-                                  setActiveDropdown(null);
-                                }}
-                              >
-                                {opt.label}
-                              </li>
-                            ))}
-                          </ul>
+                    {visibleColumns.employees.includes('id') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.id}
+                          onChange={(e) => setEmpFilters({ ...empFilters, id: e.target.value })}
+                          placeholder="Filter ID..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('nik') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.employeeNumber}
+                          onChange={(e) => setEmpFilters({ ...empFilters, employeeNumber: e.target.value })}
+                          placeholder="Filter NIK..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('fullName') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.fullName}
+                          onChange={(e) => setEmpFilters({ ...empFilters, fullName: e.target.value })}
+                          placeholder="Filter nama..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('email') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.email}
+                          onChange={(e) => setEmpFilters({ ...empFilters, email: e.target.value })}
+                          placeholder="Filter email..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('phoneNumber') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.phoneNumber}
+                          onChange={(e) => setEmpFilters({ ...empFilters, phoneNumber: e.target.value })}
+                          placeholder="Filter telepon..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('departmentName') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.departmentName}
+                          onChange={(e) => setEmpFilters({ ...empFilters, departmentName: e.target.value })}
+                          placeholder="Filter divisi..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('jobTitle') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.jobTitle}
+                          onChange={(e) => setEmpFilters({ ...empFilters, jobTitle: e.target.value })}
+                          placeholder="Filter jabatan..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('joinedAt') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={empFilters.joinedAt}
+                          onChange={(e) => setEmpFilters({ ...empFilters, joinedAt: e.target.value })}
+                          placeholder="Filter tanggal..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('status') && (
+                      <th>
+                        <div className="table-dropdown-container">
+                          <button
+                            type="button"
+                            className={`table-dropdown-trigger ${activeDropdown === 'empStatus' ? 'open' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdown(activeDropdown === 'empStatus' ? null : 'empStatus');
+                            }}
+                          >
+                            <span>
+                              {empFilters.status === '1' ? 'Aktif' : empFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                            </span>
+                            <ChevronDownIcon />
+                          </button>
+                          {activeDropdown === 'empStatus' && (
+                            <ul className="table-dropdown-menu">
+                              {[
+                                { value: '', label: 'Semua' },
+                                { value: '1', label: 'Aktif' },
+                                { value: '0', label: 'Tidak Aktif' }
+                              ].map((opt) => (
+                                <li
+                                  key={opt.value}
+                                  className={empFilters.status === opt.value ? 'active' : ''}
+                                  onClick={() => {
+                                    setEmpFilters({ ...empFilters, status: opt.value });
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  {opt.label}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </th>
+                    )}
+                    {visibleColumns.employees.includes('actions') && (
+                      <th>
+                        {isEmpFiltered && (
+                          <button
+                            type="button"
+                            className="clear-filters-btn"
+                            onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
+                            title="Reset Pencarian"
+                          >
+                            <ResetIcon />
+                          </button>
                         )}
-                      </div>
-                    </th>
-                    <th>
-                      {isEmpFiltered && (
-                        <button
-                          type="button"
-                          className="clear-filters-btn"
-                          onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
-                          title="Reset Pencarian"
-                        >
-                          <ResetIcon />
-                        </button>
-                      )}
-                    </th>
-                  </tr>
+                      </th>
+                    )}
                 </>
               )}
 
@@ -809,90 +939,99 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {activeTab === 'departments' && (
                 <>
                   <tr>
-                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    {visibleColumns.departments.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.departments.includes('name') && <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.departments.includes('code') && <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.departments.includes('status') && <th>Status</th>}
+                    {visibleColumns.departments.includes('actions') && <th>Aksi</th>}
                   </tr>
                   <tr className="table-filter-row">
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={deptFilters.id}
-                        onChange={(e) => setDeptFilters({ ...deptFilters, id: e.target.value })}
-                        placeholder="Filter ID..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={deptFilters.name}
-                        onChange={(e) => setDeptFilters({ ...deptFilters, name: e.target.value })}
-                        placeholder="Filter nama..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={deptFilters.code}
-                        onChange={(e) => setDeptFilters({ ...deptFilters, code: e.target.value })}
-                        placeholder="Filter kode..."
-                      />
-                    </th>
-                    <th>
-                      <div className="table-dropdown-container">
-                        <button
-                          type="button"
-                          className={`table-dropdown-trigger ${activeDropdown === 'deptStatus' ? 'open' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveDropdown(activeDropdown === 'deptStatus' ? null : 'deptStatus');
-                          }}
-                        >
-                          <span>
-                            {deptFilters.status === '1' ? 'Aktif' : deptFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
-                          </span>
-                          <ChevronDownIcon />
-                        </button>
-                        {activeDropdown === 'deptStatus' && (
-                          <ul className="table-dropdown-menu">
-                            {[
-                              { value: '', label: 'Semua' },
-                              { value: '1', label: 'Aktif' },
-                              { value: '0', label: 'Tidak Aktif' }
-                            ].map((opt) => (
-                              <li
-                                key={opt.value}
-                                className={deptFilters.status === opt.value ? 'active' : ''}
-                                onClick={() => {
-                                  setDeptFilters({ ...deptFilters, status: opt.value });
-                                  setActiveDropdown(null);
-                                }}
-                              >
-                                {opt.label}
-                              </li>
-                            ))}
-                          </ul>
+                    {visibleColumns.departments.includes('id') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={deptFilters.id}
+                          onChange={(e) => setDeptFilters({ ...deptFilters, id: e.target.value })}
+                          placeholder="Filter ID..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.departments.includes('name') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={deptFilters.name}
+                          onChange={(e) => setDeptFilters({ ...deptFilters, name: e.target.value })}
+                          placeholder="Filter nama..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.departments.includes('code') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={deptFilters.code}
+                          onChange={(e) => setDeptFilters({ ...deptFilters, code: e.target.value })}
+                          placeholder="Filter kode..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.departments.includes('status') && (
+                      <th>
+                        <div className="table-dropdown-container">
+                          <button
+                            type="button"
+                            className={`table-dropdown-trigger ${activeDropdown === 'deptStatus' ? 'open' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdown(activeDropdown === 'deptStatus' ? null : 'deptStatus');
+                            }}
+                          >
+                            <span>
+                              {deptFilters.status === '1' ? 'Aktif' : deptFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                            </span>
+                            <ChevronDownIcon />
+                          </button>
+                          {activeDropdown === 'deptStatus' && (
+                            <ul className="table-dropdown-menu">
+                              {[
+                                { value: '', label: 'Semua' },
+                                { value: '1', label: 'Aktif' },
+                                { value: '0', label: 'Tidak Aktif' }
+                              ].map((opt) => (
+                                <li
+                                  key={opt.value}
+                                  className={deptFilters.status === opt.value ? 'active' : ''}
+                                  onClick={() => {
+                                    setDeptFilters({ ...deptFilters, status: opt.value });
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  {opt.label}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </th>
+                    )}
+                    {visibleColumns.departments.includes('actions') && (
+                      <th>
+                        {isDeptFiltered && (
+                          <button
+                            type="button"
+                            className="clear-filters-btn"
+                            onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
+                            title="Reset Pencarian"
+                          >
+                            <ResetIcon />
+                          </button>
                         )}
-                      </div>
-                    </th>
-                    <th>
-                      {isDeptFiltered && (
-                        <button
-                          type="button"
-                          className="clear-filters-btn"
-                          onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
-                          title="Reset Pencarian"
-                        >
-                          <ResetIcon />
-                        </button>
-                      )}
-                    </th>
-                  </tr>
+                      </th>
+                    )}
                 </>
               )}
 
@@ -900,90 +1039,99 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {activeTab === 'jobs' && (
                 <>
                   <tr>
-                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    {visibleColumns.jobs.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.jobs.includes('title') && <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.jobs.includes('grade') && <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.jobs.includes('status') && <th>Status</th>}
+                    {visibleColumns.jobs.includes('actions') && <th>Aksi</th>}
                   </tr>
                   <tr className="table-filter-row">
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={jobFilters.id}
-                        onChange={(e) => setJobFilters({ ...jobFilters, id: e.target.value })}
-                        placeholder="Filter ID..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={jobFilters.title}
-                        onChange={(e) => setJobFilters({ ...jobFilters, title: e.target.value })}
-                        placeholder="Filter jabatan..."
-                      />
-                    </th>
-                    <th>
-                      <input
-                        type="text"
-                        className="table-filter-input"
-                        value={jobFilters.grade}
-                        onChange={(e) => setJobFilters({ ...jobFilters, grade: e.target.value })}
-                        placeholder="Filter grade..."
-                      />
-                    </th>
-                    <th>
-                      <div className="table-dropdown-container">
-                        <button
-                          type="button"
-                          className={`table-dropdown-trigger ${activeDropdown === 'jobStatus' ? 'open' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveDropdown(activeDropdown === 'jobStatus' ? null : 'jobStatus');
-                          }}
-                        >
-                          <span>
-                            {jobFilters.status === '1' ? 'Aktif' : jobFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
-                          </span>
-                          <ChevronDownIcon />
-                        </button>
-                        {activeDropdown === 'jobStatus' && (
-                          <ul className="table-dropdown-menu">
-                            {[
-                              { value: '', label: 'Semua' },
-                              { value: '1', label: 'Aktif' },
-                              { value: '0', label: 'Tidak Aktif' }
-                            ].map((opt) => (
-                              <li
-                                key={opt.value}
-                                className={jobFilters.status === opt.value ? 'active' : ''}
-                                onClick={() => {
-                                  setJobFilters({ ...jobFilters, status: opt.value });
-                                  setActiveDropdown(null);
-                                }}
-                              >
-                                {opt.label}
-                              </li>
-                            ))}
-                          </ul>
+                    {visibleColumns.jobs.includes('id') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={jobFilters.id}
+                          onChange={(e) => setJobFilters({ ...jobFilters, id: e.target.value })}
+                          placeholder="Filter ID..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.jobs.includes('title') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={jobFilters.title}
+                          onChange={(e) => setJobFilters({ ...jobFilters, title: e.target.value })}
+                          placeholder="Filter jabatan..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.jobs.includes('grade') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={jobFilters.grade}
+                          onChange={(e) => setJobFilters({ ...jobFilters, grade: e.target.value })}
+                          placeholder="Filter grade..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.jobs.includes('status') && (
+                      <th>
+                        <div className="table-dropdown-container">
+                          <button
+                            type="button"
+                            className={`table-dropdown-trigger ${activeDropdown === 'jobStatus' ? 'open' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdown(activeDropdown === 'jobStatus' ? null : 'jobStatus');
+                            }}
+                          >
+                            <span>
+                              {jobFilters.status === '1' ? 'Aktif' : jobFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                            </span>
+                            <ChevronDownIcon />
+                          </button>
+                          {activeDropdown === 'jobStatus' && (
+                            <ul className="table-dropdown-menu">
+                              {[
+                                { value: '', label: 'Semua' },
+                                { value: '1', label: 'Aktif' },
+                                { value: '0', label: 'Tidak Aktif' }
+                              ].map((opt) => (
+                                <li
+                                  key={opt.value}
+                                  className={jobFilters.status === opt.value ? 'active' : ''}
+                                  onClick={() => {
+                                    setJobFilters({ ...jobFilters, status: opt.value });
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  {opt.label}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </th>
+                    )}
+                    {visibleColumns.jobs.includes('actions') && (
+                      <th>
+                        {isJobFiltered && (
+                          <button
+                            type="button"
+                            className="clear-filters-btn"
+                            onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
+                            title="Reset Pencarian"
+                          >
+                            <ResetIcon />
+                          </button>
                         )}
-                      </div>
-                    </th>
-                    <th>
-                      {isJobFiltered && (
-                        <button
-                          type="button"
-                          className="clear-filters-btn"
-                          onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
-                          title="Reset Pencarian"
-                        >
-                          <ResetIcon />
-                        </button>
-                      )}
-                    </th>
-                  </tr>
+                      </th>
+                    )}
                 </>
               )}
             </thead>
@@ -991,73 +1139,93 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {/* Loop Baris Karyawan */}
               {activeTab === 'employees' && employees.map((emp) => (
                 <tr key={emp.id}>
-                  <td>{emp.id}</td>
-                  <td className="bold">{emp.employeeNumber}</td>
-                  <td>{emp.fullName}</td>
-                  <td>{emp.email}</td>
-                  <td>{emp.phoneNumber || '-'}</td>
-                  <td>
-                    <span className="tag-dept">{emp.departmentName}</span>
-                  </td>
-                  <td>
-                    {emp.jobTitle} <span className="text-muted">({emp.jobGrade})</span>
-                  </td>
-                  <td>{emp.joinedAt}</td>
-                  <td>
-                    <span className={emp.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                      {emp.status === 1 ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title="Ubah Data"><EditIcon /></button>
-                      <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title="Hapus Data"><TrashIcon /></button>
-                    </div>
-                  </td>
+                  {visibleColumns.employees.includes('id') && <td>{emp.id}</td>}
+                  {visibleColumns.employees.includes('nik') && <td className="bold">{emp.employeeNumber}</td>}
+                  {visibleColumns.employees.includes('fullName') && <td>{emp.fullName}</td>}
+                  {visibleColumns.employees.includes('email') && <td>{emp.email}</td>}
+                  {visibleColumns.employees.includes('phoneNumber') && <td>{emp.phoneNumber || '-'}</td>}
+                  {visibleColumns.employees.includes('departmentName') && (
+                    <td>
+                      <span className="tag-dept">{emp.departmentName}</span>
+                    </td>
+                  )}
+                  {visibleColumns.employees.includes('jobTitle') && (
+                    <td>
+                      {emp.jobTitle} <span className="text-muted">({emp.jobGrade})</span>
+                    </td>
+                  )}
+                  {visibleColumns.employees.includes('joinedAt') && <td>{emp.joinedAt}</td>}
+                  {visibleColumns.employees.includes('status') && (
+                    <td>
+                      <span className={emp.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                        {emp.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                      </span>
+                    </td>
+                  )}
+                  {visibleColumns.employees.includes('actions') && (
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title="Ubah Data"><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title="Hapus Data"><TrashIcon /></button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
               {/* Loop Baris Departemen */}
               {activeTab === 'departments' && departments.map((dept) => (
                 <tr key={dept.id}>
-                  <td>{dept.id}</td>
-                  <td className="bold">{dept.name}</td>
-                  <td>
-                    <span className="tag-code">{dept.code}</span>
-                  </td>
-                  <td>
-                    <span className={dept.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                      {dept.status === 1 ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title="Ubah Data"><EditIcon /></button>
-                      <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title="Hapus Data"><TrashIcon /></button>
-                    </div>
-                  </td>
+                  {visibleColumns.departments.includes('id') && <td>{dept.id}</td>}
+                  {visibleColumns.departments.includes('name') && <td className="bold">{dept.name}</td>}
+                  {visibleColumns.departments.includes('code') && (
+                    <td>
+                      <span className="tag-code">{dept.code}</span>
+                    </td>
+                  )}
+                  {visibleColumns.departments.includes('status') && (
+                    <td>
+                      <span className={dept.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                        {dept.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                      </span>
+                    </td>
+                  )}
+                  {visibleColumns.departments.includes('actions') && (
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title="Ubah Data"><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title="Hapus Data"><TrashIcon /></button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
               {/* Loop Baris Jabatan */}
               {activeTab === 'jobs' && jobs.map((job) => (
                 <tr key={job.id}>
-                  <td>{job.id}</td>
-                  <td className="bold">{job.title}</td>
-                  <td>
-                    <span className="tag-grade">{job.grade}</span>
-                  </td>
-                  <td>
-                    <span className={job.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                      {job.status === 1 ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(job)} title="Ubah Data"><EditIcon /></button>
-                      <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)} title="Hapus Data"><TrashIcon /></button>
-                    </div>
-                  </td>
+                  {visibleColumns.jobs.includes('id') && <td>{job.id}</td>}
+                  {visibleColumns.jobs.includes('title') && <td className="bold">{job.title}</td>}
+                  {visibleColumns.jobs.includes('grade') && (
+                    <td>
+                      <span className="tag-grade">{job.grade}</span>
+                    </td>
+                  )}
+                  {visibleColumns.jobs.includes('status') && (
+                    <td>
+                      <span className={job.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                        {job.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                      </span>
+                    </td>
+                  )}
+                  {visibleColumns.jobs.includes('actions') && (
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(job)} title="Ubah Data"><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)} title="Hapus Data"><TrashIcon /></button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
@@ -1066,7 +1234,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 (activeTab === 'departments' && departments.length === 0) ||
                 (activeTab === 'jobs' && jobs.length === 0)) && (
                   <tr>
-                    <td colSpan={10} className="empty-row">
+                    <td colSpan={visibleColumns[activeTab].length} className="empty-row">
                       Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
                     </td>
                   </tr>
