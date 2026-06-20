@@ -36,6 +36,9 @@
   --select-option-bg: #1e293b;
   --select-option-color: #ffffff;
   --box-shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --tag-dept-bg: rgba(99, 102, 241, 0.1);
+  --tag-dept-border: rgba(99, 102, 241, 0.2);
+  --tag-dept-color: #a5b4fc;
 
   /* Animasi Transisi Mulus */
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,6 +74,9 @@
   --select-option-bg: #ffffff;
   --select-option-color: #0f172a;
   --box-shadow-premium: 0 8px 32px 0 rgba(15, 23, 42, 0.08);
+  --tag-dept-bg: rgba(79, 70, 229, 0.08);
+  --tag-dept-border: rgba(79, 70, 229, 0.15);
+  --tag-dept-color: #4f46e5;
 }
 
 /* RESET ATURAN MARGIN & PADDING BAWAAN BROWSER */

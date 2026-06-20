@@ -400,18 +400,20 @@
 .custom-table td.bold {
   font-weight: 600;
   font-family: var(--font-heading);
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 /* Badges and Tags */
 .tag-dept {
   padding: 4px 10px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  background: var(--tag-dept-bg);
+  border: 1px solid var(--tag-dept-border);
+  color: var(--tag-dept-color);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .tag-code {
@@ -933,6 +935,16 @@
   color: #ffffff;
   border-color: var(--error);
   box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+}
+
+select.table-filter-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 1.25em 1.25em;
+  padding-right: 24px;
 }
 
 select.table-filter-input option {
