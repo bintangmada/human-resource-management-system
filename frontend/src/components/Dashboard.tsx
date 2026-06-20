@@ -242,15 +242,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     }
   };
 
+  // Reset pagination ke halaman pertama jika filter pencarian berubah
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [empFilters, deptFilters, jobFilters]);
+
   /**
    * React hook `useEffect`:
    * Fungsi ini akan dipicu secara otomatis setiap kali ada perubahan pada:
-   * activeTab, currentPage, pageSize, sortBy, sortDir, atau tenantId.
-   * Hal ini memastikan data tabel selalu selaras (sync) secara realtime.
+   * activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, atau filter pencarian.
+   * Debouncing 400ms diterapkan untuk mencegah overload request API saat mengetik.
    */
   useEffect(() => {
-    fetchData();
-  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, empFilters, deptFilters, jobFilters]);
 
   /**
    * Fungsi handleTabChange:
@@ -557,152 +566,155 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           </button>
         </div>
 
-        {/* 3. PANEL FILTER PENCARIAN (Berdasarkan Tab Aktif) */}
-        <div className="filters-panel glass-panel">
-          <h3>🔍 Filter Pencarian</h3>
-          <div className="filters-grid">
-            
-            {/* Filter Khusus Tab Karyawan */}
-            {activeTab === 'employees' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Lengkap</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.fullName}
-                    onChange={(e) => setEmpFilters({...empFilters, fullName: e.target.value})}
-                    placeholder="Cari nama..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>NIK / Nomor Karyawan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.employeeNumber}
-                    onChange={(e) => setEmpFilters({...empFilters, employeeNumber: e.target.value})}
-                    placeholder="Cari NIK..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Email</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.email}
-                    onChange={(e) => setEmpFilters({...empFilters, email: e.target.value})}
-                    placeholder="Cari email..."
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Filter Khusus Tab Departemen */}
-            {activeTab === 'departments' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Departemen</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={deptFilters.name}
-                    onChange={(e) => setDeptFilters({...deptFilters, name: e.target.value})}
-                    placeholder="Cari departemen..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Kode Singkatan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={deptFilters.code}
-                    onChange={(e) => setDeptFilters({...deptFilters, code: e.target.value})}
-                    placeholder="Cari kode..."
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Filter Khusus Tab Jabatan */}
-            {activeTab === 'jobs' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Jabatan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={jobFilters.title}
-                    onChange={(e) => setJobFilters({...jobFilters, title: e.target.value})}
-                    placeholder="Cari jabatan..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Golongan / Grade</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={jobFilters.grade}
-                    onChange={(e) => setJobFilters({...jobFilters, grade: e.target.value})}
-                    placeholder="Cari golongan..."
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          
-          <div className="filter-actions">
-            <button className="btn-secondary" onClick={() => {
-              // Bersihkan seluruh isian kolom filter
-              setEmpFilters({ fullName: '', employeeNumber: '', email: '' });
-              setDeptFilters({ name: '', code: '' });
-              setJobFilters({ title: '', grade: '' });
-            }}>
-              Clear Filters
-            </button>
-            <button className="btn-primary" onClick={fetchData}>
-              Terapkan Filter
-            </button>
-          </div>
-        </div>
-
         {/* 4. TABEL UTAMA DATA */}
         <div className="table-container glass-panel">
           <table className="custom-table">
             <thead>
               {/* Header Kolom Karyawan */}
               {activeTab === 'employees' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>No. Telepon</th>
-                  <th>Departemen</th>
-                  <th>Jabatan (Grade)</th>
-                  <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>No. Telepon</th>
+                    <th>Departemen</th>
+                    <th>Jabatan (Grade)</th>
+                    <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th></th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={empFilters.employeeNumber}
+                        onChange={(e) => setEmpFilters({...empFilters, employeeNumber: e.target.value})}
+                        placeholder="Filter NIK..."
+                      />
+                    </th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={empFilters.fullName}
+                        onChange={(e) => setEmpFilters({...empFilters, fullName: e.target.value})}
+                        placeholder="Filter nama..."
+                      />
+                    </th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={empFilters.email}
+                        onChange={(e) => setEmpFilters({...empFilters, email: e.target.value})}
+                        placeholder="Filter email..."
+                      />
+                    </th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>
+                      <button 
+                        type="button" 
+                        className="clear-filters-btn"
+                        onClick={() => setEmpFilters({ fullName: '', employeeNumber: '', email: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
 
               {/* Header Kolom Departemen */}
               {activeTab === 'departments' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th></th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={deptFilters.name}
+                        onChange={(e) => setDeptFilters({...deptFilters, name: e.target.value})}
+                        placeholder="Filter nama..."
+                      />
+                    </th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={deptFilters.code}
+                        onChange={(e) => setDeptFilters({...deptFilters, code: e.target.value})}
+                        placeholder="Filter kode..."
+                      />
+                    </th>
+                    <th>
+                      <button 
+                        type="button" 
+                        className="clear-filters-btn"
+                        onClick={() => setDeptFilters({ name: '', code: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
 
               {/* Header Kolom Jabatan */}
               {activeTab === 'jobs' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th></th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={jobFilters.title}
+                        onChange={(e) => setJobFilters({...jobFilters, title: e.target.value})}
+                        placeholder="Filter jabatan..."
+                      />
+                    </th>
+                    <th>
+                      <input 
+                        type="text" 
+                        className="table-filter-input" 
+                        value={jobFilters.grade}
+                        onChange={(e) => setJobFilters({...jobFilters, grade: e.target.value})}
+                        placeholder="Filter grade..."
+                      />
+                    </th>
+                    <th>
+                      <button 
+                        type="button" 
+                        className="clear-filters-btn"
+                        onClick={() => setJobFilters({ title: '', grade: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
             </thead>
             <tbody>
