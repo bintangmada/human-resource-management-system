@@ -7,7 +7,9 @@ import com.hrms.enterprise.employee.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -72,7 +74,15 @@ public class EmployeeController {
             @RequestParam(value = "fullName", required = false) String fullName,
             @RequestParam(value = "employeeNumber", required = false) String employeeNumber,
             @RequestParam(value = "email", required = false) String email,
-            Pageable pageable) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<EmployeeResponse> pageResult = employeeService.getAllEmployees(tenantId, fullName, employeeNumber, email, pageable);
 
