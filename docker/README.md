@@ -70,9 +70,10 @@ Bagian ini menjelaskan skenario kegagalan data dan langkah mitigasi/pemulihannya
 
 ## 🛠️ 4. Panduan Operasional (Cheat Sheet)
 
-### A. Melakukan Backup Database Manual
-Jalankan perintah ini untuk mengekspor seluruh skema dan data tabel dari kontainer ke berkas `.sql` di komputer host Anda:
+### A. Backup & Restore PostgreSQL (Database Transaksional)
 
+**Melakukan Backup:**
+Jalankan perintah ini untuk mengekspor seluruh skema dan data tabel dari kontainer ke berkas `.sql` di komputer host Anda:
 ```bash
 # Backup PostgreSQL Utama
 docker exec -t hrms-postgres pg_dump -U postgres -d hrms_main > backup_hrms_main.sql
@@ -81,15 +82,67 @@ docker exec -t hrms-postgres pg_dump -U postgres -d hrms_main > backup_hrms_main
 docker exec -t hrms-timescaledb pg_dump -U postgres -d hrms_timeseries > backup_hrms_timeseries.sql
 ```
 
-### B. Melakukan Pemulihan (Restore) Database
+**Melakukan Restore (Pemulihan):**
 Jika database kosong atau baru saja terhapus, gunakan berkas cadangan `.sql` untuk memulihkan keadaan data:
-
 ```bash
 # Restore PostgreSQL Utama
 cat backup_hrms_main.sql | docker exec -i hrms-postgres psql -U postgres -d hrms_main
 ```
 
-### C. Utilitas Manajemen Volume Docker
+---
+
+### B. Backup & Restore Redis (Cache & Session)
+
+Redis menyimpan data memory secara periodik ke file snapshot `/data/dump.rdb`.
+
+**Melakukan Backup:**
+```bash
+# 1. Paksa Redis menulis data memory terbaru ke file dump di disk
+docker exec -t hrms-redis redis-cli SAVE
+
+# 2. Salin file dump.rdb dari dalam kontainer ke komputer host Anda
+docker cp hrms-redis:/data/dump.rdb ./backup_redis_dump.rdb
+```
+
+**Melakukan Restore (Pemulihan):**
+```bash
+# 1. Hentikan kontainer Redis terlebih dahulu
+docker stop hrms-redis
+
+# 2. Salin file cadangan dump.rdb kembali ke dalam kontainer
+docker cp ./backup_redis_dump.rdb hrms-redis:/data/dump.rdb
+
+# 3. Jalankan kembali kontainer Redis
+docker start hrms-redis
+```
+
+---
+
+### C. Backup & Restore Kafka (Event Broker)
+
+Saat ini Kafka menyimpan data topik dan offset di direktori internal `/tmp/kraft-combined-logs`.
+
+**Melakukan Backup:**
+```bash
+# Salin seluruh direktori log/pesan Kafka dari kontainer ke komputer host Anda
+docker cp hrms-kafka:/tmp/kraft-combined-logs ./backup_kafka_logs
+```
+
+**Melakukan Restore (Pemulihan):**
+```bash
+# 1. Hentikan kontainer Kafka terlebih dahulu
+docker stop hrms-kafka
+
+# 2. Salin direktori cadangan kembali ke dalam direktori kontainer
+docker cp ./backup_kafka_logs/. hrms-kafka:/tmp/kraft-combined-logs/
+
+# 3. Jalankan kembali kontainer Kafka
+docker start hrms-kafka
+```
+
+---
+
+### D. Utilitas Manajemen Volume Docker
 Gunakan perintah-perintah ini untuk memantau status penyimpanan Docker:
 
 ```bash
