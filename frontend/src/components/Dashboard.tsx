@@ -84,6 +84,12 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
+const ResetIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+  </svg>
+);
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <circle cx="12" cy="12" r="5"></circle>
@@ -163,6 +169,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' });
   const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '', status: '' });
   const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '', status: '' });
+
+  // Helper checks to see if search filters are active
+  const isEmpFiltered = Object.values(empFilters).some(val => val !== '');
+  const isDeptFiltered = Object.values(deptFilters).some(val => val !== '');
+  const isJobFiltered = Object.values(jobFilters).some(val => val !== '');
 
   // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
   const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
@@ -779,14 +790,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       </div>
                     </th>
                     <th>
-                      <button
-                        type="button"
-                        className="clear-filters-btn"
-                        onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
-                        title="Clear Filters"
-                      >
-                        ✕
-                      </button>
+                      {isEmpFiltered && (
+                        <button
+                          type="button"
+                          className="clear-filters-btn"
+                          onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
+                          title="Reset Pencarian"
+                        >
+                          <ResetIcon />
+                        </button>
+                      )}
                     </th>
                   </tr>
                 </>
@@ -868,14 +881,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       </div>
                     </th>
                     <th>
-                      <button
-                        type="button"
-                        className="clear-filters-btn"
-                        onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
-                        title="Clear Filters"
-                      >
-                        ✕
-                      </button>
+                      {isDeptFiltered && (
+                        <button
+                          type="button"
+                          className="clear-filters-btn"
+                          onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
+                          title="Reset Pencarian"
+                        >
+                          <ResetIcon />
+                        </button>
+                      )}
                     </th>
                   </tr>
                 </>
@@ -957,14 +972,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       </div>
                     </th>
                     <th>
-                      <button
-                        type="button"
-                        className="clear-filters-btn"
-                        onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
-                        title="Clear Filters"
-                      >
-                        ✕
-                      </button>
+                      {isJobFiltered && (
+                        <button
+                          type="button"
+                          className="clear-filters-btn"
+                          onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
+                          title="Reset Pencarian"
+                        >
+                          <ResetIcon />
+                        </button>
+                      )}
                     </th>
                   </tr>
                 </>
