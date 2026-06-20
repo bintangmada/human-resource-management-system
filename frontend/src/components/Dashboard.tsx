@@ -754,8 +754,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         <input
                           type="checkbox"
                           checked={visibleColumns[activeTab].includes(col.key)}
-                          onChange={() => {}} // Controlled via onClick on <li> for better hit area
-                          onClick={(e) => e.stopPropagation()}
+                          readOnly
                         />
                         <span>{col.label}</span>
                       </li>

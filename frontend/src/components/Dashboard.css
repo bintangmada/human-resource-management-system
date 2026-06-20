@@ -1219,16 +1219,40 @@
 }
 
 .column-selector-list li:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(99, 102, 241, 0.08);
 }
 
 .column-selector-list li input[type="checkbox"] {
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
   border: 1.5px solid var(--text-muted);
-  accent-color: var(--primary);
+  border-radius: 4px;
+  outline: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  background: transparent;
+}
+
+.column-selector-list li input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.column-selector-list li input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
 }
 
 .column-selector-list li span {
