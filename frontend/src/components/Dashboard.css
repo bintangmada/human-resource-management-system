@@ -451,18 +451,34 @@
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.edit-btn {
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.04);
 }
 
 .edit-btn:hover {
+  color: #ffffff;
   border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--primary);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.delete-btn {
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.3);
+  background: rgba(244, 63, 94, 0.04);
 }
 
 .delete-btn:hover {
+  color: #ffffff;
   border-color: var(--error);
-  background: rgba(244, 63, 94, 0.1);
+  background: var(--error);
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
 }
 
 /* Pagination Panel */
