@@ -86,6 +86,34 @@ services:
       - hrms-network
     restart: always
 
+  # 6. Core Employee Microservice
+  employee-service:
+    build:
+      context: ..
+      dockerfile: backend/employee-service/Dockerfile
+    container_name: hrms-employee-service
+    ports:
+      - "8020:8020"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: hrms_main
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_SERVERS: kafka:29092
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: "true"
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - hrms-network
+    restart: always
+
+
 volumes:
   postgres_data:
     driver: local

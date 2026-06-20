@@ -29,12 +29,12 @@
 
     <!-- Microservice Submodules list -->
     <modules>
-        <module>api-gateway</module>
-        <module>tenant-service</module>
-        <module>auth-service</module>
+        <!-- <module>api-gateway</module> -->
+        <!-- <module>tenant-service</module> -->
+        <!-- <module>auth-service</module> -->
         <module>employee-service</module>
-        <module>attendance-service</module>
-        <module>payroll-service</module>
+        <!-- <module>attendance-service</module> -->
+        <!-- <module>payroll-service</module> -->
     </modules>
 
     <dependencyManagement>
