@@ -934,3 +934,8 @@
   border-color: var(--error);
   box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
 }
+
+select.table-filter-input option {
+  background-color: #1e293b;
+  color: #ffffff;
+}
