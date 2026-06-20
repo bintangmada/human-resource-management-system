@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   padding: 32px 24px;
-  background: rgba(17, 24, 39, 0.5); /* Glassmorphism dark */
+  background: var(--bg-sidebar); /* Glassmorphism theme-aware */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--border-light);
@@ -67,7 +67,7 @@
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -668,7 +668,7 @@
   max-width: 600px;
   padding: 36px;
   border-radius: 20px;
-  background: rgba(17, 24, 39, 0.75);
+  background: var(--bg-modal);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 100px rgba(99, 102, 241, 0.1);
   display: flex;
@@ -888,14 +888,14 @@
 /* Table Filter Row */
 .table-filter-row th {
   padding: 8px 12px !important;
-  background: rgba(17, 24, 39, 0.4) !important;
+  background: var(--bg-filter-row) !important;
   border-bottom: 1px solid var(--border-light) !important;
 }
 
 .table-filter-input {
   width: 100%;
   padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-filter-input);
   border: 1px solid var(--border-light);
   border-radius: 6px;
   color: var(--text-main);
@@ -936,6 +936,27 @@
 }
 
 select.table-filter-input option {
-  background-color: #1e293b;
+  background-color: var(--select-option-bg);
+  color: var(--select-option-color);
+}
+
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--primary);
   color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
 }
