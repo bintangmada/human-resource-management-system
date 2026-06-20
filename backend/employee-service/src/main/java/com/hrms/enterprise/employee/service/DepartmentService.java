@@ -32,6 +32,8 @@ public interface DepartmentService {
     DepartmentResponse updateDepartment(Long id, DepartmentRequest request, Long tenantId, String actor);
 
     /**
+     * Mendapatkan daftar semua departemen dengan paginasi dan filter.
+     */
     Page<DepartmentResponse> getAllDepartments(Long tenantId, String id, String name, String code, Pageable pageable);
 
     /**

@@ -201,9 +201,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     try {
       if (activeTab === 'employees') {
         const query = new URLSearchParams({
+          id: empFilters.id,
           fullName: empFilters.fullName,
           employeeNumber: empFilters.employeeNumber,
           email: empFilters.email,
+          phoneNumber: empFilters.phoneNumber,
+          departmentName: empFilters.departmentName,
+          jobTitle: empFilters.jobTitle,
+          joinedAt: empFilters.joinedAt,
           page: currentPage.toString(),
           size: pageSize.toString(),
           sortBy,
@@ -214,6 +219,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'departments') {
         const query = new URLSearchParams({
+          id: deptFilters.id,
           name: deptFilters.name,
           code: deptFilters.code,
           page: currentPage.toString(),
@@ -226,6 +232,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'jobs') {
         const query = new URLSearchParams({
+          id: jobFilters.id,
           title: jobFilters.title,
           grade: jobFilters.grade,
           page: currentPage.toString(),

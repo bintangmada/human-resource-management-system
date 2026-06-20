@@ -31,6 +31,8 @@ public interface EmployeeService {
     EmployeeResponse updateEmployee(Long id, EmployeeRequest request, Long tenantId, String actor);
 
     /**
+     * Mendapatkan daftar semua karyawan aktif dengan paginasi dan filter.
+     */
     Page<EmployeeResponse> getAllEmployees(
             Long tenantId,
             String id,
