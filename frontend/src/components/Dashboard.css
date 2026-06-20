@@ -535,26 +535,86 @@
   gap: 12px;
 }
 
-.page-size-select {
+/* Custom premium dropdown */
+.custom-dropdown-container {
+  position: relative;
   width: 145px;
+}
+
+.custom-dropdown-trigger {
+  width: 100%;
   padding: 8px 12px;
   background-color: var(--bg-input);
   border: 1px solid var(--border-light);
   color: var(--text-main);
   border-radius: 8px;
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
-  background-position: right 8px center;
-  background-repeat: no-repeat;
-  background-size: 1.25em 1.25em;
-  padding-right: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
   transition: var(--transition-smooth);
 }
 
-.page-size-select option {
-  background-color: var(--select-option-bg);
-  color: var(--select-option-color);
+.custom-dropdown-trigger:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 6px); /* Floating above the trigger since it's at the bottom */
+  left: 0;
+  width: 100%;
+  background: var(--bg-modal);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow-premium);
+  list-style: none;
+  padding: 4px;
+  margin: 0;
+  z-index: 1000;
+  animation: slideUpFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.custom-dropdown-menu li {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-main);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.custom-dropdown-menu li:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.custom-dropdown-menu li.active {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.custom-dropdown-menu li.active:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* FLOATING TOAST NOTIFICATIONS */
