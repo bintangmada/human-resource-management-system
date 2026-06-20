@@ -376,9 +376,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <span className="actor-icon">👤</span>
             <span className="actor-email">{actorEmail}</span>
           </div>
-          <button type="button" className="logout-btn" onClick={onLogout}>
-            Switch Tenant ⇄
-          </button>
+          <div className="sidebar-actions">
+            <button type="button" className="switch-tenant-btn" onClick={onLogout}>
+              Ganti Tenant ⇄
+            </button>
+            <button type="button" className="logout-btn" onClick={onLogout}>
+              Logout / Keluar 🚪
+            </button>
+          </div>
         </div>
       </aside>
 
