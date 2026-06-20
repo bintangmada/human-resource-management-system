@@ -81,6 +81,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   // State untuk dialog konfirmasi logout kustom
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
+  // State untuk melipat sidebar (Collapse/Expand)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
   useEffect(() => {
     if (successMsg) {
@@ -327,10 +330,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   return (
     <div className="dashboard-layout">
       {/* 1. SIDEBAR DI SEBELAH KIRI */}
-      <aside className="sidebar glass-panel">
+      {/* 1. SIDEBAR DI SEBELAH KIRI */}
+      <aside className={`sidebar glass-panel ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <span className="brand-logo">🏢</span>
-          <span className="brand-title">HRMS Portal</span>
+          {!isSidebarCollapsed && <span className="brand-title">HRMS Portal</span>}
+          <button 
+            type="button" 
+            className="toggle-sidebar-btn" 
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            title={isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+          >
+            {isSidebarCollapsed ? "▶" : "◀"}
+          </button>
         </div>
         
         <div className="sidebar-menu">
@@ -341,17 +353,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               type="button"
               className={`menu-item-btn ${activeTab === 'departments' ? 'active' : ''}`}
               onClick={() => handleTabChange('departments')}
+              title="Departemen"
             >
               <span className="menu-icon">📂</span>
-              <span className="menu-label">Departemen</span>
+              {!isSidebarCollapsed && <span className="menu-label">Departemen</span>}
             </button>
             <button 
               type="button"
               className={`menu-item-btn ${activeTab === 'jobs' ? 'active' : ''}`}
               onClick={() => handleTabChange('jobs')}
+              title="Posisi Jabatan"
             >
               <span className="menu-icon">💼</span>
-              <span className="menu-label">Posisi Jabatan</span>
+              {!isSidebarCollapsed && <span className="menu-label">Posisi Jabatan</span>}
             </button>
           </div>
 
@@ -362,31 +376,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               type="button"
               className={`menu-item-btn ${activeTab === 'employees' ? 'active' : ''}`}
               onClick={() => handleTabChange('employees')}
+              title="Karyawan (Pegawai)"
             >
               <span className="menu-icon">👥</span>
-              <span className="menu-label">Karyawan (Pegawai)</span>
+              {!isSidebarCollapsed && <span className="menu-label">Karyawan (Pegawai)</span>}
             </button>
           </div>
         </div>
 
         {/* Bagian Bawah Sidebar (Info Tenant & Akun) */}
         <div className="sidebar-footer">
-          <div className="tenant-badge">
-            <span className="badge-dot"></span>
-            <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
-          </div>
-          <div className="actor-info">
-            <span className="actor-icon">👤</span>
-            <span className="actor-email">{actorEmail}</span>
-          </div>
-          <div className="sidebar-actions">
-            <button type="button" className="switch-tenant-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
-              Ganti Tenant ⇄
-            </button>
-            <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
-              Logout / Keluar 🚪
-            </button>
-          </div>
+          {!isSidebarCollapsed ? (
+            <>
+              <div className="tenant-badge">
+                <span className="badge-dot"></span>
+                <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
+              </div>
+              <div className="actor-info">
+                <span className="actor-icon">👤</span>
+                <span className="actor-email">{actorEmail}</span>
+              </div>
+              <div className="sidebar-actions">
+                <button type="button" className="switch-tenant-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
+                  Ganti Tenant ⇄
+                </button>
+                <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
+                  Logout / Keluar 🚪
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="sidebar-actions-collapsed">
+              <button 
+                type="button" 
+                className="action-icon-btn logout-icon-btn" 
+                onClick={() => setIsLogoutConfirmOpen(true)}
+                title="Logout / Keluar"
+              >
+                🚪
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 

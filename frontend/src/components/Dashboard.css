@@ -22,19 +22,35 @@
   border-radius: 0; /* Full height layout */
   box-sizing: border-box;
   z-index: 100;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+  width: 80px;
+  min-width: 80px;
+  padding: 32px 14px;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-light);
+  transition: justify-content 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-brand {
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .brand-logo {
   font-size: 28px;
+  flex-shrink: 0;
 }
 
 .brand-title {
@@ -45,6 +61,35 @@
   background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.toggle-sidebar-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.toggle-sidebar-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.sidebar.collapsed .toggle-sidebar-btn {
+  margin-top: 8px;
 }
 
 .sidebar-menu {
@@ -743,4 +788,47 @@
 @keyframes scaleUp {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* Collapsed Sidebar adjustments */
+.sidebar.collapsed .menu-group-title {
+  display: none;
+}
+
+.sidebar.collapsed .menu-item-btn {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+}
+
+.sidebar.collapsed .menu-label {
+  display: none;
+}
+
+.sidebar-actions-collapsed {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: var(--transition-smooth);
+}
+
+.action-icon-btn:hover {
+  background: var(--error);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
 }
