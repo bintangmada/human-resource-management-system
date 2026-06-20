@@ -78,6 +78,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
+  // State untuk dialog konfirmasi logout kustom
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
   // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
   useEffect(() => {
     if (successMsg) {
@@ -377,10 +380,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <span className="actor-email">{actorEmail}</span>
           </div>
           <div className="sidebar-actions">
-            <button type="button" className="switch-tenant-btn" onClick={onLogout}>
+            <button type="button" className="switch-tenant-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
               Ganti Tenant ⇄
             </button>
-            <button type="button" className="logout-btn" onClick={onLogout}>
+            <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
               Logout / Keluar 🚪
             </button>
           </div>
@@ -882,6 +885,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 onClick={executeDelete}
               >
                 Ya, Hapus Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. DIALOG KONFIRMASI LOGOUT KUSTOM */}
+      {isLogoutConfirmOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-content confirm-modal glass-panel">
+            <div className="confirm-icon-wrapper">
+              <span className="confirm-warning-icon">🚪</span>
+            </div>
+            <div className="confirm-body">
+              <h3>Konfirmasi Keluar</h3>
+              <p>Apakah Anda benar-benar yakin ingin keluar dari sesi admin saat ini?</p>
+              <span className="confirm-subtext">Anda perlu login kembali untuk mengakses data dashboard.</span>
+            </div>
+            <div className="modal-actions confirm-actions">
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setIsLogoutConfirmOpen(false)}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className="btn-danger" 
+                onClick={onLogout}
+              >
+                Ya, Keluar
               </button>
             </div>
           </div>
