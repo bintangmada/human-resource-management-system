@@ -711,8 +711,11 @@
 }
 
 .confirm-warning-icon {
-  font-size: 48px;
+  color: var(--error);
   animation: pulseWarning 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes pulseWarning {

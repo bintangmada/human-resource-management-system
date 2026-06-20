@@ -9,6 +9,83 @@ import {
 } from '../types';
 import './Dashboard.css';
 
+// Inline SVG Flat Icons for premium consistent aesthetics
+const BrandIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', flexShrink: 0 }}>
+    <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+    <path d="M7 22V14h10v8"></path>
+    <path d="M17 18h1"></path>
+    <path d="M12 18h.01"></path>
+    <path d="M7 18h1"></path>
+    <path d="M17 14h1"></path>
+    <path d="M12 14h.01"></path>
+    <path d="M7 14h1"></path>
+    <path d="M17 10h1"></path>
+    <path d="M12 10h.01"></path>
+    <path d="M7 10h1"></path>
+    <path d="M17 6h1"></path>
+    <path d="M12 6h.01"></path>
+    <path d="M7 6h1"></path>
+  </svg>
+);
+
+const FolderIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const BriefcaseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const LogOutIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+);
+
+const ChevronLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+);
+
+const WarningIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+    <line x1="12" y1="9" x2="12" y2="13"></line>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+);
+
 /**
  * Interface DashboardProps:
  * Menentukan props yang harus dikirim oleh App.tsx ke Dashboard.
@@ -333,7 +410,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       {/* 1. SIDEBAR DI SEBELAH KIRI */}
       <aside className={`sidebar glass-panel ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
-          <span className="brand-logo">🏢</span>
+          <BrandIcon />
           {!isSidebarCollapsed && <span className="brand-title">HRMS Portal</span>}
           <button 
             type="button" 
@@ -341,7 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             title={isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
           >
-            {isSidebarCollapsed ? "▶" : "◀"}
+            {isSidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </button>
         </div>
         
@@ -355,7 +432,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               onClick={() => handleTabChange('departments')}
               title="Departemen"
             >
-              <span className="menu-icon">📂</span>
+              <span className="menu-icon"><FolderIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">Departemen</span>}
             </button>
             <button 
@@ -364,7 +441,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               onClick={() => handleTabChange('jobs')}
               title="Posisi Jabatan"
             >
-              <span className="menu-icon">💼</span>
+              <span className="menu-icon"><BriefcaseIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">Posisi Jabatan</span>}
             </button>
           </div>
@@ -378,7 +455,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               onClick={() => handleTabChange('employees')}
               title="Karyawan (Pegawai)"
             >
-              <span className="menu-icon">👥</span>
+              <span className="menu-icon"><UsersIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">Karyawan (Pegawai)</span>}
             </button>
           </div>
@@ -393,7 +470,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
               </div>
               <div className="actor-info">
-                <span className="actor-icon">👤</span>
+                <span className="actor-icon"><UserIcon /></span>
                 <span className="actor-email">{actorEmail}</span>
               </div>
               <div className="sidebar-actions">
@@ -401,7 +478,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   Ganti Tenant ⇄
                 </button>
                 <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
-                  Logout / Keluar 🚪
+                  Logout / Keluar <LogOutIcon />
                 </button>
               </div>
             </>
@@ -413,7 +490,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 onClick={() => setIsLogoutConfirmOpen(true)}
                 title="Logout / Keluar"
               >
-                🚪
+                <LogOutIcon size={18} />
               </button>
             </div>
           )}
@@ -890,8 +967,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       {isConfirmOpen && (
         <div className="modal-backdrop">
           <div className="modal-content confirm-modal glass-panel">
-            <div className="confirm-icon-wrapper">
-              <span className="confirm-warning-icon">⚠️</span>
+            <div className="confirm-icon-wrapper confirm-warning-icon">
+              <WarningIcon />
             </div>
             <div className="confirm-body">
               <h3>Konfirmasi Penghapusan</h3>
@@ -925,8 +1002,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       {isLogoutConfirmOpen && (
         <div className="modal-backdrop">
           <div className="modal-content confirm-modal glass-panel">
-            <div className="confirm-icon-wrapper">
-              <span className="confirm-warning-icon">🚪</span>
+            <div className="confirm-icon-wrapper confirm-warning-icon">
+              <LogOutIcon size={48} />
             </div>
             <div className="confirm-body">
               <h3>Konfirmasi Keluar</h3>
