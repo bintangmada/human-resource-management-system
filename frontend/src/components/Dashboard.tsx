@@ -932,6 +932,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         )}
                       </th>
                     )}
+                  </tr>
                 </>
               )}
 
@@ -1032,6 +1033,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         )}
                       </th>
                     )}
+                  </tr>
                 </>
               )}
 
@@ -1132,6 +1134,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         )}
                       </th>
                     )}
+                  </tr>
                 </>
               )}
             </thead>
