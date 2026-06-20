@@ -159,6 +159,8 @@ type ActiveTab = 'employees' | 'departments' | 'jobs';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout }) => {
 
+  const tenantName = tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri';
+
   // 1. STATE UNTUK TAB AKTIF
   // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
   const [activeTab, setActiveTab] = useState<ActiveTab>('employees');
@@ -661,7 +663,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <>
               <div className="tenant-badge">
                 <span className="badge-dot"></span>
-                <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
+                <span className="tenant-name">{tenantName}</span>
               </div>
               <div className="actor-info">
                 <span className="actor-icon"><UserIcon /></span>
@@ -726,7 +728,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {activeTab === 'employees' ? 'Kelola Karyawan' : activeTab === 'departments' ? 'Kelola Departemen' : 'Kelola Jabatan'}
             </h1>
             <p className="page-header-desc">
-              Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} multi-tenant.
+              Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} {tenantName}.
             </p>
           </div>
 
