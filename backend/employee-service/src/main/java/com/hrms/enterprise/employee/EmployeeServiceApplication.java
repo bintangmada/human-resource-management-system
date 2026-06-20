@@ -10,6 +10,6 @@ public class EmployeeServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(EmployeeServiceApplication.class, args);
-        System.out.println("SERVER IS RUNNING");
+        System.out.println("EMPLOYEE BACKEND IS RUNNING");
     }
 }
