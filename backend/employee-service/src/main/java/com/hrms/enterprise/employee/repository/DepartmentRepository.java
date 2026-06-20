@@ -28,8 +28,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
      * @return Halaman (Page) departemen yang aktif
      */
     @Query("SELECT d FROM Department d WHERE d.tenantId = :tenantId AND d.deletedStatus = :deletedStatus " +
-           "AND (:name IS NULL OR TRIM(:name) = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-           "AND (:code IS NULL OR TRIM(:code) = '' OR LOWER(d.code) LIKE LOWER(CONCAT('%', :code, '%')))")
+           "AND (:name IS NULL OR LOWER(d.name) LIKE :name) " +
+           "AND (:code IS NULL OR LOWER(d.code) LIKE :code)")
     Page<Department> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,

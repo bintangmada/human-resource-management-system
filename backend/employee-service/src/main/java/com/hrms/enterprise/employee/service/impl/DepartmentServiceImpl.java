@@ -82,15 +82,15 @@ public class DepartmentServiceImpl implements DepartmentService {
         return mapToResponse(updatedDepartment);
     }
 
-    /**
-     * Menarik Semua Departemen Milik Tenant.
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<DepartmentResponse> getAllDepartments(Long tenantId, String name, String code, Pageable pageable) {
-        // Pengambilan data dibatasi hanya untuk yang status hapusnya = 0 (belum di-soft-delete) dengan paginasi dan filter per kolom
-        return departmentRepository.findAllByTenantIdAndDeletedStatusAndFilters(tenantId, 0, name, code, pageable)
-                .map(this::mapToResponse);
+        String cleanName = (name == null || name.trim().isEmpty()) ? null : "%" + name.trim().toLowerCase() + "%";
+        String cleanCode = (code == null || code.trim().isEmpty()) ? null : "%" + code.trim().toLowerCase() + "%";
+
+        return departmentRepository.findAllByTenantIdAndDeletedStatusAndFilters(
+                tenantId, 0, cleanName, cleanCode, pageable
+        ).map(this::mapToResponse);
     }
 
     /**

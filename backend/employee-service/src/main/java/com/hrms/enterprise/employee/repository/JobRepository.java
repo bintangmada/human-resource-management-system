@@ -27,8 +27,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
      * @return Halaman (Page) posisi jabatan
      */
     @Query("SELECT j FROM Job j WHERE j.tenantId = :tenantId AND j.deletedStatus = :deletedStatus " +
-           "AND (:title IS NULL OR TRIM(:title) = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%'))) " +
-           "AND (:grade IS NULL OR TRIM(:grade) = '' OR LOWER(j.grade) LIKE LOWER(CONCAT('%', :grade, '%')))")
+           "AND (:title IS NULL OR LOWER(j.title) LIKE :title) " +
+           "AND (:grade IS NULL OR LOWER(j.grade) LIKE :grade)")
     Page<Job> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
