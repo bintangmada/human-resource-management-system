@@ -292,30 +292,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
   return (
     <div className="dashboard-layout">
-      {/* 1. TOP NAVIGATION BAR */}
-      <nav className="navbar glass-panel">
-        <div className="nav-brand">
+      {/* 1. SIDEBAR DI SEBELAH KIRI */}
+      <aside className="sidebar glass-panel">
+        <div className="sidebar-brand">
           <span className="brand-logo">🏢</span>
-          <span className="brand-title">HRMS Enterprise</span>
+          <span className="brand-title">HRMS Portal</span>
         </div>
-        <div className="nav-actions">
-          {/* Badge Multi-Tenant */}
+        
+        <div className="sidebar-menu">
+          {/* Kelompok Menu: Konfigurasi Data Master */}
+          <div className="menu-group">
+            <div className="menu-group-title">KONFIGURASI DATA MASTER</div>
+            <button 
+              type="button"
+              className={`menu-item-btn ${activeTab === 'departments' ? 'active' : ''}`}
+              onClick={() => handleTabChange('departments')}
+            >
+              <span className="menu-icon">📂</span>
+              <span className="menu-label">Departemen</span>
+            </button>
+            <button 
+              type="button"
+              className={`menu-item-btn ${activeTab === 'jobs' ? 'active' : ''}`}
+              onClick={() => handleTabChange('jobs')}
+            >
+              <span className="menu-icon">💼</span>
+              <span className="menu-label">Posisi Jabatan</span>
+            </button>
+          </div>
+
+          {/* Kelompok Menu: Data Transaksi */}
+          <div className="menu-group">
+            <div className="menu-group-title">DATA TRANSAKSI</div>
+            <button 
+              type="button"
+              className={`menu-item-btn ${activeTab === 'employees' ? 'active' : ''}`}
+              onClick={() => handleTabChange('employees')}
+            >
+              <span className="menu-icon">👥</span>
+              <span className="menu-label">Karyawan (Pegawai)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Bagian Bawah Sidebar (Info Tenant & Akun) */}
+        <div className="sidebar-footer">
           <div className="tenant-badge">
             <span className="badge-dot"></span>
-            Tenant: <strong>{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</strong>
+            <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
           </div>
-          {/* Info Aktor Log */}
           <div className="actor-info">
-            👤 <span>{actorEmail}</span>
+            <span className="actor-icon">👤</span>
+            <span className="actor-email">{actorEmail}</span>
           </div>
-          {/* Tombol Logout Simulator */}
-          <button className="logout-btn" onClick={onLogout}>
+          <button type="button" className="logout-btn" onClick={onLogout}>
             Switch Tenant ⇄
           </button>
         </div>
-      </nav>
+      </aside>
 
-      {/* 2. AREA UTAMA KONTEN */}
+      {/* 2. AREA UTAMA KONTEN (KANAN) */}
       <div className="dashboard-content">
         
         {/* Notifikasi Alert Sukses */}
@@ -332,27 +368,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           </div>
         )}
 
-        {/* Tab Switcher & Tombol Tambah Baru */}
+        {/* Header Halaman Aktif */}
         <div className="content-header">
-          <div className="tab-buttons">
-            <button 
-              className={`tab-btn ${activeTab === 'employees' ? 'active' : ''}`}
-              onClick={() => handleTabChange('employees')}
-            >
-              👥 Karyawan
-            </button>
-            <button 
-              className={`tab-btn ${activeTab === 'departments' ? 'active' : ''}`}
-              onClick={() => handleTabChange('departments')}
-            >
-              📂 Departemen
-            </button>
-            <button 
-              className={`tab-btn ${activeTab === 'jobs' ? 'active' : ''}`}
-              onClick={() => handleTabChange('jobs')}
-            >
-              💼 Posisi Jabatan
-            </button>
+          <div className="page-header-info">
+            <h1 className="page-header-title">
+              {activeTab === 'employees' ? 'Kelola Karyawan' : activeTab === 'departments' ? 'Kelola Departemen' : 'Kelola Jabatan'}
+            </h1>
+            <p className="page-header-desc">
+              Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} multi-tenant.
+            </p>
           </div>
           
           <button className="btn-primary" onClick={openCreateModal}>
