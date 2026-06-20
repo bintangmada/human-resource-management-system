@@ -49,6 +49,7 @@ public class JobServiceImpl implements JobService {
                 .tenantId(tenantId)
                 .title(request.getTitle())
                 .grade(request.getGrade())
+                .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Audit trail manual
                 .build();
 
@@ -75,6 +76,9 @@ public class JobServiceImpl implements JobService {
 
         job.setTitle(request.getTitle());
         job.setGrade(request.getGrade());
+        if (request.getStatus() != null) {
+            job.setStatus(request.getStatus());
+        }
         job.setUpdatedBy(actor); // Audit trail manual
 
         Job updatedJob = jobRepository.save(job);

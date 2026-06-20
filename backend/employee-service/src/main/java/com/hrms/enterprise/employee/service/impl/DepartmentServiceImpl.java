@@ -49,6 +49,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .tenantId(tenantId)
                 .name(request.getName())
                 .code(request.getCode())
+                .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Mencatat manual aktor pembuat data
                 .build();
 
@@ -76,6 +77,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         // Melakukan pembaruan nilai properti
         department.setName(request.getName());
         department.setCode(request.getCode());
+        if (request.getStatus() != null) {
+            department.setStatus(request.getStatus());
+        }
         department.setUpdatedBy(actor); // Mencatat manual aktor pengubah data
 
         Department updatedDepartment = departmentRepository.save(department);

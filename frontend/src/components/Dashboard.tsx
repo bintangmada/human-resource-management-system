@@ -157,11 +157,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     phoneNumber: '',
     departmentId: '',
     jobId: '',
-    joinedAt: new Date().toISOString().split('T')[0]                  // Default tanggal hari ini (format YYYY-MM-DD)
+    joinedAt: new Date().toISOString().split('T')[0],                  // Default tanggal hari ini (format YYYY-MM-DD)
+    status: 1
   });
 
-  const [deptForm, setDeptForm] = useState({ name: '', code: '' });
-  const [jobForm, setJobForm] = useState({ title: '', grade: '' });
+  const [deptForm, setDeptForm] = useState({ name: '', code: '', status: 1 });
+  const [jobForm, setJobForm] = useState({ title: '', grade: '', status: 1 });
 
   // 7. STATE UNTUK NOTIFIKASI
   const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
@@ -340,10 +341,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       phoneNumber: '',
       departmentId: '',
       jobId: '',
-      joinedAt: new Date().toISOString().split('T')[0]
+      joinedAt: new Date().toISOString().split('T')[0],
+      status: 1
     });
-    setDeptForm({ name: '', code: '' });
-    setJobForm({ title: '', grade: '' });
+    setDeptForm({ name: '', code: '', status: 1 });
+    setJobForm({ title: '', grade: '', status: 1 });
 
     setIsModalOpen(true);
   };
@@ -366,12 +368,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         phoneNumber: item.phoneNumber || '',
         departmentId: item.departmentId.toString(),
         jobId: item.jobId.toString(),
-        joinedAt: item.joinedAt
+        joinedAt: item.joinedAt,
+        status: item.status
       });
     } else if (activeTab === 'departments') {
-      setDeptForm({ name: item.name, code: item.code });
+      setDeptForm({ name: item.name, code: item.code, status: item.status });
     } else if (activeTab === 'jobs') {
-      setJobForm({ title: item.title, grade: item.grade || '' });
+      setJobForm({ title: item.title, grade: item.grade || '', status: item.status });
     }
 
     setIsModalOpen(true);
@@ -396,12 +399,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         body = {
           ...empForm,
           departmentId: parseInt(empForm.departmentId),
-          jobId: parseInt(empForm.jobId)
+          jobId: parseInt(empForm.jobId),
+          status: empForm.status
         };
       } else if (activeTab === 'departments') {
-        body = deptForm;
+        body = {
+          ...deptForm,
+          status: deptForm.status
+        };
       } else if (activeTab === 'jobs') {
-        body = jobForm;
+        body = {
+          ...jobForm,
+          status: jobForm.status
+        };
       }
 
       await apiRequest(endpoint, { method, body });
@@ -589,6 +599,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th>Departemen</th>
                     <th>Jabatan (Grade)</th>
                     <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
@@ -664,6 +675,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter tanggal..."
                       />
                     </th>
+                    <th></th>
                     <th>
                       <button
                         type="button"
@@ -685,6 +697,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
                     <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
                     <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
@@ -715,6 +728,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter kode..."
                       />
                     </th>
+                    <th></th>
                     <th>
                       <button
                         type="button"
@@ -736,6 +750,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
                     <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
                     <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                   <tr className="table-filter-row">
@@ -766,6 +781,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter grade..."
                       />
                     </th>
+                    <th></th>
                     <th>
                       <button
                         type="button"
@@ -797,6 +813,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </td>
                   <td>{emp.joinedAt}</td>
                   <td>
+                    <span className={emp.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {emp.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-buttons">
                       <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title="Ubah Data"><EditIcon /></button>
                       <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title="Hapus Data"><TrashIcon /></button>
@@ -814,6 +835,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <span className="tag-code">{dept.code}</span>
                   </td>
                   <td>
+                    <span className={dept.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {dept.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-buttons">
                       <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title="Ubah Data"><EditIcon /></button>
                       <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title="Hapus Data"><TrashIcon /></button>
@@ -829,6 +855,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   <td className="bold">{job.title}</td>
                   <td>
                     <span className="tag-grade">{job.grade}</span>
+                  </td>
+                  <td>
+                    <span className={job.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {job.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
                   </td>
                   <td>
                     <div className="action-buttons">
@@ -976,7 +1007,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       ))}
                     </select>
                   </div>
-                  <div className="form-group full-width">
+                  <div className="form-group">
                     <label className="form-label">Tanggal Bergabung</label>
                     <input
                       type="date"
@@ -985,6 +1016,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       onChange={(e) => setEmpForm({ ...empForm, joinedAt: e.target.value })}
                       required
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={empForm.status}
+                      onChange={(e) => setEmpForm({ ...empForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
                   </div>
                 </div>
               )}
@@ -1014,6 +1057,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       required
                     />
                   </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={deptForm.status}
+                      onChange={(e) => setDeptForm({ ...deptForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
+                  </div>
                 </>
               )}
 
@@ -1041,6 +1096,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                       placeholder="e.g. SE3"
                       required
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={jobForm.status}
+                      onChange={(e) => setJobForm({ ...jobForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
                   </div>
                 </>
               )}

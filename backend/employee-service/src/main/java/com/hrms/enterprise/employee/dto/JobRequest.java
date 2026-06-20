@@ -19,4 +19,6 @@ public class JobRequest {
 
     @Size(max = 50, message = "{validation.job.grade.size}")
     private String grade;
+
+    private Integer status;
 }

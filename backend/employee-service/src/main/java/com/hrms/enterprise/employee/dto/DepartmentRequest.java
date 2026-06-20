@@ -21,4 +21,6 @@ public class DepartmentRequest {
     @NotBlank(message = "{validation.department.code.required}")
     @Size(max = 20, message = "{validation.department.code.size}")
     private String code;
+
+    private Integer status;
 }

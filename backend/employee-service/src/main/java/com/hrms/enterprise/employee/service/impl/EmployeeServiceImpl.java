@@ -72,6 +72,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .departmentId(request.getDepartmentId())
                 .jobId(request.getJobId())
                 .joinedAt(request.getJoinedAt())
+                .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Audit log manual
                 .build();
 
@@ -118,6 +119,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartmentId(request.getDepartmentId());
         employee.setJobId(request.getJobId());
         employee.setJoinedAt(request.getJoinedAt());
+        if (request.getStatus() != null) {
+            employee.setStatus(request.getStatus());
+        }
         employee.setUpdatedBy(actor); // Audit log manual
 
         Employee updatedEmployee = employeeRepository.save(employee);
