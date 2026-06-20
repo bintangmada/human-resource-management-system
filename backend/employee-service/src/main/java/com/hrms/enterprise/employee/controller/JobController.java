@@ -7,7 +7,9 @@ import com.hrms.enterprise.employee.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -71,7 +73,15 @@ public class JobController {
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "grade", required = false) String grade,
-            Pageable pageable) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, title, grade, pageable);
 

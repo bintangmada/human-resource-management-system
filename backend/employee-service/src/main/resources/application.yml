@@ -4,13 +4,13 @@ spring:
 
   # Database Connection Configuration (PostgreSQL)
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:hrms_main}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${HRMS_DB_HOST:localhost}:${HRMS_DB_PORT:5434}/${HRMS_DB_NAME:hrms_main}
+    username: ${HRMS_DB_USERNAME:postgres}
+    password: ${HRMS_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: ${DB_POOL_MAX:20}
-      minimum-idle: ${DB_POOL_MIN:5}
+      maximum-pool-size: ${HRMS_DB_POOL_MAX:20}
+      minimum-idle: ${HRMS_DB_POOL_MIN:5}
       idle-timeout: 300000
       max-lifetime: 1800000
       connection-timeout: 20000
@@ -18,8 +18,8 @@ spring:
   # JPA & Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate} # Uses 'validate' in production, can be set to 'update' locally
-    show-sql: ${JPA_SHOW_SQL:false}
+      ddl-auto: ${HRMS_JPA_DDL_AUTO:update} # Secara default menggunakan 'update' untuk mempermudah development lokal, dapat di-override ke 'validate' di production
+    show-sql: ${HRMS_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -28,14 +28,14 @@ spring:
   # Caching Configuration (Redis)
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:} # Blank by default locally, injected on VPS
+      host: ${HRMS_REDIS_HOST:localhost}
+      port: ${HRMS_REDIS_PORT:6379}
+      password: ${HRMS_REDIS_PASSWORD:hrms_redis_secret} # Default password locally, can be overridden via env
       timeout: 60000
 
   # Messaging / Event Broker Configuration (Apache Kafka)
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${HRMS_KAFKA_SERVERS:localhost:9092}
     consumer:
       group-id: employee-group
       auto-offset-reset: earliest
@@ -52,3 +52,14 @@ server:
   port: 8020
   error:
     include-message: always
+
+# Springdoc OpenAPI Swagger Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    # Hides the Schemas/Entities section completely from the bottom of the page
+    default-models-expand-depth: -1
+  api-docs:
+    path: /v3/api-docs
+  # Shows only our actual rest endpoints and excludes spring default ones (like /error)
+  paths-to-match: /api/v1/**

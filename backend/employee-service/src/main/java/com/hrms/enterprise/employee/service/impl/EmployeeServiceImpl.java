@@ -124,14 +124,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         return mapToResponse(updatedEmployee);
     }
 
-    /**
-     * Menarik Semua Karyawan Aktif Milik Tenant.
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<EmployeeResponse> getAllEmployees(Long tenantId, String fullName, String employeeNumber, String email, Pageable pageable) {
-        return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(tenantId, 0, fullName, employeeNumber, email, pageable)
-                .map(this::mapToResponse);
+        String cleanFullName = (fullName == null || fullName.trim().isEmpty()) ? null : "%" + fullName.trim().toLowerCase() + "%";
+        String cleanEmployeeNumber = (employeeNumber == null || employeeNumber.trim().isEmpty()) ? null : "%" + employeeNumber.trim().toLowerCase() + "%";
+        String cleanEmail = (email == null || email.trim().isEmpty()) ? null : "%" + email.trim().toLowerCase() + "%";
+
+        return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(
+                tenantId, 0, cleanFullName, cleanEmployeeNumber, cleanEmail, pageable
+        ).map(this::mapToResponse);
     }
 
     /**

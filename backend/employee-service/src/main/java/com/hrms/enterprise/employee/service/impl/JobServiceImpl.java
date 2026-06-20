@@ -79,14 +79,15 @@ public class JobServiceImpl implements JobService {
         return mapToResponse(updatedJob);
     }
 
-    /**
-     * Menarik Semua Posisi Jabatan Aktif Milik Tenant.
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<JobResponse> getAllJobs(Long tenantId, String title, String grade, Pageable pageable) {
-        return jobRepository.findAllByTenantIdAndDeletedStatusAndFilters(tenantId, 0, title, grade, pageable)
-                .map(this::mapToResponse);
+        String cleanTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.trim().toLowerCase() + "%";
+        String cleanGrade = (grade == null || grade.trim().isEmpty()) ? null : "%" + grade.trim().toLowerCase() + "%";
+
+        return jobRepository.findAllByTenantIdAndDeletedStatusAndFilters(
+                tenantId, 0, cleanTitle, cleanGrade, pageable
+        ).map(this::mapToResponse);
     }
 
     /**

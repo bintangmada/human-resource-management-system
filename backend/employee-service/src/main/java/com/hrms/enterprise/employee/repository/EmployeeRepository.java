@@ -28,9 +28,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return Halaman (Page) data karyawan
      */
     @Query("SELECT e FROM Employee e WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
-           "AND (:fullName IS NULL OR TRIM(:fullName) = '' OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :fullName, '%'))) " +
-           "AND (:employeeNumber IS NULL OR TRIM(:employeeNumber) = '' OR LOWER(e.employeeNumber) LIKE LOWER(CONCAT('%', :employeeNumber, '%'))) " +
-           "AND (:email IS NULL OR TRIM(:email) = '' OR LOWER(e.email) LIKE LOWER(CONCAT('%', :email, '%')))")
+           "AND (:fullName IS NULL OR LOWER(e.fullName) LIKE :fullName) " +
+           "AND (:employeeNumber IS NULL OR LOWER(e.employeeNumber) LIKE :employeeNumber) " +
+           "AND (:email IS NULL OR LOWER(e.email) LIKE :email)")
     Page<Employee> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,

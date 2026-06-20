@@ -1,0 +1,626 @@
+{
+	"info": {
+		"name": "HRMS Employee Service",
+		"description": "Koleksi Postman untuk berinteraksi dengan HRMS Employee Service API. Mendukung multi-tenancy, i18n, paginasi, dan filter pencarian.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Departments",
+			"item": [
+				{
+					"name": "Create Department",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}",
+								"description": "ID Tenant/Perusahaan"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}",
+								"description": "Email Pelaku Aksi (Audit Log)"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id",
+								"description": "Lokalisasi Pesan (id / en)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Software Engineering\",\n  \"code\": \"ENG\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Department",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Software Engineering & DevOps\",\n  \"code\": \"ENG\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Departments (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments?name=&code=&page=0&size=10&sortBy=id&sortDir=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Filter nama departemen (Opsional)"
+								},
+								{
+									"key": "code",
+									"value": "",
+									"description": "Filter kode departemen (Opsional)"
+								},
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Nomor Halaman"
+								},
+								{
+									"key": "size",
+									"value": "10",
+									"description": "Jumlah data per halaman"
+								},
+								{
+									"key": "sortBy",
+									"value": "id",
+									"description": "Kolom pengurutan (id / name / code)"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc",
+									"description": "Arah pengurutan (asc / desc)"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Department By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Department (Soft Delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "Create Job",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"grade\": \"G-5\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/jobs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Job",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Lead Software Engineer\",\n  \"grade\": \"G-6\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/jobs/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Jobs (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/jobs?title=&grade=&page=0&size=10&sortBy=id&sortDir=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "",
+									"description": "Filter nama jabatan (Opsional)"
+								},
+								{
+									"key": "grade",
+									"value": "",
+									"description": "Filter golongan jabatan (Opsional)"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "id"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Job By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/jobs/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Job (Soft Delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/jobs/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employees",
+			"item": [
+				{
+					"name": "Create Employee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeNumber\": \"EMP-20260620-001\",\n  \"fullName\": \"Bintang Mada\",\n  \"email\": \"bintang.mada@enterprise.com\",\n  \"phoneNumber\": \"081234567890\",\n  \"departmentId\": 1,\n  \"jobId\": 1,\n  \"joinedAt\": \"2026-06-20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employee",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeNumber\": \"EMP-20260620-001\",\n  \"fullName\": \"Bintang Mada Wibowo\",\n  \"email\": \"bintang.mada@enterprise.com\",\n  \"phoneNumber\": \"081234567899\",\n  \"departmentId\": 1,\n  \"jobId\": 1,\n  \"joinedAt\": \"2026-06-20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Employees (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees?fullName=&employeeNumber=&email=&page=0&size=10&sortBy=id&sortDir=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							],
+							"query": [
+								{
+									"key": "fullName",
+									"value": "",
+									"description": "Filter nama karyawan (Opsional)"
+								},
+								{
+									"key": "employeeNumber",
+									"value": "",
+									"description": "Filter NIK karyawan (Opsional)"
+								},
+								{
+									"key": "email",
+									"value": "",
+									"description": "Filter email karyawan (Opsional)"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "id"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Employee (Soft Delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Tenant-ID",
+								"value": "{{tenantId}}"
+							},
+							{
+								"key": "X-User-Email",
+								"value": "{{actorEmail}}"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "id"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8020",
+			"type": "string"
+		},
+		{
+			"key": "tenantId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "actorEmail",
+			"value": "system@hrms.com",
+			"type": "string"
+		}
+	]
+}
