@@ -19,7 +19,8 @@ import java.util.Locale;
 
 /**
  * REST Controller untuk mengelola data Posisi Jabatan (Job).
- * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi output ApiResponse.
+ * Menyediakan standardisasi multi-tenancy, i18n, paginasi, dan standarisasi
+ * output ApiResponse.
  */
 @RestController
 @RequestMapping("/api/v1/jobs")
@@ -66,11 +67,14 @@ public class JobController {
     }
 
     /**
-     * Menarik Semua Posisi Jabatan dengan Paginasi dan Filter Kolom (Nama Jabatan & Golongan).
+     * Menarik Semua Posisi Jabatan dengan Paginasi dan Filter Kolom (Nama Jabatan &
+     * Golongan).
      */
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<JobResponse>>> getAllJobs(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "grade", required = false) String grade,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -83,7 +87,7 @@ public class JobController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, title, grade, pageable);
+        Page<JobResponse> pageResult = jobService.getAllJobs(tenantId, status, id, title, grade, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

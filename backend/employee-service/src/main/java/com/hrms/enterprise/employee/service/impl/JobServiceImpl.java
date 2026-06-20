@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 
 /**
  * Kelas implementasi dari JobService.
- * Menangani aturan bisnis posisi jabatan, verifikasi keunikan nama jabatan per tenant,
+ * Menangani aturan bisnis posisi jabatan, verifikasi keunikan nama jabatan per
+ * tenant,
  * pencatatan audit log manual, dan mekanisme soft delete.
  */
 @Service
@@ -48,6 +49,7 @@ public class JobServiceImpl implements JobService {
                 .tenantId(tenantId)
                 .title(request.getTitle())
                 .grade(request.getGrade())
+                .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Audit trail manual
                 .build();
 
@@ -64,7 +66,8 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findByIdAndTenantIdAndDeletedStatus(id, tenantId, 0)
                 .orElseThrow(() -> new ResourceNotFoundException("job.not.found", id));
 
-        // Aturan Bisnis: Jika nama jabatan diubah, pastikan tidak duplikat dengan yang sudah ada.
+        // Aturan Bisnis: Jika nama jabatan diubah, pastikan tidak duplikat dengan yang
+        // sudah ada.
         if (!job.getTitle().equalsIgnoreCase(request.getTitle())) {
             if (jobRepository.existsByTitleAndTenantIdAndDeletedStatus(request.getTitle(), tenantId, 0)) {
                 throw new BadRequestException("job.title.exists", request.getTitle());
@@ -73,6 +76,9 @@ public class JobServiceImpl implements JobService {
 
         job.setTitle(request.getTitle());
         job.setGrade(request.getGrade());
+        if (request.getStatus() != null) {
+            job.setStatus(request.getStatus());
+        }
         job.setUpdatedBy(actor); // Audit trail manual
 
         Job updatedJob = jobRepository.save(job);
@@ -81,13 +87,13 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<JobResponse> getAllJobs(Long tenantId, String title, String grade, Pageable pageable) {
+    public Page<JobResponse> getAllJobs(Long tenantId, Integer status, String id, String title, String grade, Pageable pageable) {
+        String cleanId = (id == null || id.trim().isEmpty()) ? null : "%" + id.trim() + "%";
         String cleanTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.trim().toLowerCase() + "%";
         String cleanGrade = (grade == null || grade.trim().isEmpty()) ? null : "%" + grade.trim().toLowerCase() + "%";
 
         return jobRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanTitle, cleanGrade, pageable
-        ).map(this::mapToResponse);
+                tenantId, 0, status, cleanId, cleanTitle, cleanGrade, pageable).map(this::mapToResponse);
     }
 
     /**
@@ -110,12 +116,14 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findByIdAndTenantIdAndDeletedStatus(id, tenantId, 0)
                 .orElseThrow(() -> new ResourceNotFoundException("job.not.found", id));
 
-        // Validasi Relasional: Pastikan tidak ada karyawan aktif yang memiliki posisi jabatan ini
+        // Validasi Relasional: Pastikan tidak ada karyawan aktif yang memiliki posisi
+        // jabatan ini
         if (employeeRepository.existsByJobIdAndTenantIdAndDeletedStatus(id, tenantId, 0)) {
             throw new BadRequestException("job.has.employees", id);
         }
 
-        // Melakukan pembaruan status soft-delete daripada menghapus baris SQL secara fisik.
+        // Melakukan pembaruan status soft-delete daripada menghapus baris SQL secara
+        // fisik.
         job.setDeletedStatus(1);
         job.setDeletedBy(actor);
         job.setDeletedAt(LocalDateTime.now());

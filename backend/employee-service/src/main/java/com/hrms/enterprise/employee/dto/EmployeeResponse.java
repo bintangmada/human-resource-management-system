@@ -19,7 +19,11 @@ public class EmployeeResponse {
     private String email;
     private String phoneNumber;
     private Long departmentId;
+    private String departmentName;
+    private String departmentCode;
     private Long jobId;
+    private String jobTitle;
+    private String jobGrade;
     private LocalDate joinedAt;
     private Integer status;
     private String createdBy;

@@ -72,6 +72,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .departmentId(request.getDepartmentId())
                 .jobId(request.getJobId())
                 .joinedAt(request.getJoinedAt())
+                .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Audit log manual
                 .build();
 
@@ -118,6 +119,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartmentId(request.getDepartmentId());
         employee.setJobId(request.getJobId());
         employee.setJoinedAt(request.getJoinedAt());
+        if (request.getStatus() != null) {
+            employee.setStatus(request.getStatus());
+        }
         employee.setUpdatedBy(actor); // Audit log manual
 
         Employee updatedEmployee = employeeRepository.save(employee);
@@ -126,13 +130,31 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EmployeeResponse> getAllEmployees(Long tenantId, String fullName, String employeeNumber, String email, Pageable pageable) {
+    public Page<EmployeeResponse> getAllEmployees(
+            Long tenantId,
+            Integer status,
+            String id,
+            String fullName,
+            String employeeNumber,
+            String email,
+            String phoneNumber,
+            String departmentName,
+            String jobTitle,
+            String joinedAt,
+            Pageable pageable) {
+
+        String cleanId = (id == null || id.trim().isEmpty()) ? null : "%" + id.trim() + "%";
         String cleanFullName = (fullName == null || fullName.trim().isEmpty()) ? null : "%" + fullName.trim().toLowerCase() + "%";
         String cleanEmployeeNumber = (employeeNumber == null || employeeNumber.trim().isEmpty()) ? null : "%" + employeeNumber.trim().toLowerCase() + "%";
         String cleanEmail = (email == null || email.trim().isEmpty()) ? null : "%" + email.trim().toLowerCase() + "%";
+        String cleanPhoneNumber = (phoneNumber == null || phoneNumber.trim().isEmpty()) ? null : "%" + phoneNumber.trim().toLowerCase() + "%";
+        String cleanDepartmentName = (departmentName == null || departmentName.trim().isEmpty()) ? null : "%" + departmentName.trim().toLowerCase() + "%";
+        String cleanJobTitle = (jobTitle == null || jobTitle.trim().isEmpty()) ? null : "%" + jobTitle.trim().toLowerCase() + "%";
+        String cleanJoinedAt = (joinedAt == null || joinedAt.trim().isEmpty()) ? null : "%" + joinedAt.trim().toLowerCase() + "%";
 
         return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanFullName, cleanEmployeeNumber, cleanEmail, pageable
+                tenantId, 0, status, cleanId, cleanFullName, cleanEmployeeNumber, cleanEmail,
+                cleanPhoneNumber, cleanDepartmentName, cleanJobTitle, cleanJoinedAt, pageable
         ).map(this::mapToResponse);
     }
 
@@ -168,6 +190,26 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Helper Mapper manual dari Entity ke Response DTO.
      */
     private EmployeeResponse mapToResponse(Employee employee) {
+        String deptName = null;
+        String deptCode = null;
+        if (employee.getDepartmentId() != null) {
+            var deptOpt = departmentRepository.findById(employee.getDepartmentId());
+            if (deptOpt.isPresent()) {
+                deptName = deptOpt.get().getName();
+                deptCode = deptOpt.get().getCode();
+            }
+        }
+
+        String jobTitle = null;
+        String jobGrade = null;
+        if (employee.getJobId() != null) {
+            var jobOpt = jobRepository.findById(employee.getJobId());
+            if (jobOpt.isPresent()) {
+                jobTitle = jobOpt.get().getTitle();
+                jobGrade = jobOpt.get().getGrade();
+            }
+        }
+
         return EmployeeResponse.builder()
                 .id(employee.getId())
                 .tenantId(employee.getTenantId())
@@ -176,7 +218,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .email(employee.getEmail())
                 .phoneNumber(employee.getPhoneNumber())
                 .departmentId(employee.getDepartmentId())
+                .departmentName(deptName)
+                .departmentCode(deptCode)
                 .jobId(employee.getJobId())
+                .jobTitle(jobTitle)
+                .jobGrade(jobGrade)
                 .joinedAt(employee.getJoinedAt())
                 .status(employee.getStatus())
                 .createdBy(employee.getCreatedBy())

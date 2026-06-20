@@ -27,16 +27,31 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) data karyawan
      */
-    @Query("SELECT e FROM Employee e WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
+    @Query("SELECT e FROM Employee e " +
+           "LEFT JOIN Department d ON e.departmentId = d.id " +
+           "LEFT JOIN Job j ON e.jobId = j.id " +
+           "WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
+           "AND (:status IS NULL OR e.status = :status) " +
+           "AND (:id IS NULL OR CAST(e.id AS string) LIKE :id) " +
            "AND (:fullName IS NULL OR LOWER(e.fullName) LIKE :fullName) " +
            "AND (:employeeNumber IS NULL OR LOWER(e.employeeNumber) LIKE :employeeNumber) " +
-           "AND (:email IS NULL OR LOWER(e.email) LIKE :email)")
+           "AND (:email IS NULL OR LOWER(e.email) LIKE :email) " +
+           "AND (:phoneNumber IS NULL OR LOWER(e.phoneNumber) LIKE :phoneNumber) " +
+           "AND (:departmentName IS NULL OR LOWER(d.name) LIKE :departmentName) " +
+           "AND (:jobTitle IS NULL OR LOWER(j.title) LIKE :jobTitle) " +
+           "AND (:joinedAt IS NULL OR CAST(e.joinedAt AS string) LIKE :joinedAt)")
     Page<Employee> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
+            @Param("status") Integer status,
+            @Param("id") String id,
             @Param("fullName") String fullName,
             @Param("employeeNumber") String employeeNumber,
             @Param("email") String email,
+            @Param("phoneNumber") String phoneNumber,
+            @Param("departmentName") String departmentName,
+            @Param("jobTitle") String jobTitle,
+            @Param("joinedAt") String joinedAt,
             Pageable pageable);
 
     /**

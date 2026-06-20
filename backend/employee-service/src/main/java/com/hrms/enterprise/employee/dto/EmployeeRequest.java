@@ -41,4 +41,6 @@ public class EmployeeRequest {
 
     @NotNull(message = "{validation.employee.joined.required}")
     private LocalDate joinedAt;
+
+    private Integer status;
 }

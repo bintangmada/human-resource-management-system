@@ -1,13 +1,126 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
-import { 
-  EmployeeResponse, 
-  DepartmentResponse, 
-  JobResponse, 
-  ApiResponse, 
-  PaginationMetadata 
+import {
+  EmployeeResponse,
+  DepartmentResponse,
+  JobResponse,
+  ApiResponse,
+  PaginationMetadata
 } from '../types';
 import './Dashboard.css';
+
+// Inline SVG Flat Icons for premium consistent aesthetics
+const BrandIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} className="brand-icon-svg">
+    <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+    <path d="M7 22V14h10v8"></path>
+    <path d="M17 18h1"></path>
+    <path d="M12 18h.01"></path>
+    <path d="M7 18h1"></path>
+    <path d="M17 14h1"></path>
+    <path d="M12 14h.01"></path>
+    <path d="M7 14h1"></path>
+    <path d="M17 10h1"></path>
+    <path d="M12 10h.01"></path>
+    <path d="M7 10h1"></path>
+    <path d="M17 6h1"></path>
+    <path d="M12 6h.01"></path>
+    <path d="M7 6h1"></path>
+  </svg>
+);
+
+const FolderIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const BriefcaseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const LogOutIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+);
+
+const ChevronLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+);
+
+const WarningIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+    <line x1="12" y1="9" x2="12" y2="13"></line>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+);
 
 /**
  * Interface DashboardProps:
@@ -27,23 +140,23 @@ interface DashboardProps {
 type ActiveTab = 'employees' | 'departments' | 'jobs';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout }) => {
-  
+
   // 1. STATE UNTUK TAB AKTIF
   // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
   const [activeTab, setActiveTab] = useState<ActiveTab>('employees');
-  
+
   // 2. STATE UNTUK DATA LIST DARI BACKEND
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
-  
+
   // State untuk menyimpan metadata paginasi (halaman aktif, total halaman, total data, dll.)
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
   // 3. STATE UNTUK FILTER PENCARIAN (Input User)
-  const [empFilters, setEmpFilters] = useState({ fullName: '', employeeNumber: '', email: '' });
-  const [deptFilters, setDeptFilters] = useState({ name: '', code: '' });
-  const [jobFilters, setJobFilters] = useState({ title: '', grade: '' });
+  const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' });
+  const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '', status: '' });
+  const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '', status: '' });
 
   // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
   const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
@@ -55,7 +168,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [isModalOpen, setIsModalOpen] = useState(false);              // Penanda modal terbuka/tertutup
   const [modalType, setModalType] = useState<'employee' | 'department' | 'job'>('employee'); // Jenis form modal
   const [editingId, setEditingId] = useState<number | null>(null);    // ID record yang sedang diedit (null jika mode Tambah Baru)
-  
+
   // 6. STATE UNTUK FORM INPUT (Binding values)
   const [empForm, setEmpForm] = useState({
     employeeNumber: '',
@@ -64,15 +177,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     phoneNumber: '',
     departmentId: '',
     jobId: '',
-    joinedAt: new Date().toISOString().split('T')[0]                  // Default tanggal hari ini (format YYYY-MM-DD)
+    joinedAt: new Date().toISOString().split('T')[0],                  // Default tanggal hari ini (format YYYY-MM-DD)
+    status: 1
   });
 
-  const [deptForm, setDeptForm] = useState({ name: '', code: '' });
-  const [jobForm, setJobForm] = useState({ title: '', grade: '' });
+  const [deptForm, setDeptForm] = useState({ name: '', code: '', status: 1 });
+  const [jobForm, setJobForm] = useState({ title: '', grade: '', status: 1 });
 
   // 7. STATE UNTUK NOTIFIKASI
   const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
   const [successMsg, setSuccessMsg] = useState('');                   // Menyimpan pesan sukses operasional
+
+  // State untuk dialog konfirmasi hapus kustom
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
+  // State untuk dialog konfirmasi logout kustom
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  // State untuk melipat sidebar (Collapse/Expand)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // State untuk Mode Gelap/Terang (Theme Toggle)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Efek samping untuk menghilangkan notifikasi secara otomatis setelah 4 detik (Auto-Dismiss)
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
 
   /**
    * Fungsi fetchData:
@@ -82,39 +229,58 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const fetchData = async () => {
     try {
       if (activeTab === 'employees') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
+          id: empFilters.id,
           fullName: empFilters.fullName,
           employeeNumber: empFilters.employeeNumber,
           email: empFilters.email,
+          phoneNumber: empFilters.phoneNumber,
+          departmentName: empFilters.departmentName,
+          jobTitle: empFilters.jobTitle,
+          joinedAt: empFilters.joinedAt,
           page: currentPage.toString(),
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (empFilters.status !== '') {
+          queryParams.status = empFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<EmployeeResponse[]>>(`/employees?${query.toString()}`);
         setEmployees(res.data);
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'departments') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
+          id: deptFilters.id,
           name: deptFilters.name,
           code: deptFilters.code,
           page: currentPage.toString(),
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (deptFilters.status !== '') {
+          queryParams.status = deptFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<DepartmentResponse[]>>(`/departments?${query.toString()}`);
         setDepartments(res.data);
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'jobs') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
+          id: jobFilters.id,
           title: jobFilters.title,
           grade: jobFilters.grade,
           page: currentPage.toString(),
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (jobFilters.status !== '') {
+          queryParams.status = jobFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<JobResponse[]>>(`/jobs?${query.toString()}`);
         setJobs(res.data);
         if (res.pagination) setPagination(res.pagination);
@@ -124,15 +290,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     }
   };
 
+  // Reset pagination ke halaman pertama jika filter pencarian berubah
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [empFilters, deptFilters, jobFilters]);
+
   /**
    * React hook `useEffect`:
    * Fungsi ini akan dipicu secara otomatis setiap kali ada perubahan pada:
-   * activeTab, currentPage, pageSize, sortBy, sortDir, atau tenantId.
-   * Hal ini memastikan data tabel selalu selaras (sync) secara realtime.
+   * activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, atau filter pencarian.
+   * Debouncing 400ms diterapkan untuk mencegah overload request API saat mengetik.
    */
   useEffect(() => {
-    fetchData();
-  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, empFilters, deptFilters, jobFilters]);
 
   /**
    * Fungsi handleTabChange:
@@ -163,17 +338,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   };
 
   /**
-   * Fungsi handleDelete:
-   * Menghapus record secara aman (Soft Delete) melalui pemanggilan HTTP DELETE ke backend.
+   * Fungsi confirmDelete:
+   * Membuka modal konfirmasi hapus kustom untuk ID yang dipilih.
    */
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+  const confirmDelete = (id: number) => {
+    setDeleteTargetId(id);
+    setIsConfirmOpen(true);
+  };
+
+  /**
+   * Fungsi executeDelete:
+   * Menghapus record secara aman (Soft Delete) setelah konfirmasi disetujui.
+   */
+  const executeDelete = async () => {
+    if (deleteTargetId === null) return;
+    setIsConfirmOpen(false);
     try {
-      await apiRequest(`/${activeTab}/${id}/delete`, { method: 'POST' });
+      await apiRequest(`/${activeTab}/${deleteTargetId}/delete`, { method: 'POST' });
       setSuccessMsg('Data berhasil dihapus secara aman!');
+      setDeleteTargetId(null);
       fetchData(); // Muat ulang data tabel
     } catch (err: any) {
       setErrorMsg(err.message || 'Gagal menghapus data!');
+      setDeleteTargetId(null);
     }
   };
 
@@ -185,7 +372,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setErrorMsg('');
     setEditingId(null);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
-    
+
     // Reset isian form ke nilai awal
     setEmpForm({
       employeeNumber: '',
@@ -194,11 +381,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       phoneNumber: '',
       departmentId: '',
       jobId: '',
-      joinedAt: new Date().toISOString().split('T')[0]
+      joinedAt: new Date().toISOString().split('T')[0],
+      status: 1
     });
-    setDeptForm({ name: '', code: '' });
-    setJobForm({ title: '', grade: '' });
-    
+    setDeptForm({ name: '', code: '', status: 1 });
+    setJobForm({ title: '', grade: '', status: 1 });
+
     setIsModalOpen(true);
   };
 
@@ -210,7 +398,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setErrorMsg('');
     setEditingId(item.id);
     setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
-    
+
     // Pindahkan isi baris tabel terpilih ke dalam state form input
     if (activeTab === 'employees') {
       setEmpForm({
@@ -220,14 +408,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         phoneNumber: item.phoneNumber || '',
         departmentId: item.departmentId.toString(),
         jobId: item.jobId.toString(),
-        joinedAt: item.joinedAt
+        joinedAt: item.joinedAt,
+        status: item.status
       });
     } else if (activeTab === 'departments') {
-      setDeptForm({ name: item.name, code: item.code });
+      setDeptForm({ name: item.name, code: item.code, status: item.status });
     } else if (activeTab === 'jobs') {
-      setJobForm({ title: item.title, grade: item.grade || '' });
+      setJobForm({ title: item.title, grade: item.grade || '', status: item.status });
     }
-    
+
     setIsModalOpen(true);
   };
 
@@ -241,7 +430,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     try {
       let endpoint = `/${activeTab}`;
       const method = 'POST'; // Hanya menggunakan metode POST (tidak menggunakan PUT)
-      
+
       // Jika mode edit, tambahkan ID dan path /update di ujung endpoint URL
       if (editingId) endpoint += `/${editingId}/update`;
 
@@ -250,12 +439,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         body = {
           ...empForm,
           departmentId: parseInt(empForm.departmentId),
-          jobId: parseInt(empForm.jobId)
+          jobId: parseInt(empForm.jobId),
+          status: empForm.status
         };
       } else if (activeTab === 'departments') {
-        body = deptForm;
+        body = {
+          ...deptForm,
+          status: deptForm.status
+        };
       } else if (activeTab === 'jobs') {
-        body = jobForm;
+        body = {
+          ...jobForm,
+          status: jobForm.status
+        };
       }
 
       await apiRequest(endpoint, { method, body });
@@ -292,181 +488,149 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
   return (
     <div className="dashboard-layout">
-      {/* 1. TOP NAVIGATION BAR */}
-      <nav className="navbar glass-panel">
-        <div className="nav-brand">
-          <span className="brand-logo">🏢</span>
-          <span className="brand-title">HRMS Enterprise</span>
-        </div>
-        <div className="nav-actions">
-          {/* Badge Multi-Tenant */}
-          <div className="tenant-badge">
-            <span className="badge-dot"></span>
-            Tenant: <strong>{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</strong>
-          </div>
-          {/* Info Aktor Log */}
-          <div className="actor-info">
-            👤 <span>{actorEmail}</span>
-          </div>
-          {/* Tombol Logout Simulator */}
-          <button className="logout-btn" onClick={onLogout}>
-            Switch Tenant ⇄
-          </button>
-        </div>
-      </nav>
-
-      {/* 2. AREA UTAMA KONTEN */}
-      <div className="dashboard-content">
-        
-        {/* Notifikasi Alert Sukses */}
-        {successMsg && (
-          <div className="alert alert-success" onClick={() => setSuccessMsg('')}>
-            ✓ {successMsg}
-          </div>
-        )}
-        
-        {/* Notifikasi Alert Error */}
-        {errorMsg && (
-          <div className="alert alert-error" onClick={() => setErrorMsg('')}>
-            ✗ {errorMsg}
-          </div>
-        )}
-
-        {/* Tab Switcher & Tombol Tambah Baru */}
-        <div className="content-header">
-          <div className="tab-buttons">
-            <button 
-              className={`tab-btn ${activeTab === 'employees' ? 'active' : ''}`}
-              onClick={() => handleTabChange('employees')}
+      {/* 1. SIDEBAR DI SEBELAH KIRI */}
+      {/* 1. SIDEBAR DI SEBELAH KIRI */}
+      <aside className={`sidebar glass-panel ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-brand">
+          <BrandIcon />
+          {!isSidebarCollapsed && <span className="brand-title">HRMS Portal</span>}
+          <div className="sidebar-brand-actions" style={{ display: 'flex', gap: '6px', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? "Mode Terang" : "Mode Gelap"}
             >
-              👥 Karyawan
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
-            <button 
-              className={`tab-btn ${activeTab === 'departments' ? 'active' : ''}`}
+            <button
+              type="button"
+              className="toggle-sidebar-btn"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              title={isSidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+            >
+              {isSidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </button>
+          </div>
+        </div>
+
+        <div className="sidebar-menu">
+          {/* Kelompok Menu: Konfigurasi Data Master */}
+          <div className="menu-group">
+            <div className="menu-group-title">KONFIGURASI DATA MASTER</div>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'departments' ? 'active' : ''}`}
               onClick={() => handleTabChange('departments')}
+              title="Departemen"
             >
-              📂 Departemen
+              <span className="menu-icon"><FolderIcon /></span>
+              {!isSidebarCollapsed && <span className="menu-label">Departemen</span>}
             </button>
-            <button 
-              className={`tab-btn ${activeTab === 'jobs' ? 'active' : ''}`}
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'jobs' ? 'active' : ''}`}
               onClick={() => handleTabChange('jobs')}
+              title="Posisi Jabatan"
             >
-              💼 Posisi Jabatan
+              <span className="menu-icon"><BriefcaseIcon /></span>
+              {!isSidebarCollapsed && <span className="menu-label">Posisi Jabatan</span>}
             </button>
           </div>
-          
+
+          {/* Kelompok Menu: Data Transaksi */}
+          <div className="menu-group">
+            <div className="menu-group-title">DATA TRANSAKSI</div>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'employees' ? 'active' : ''}`}
+              onClick={() => handleTabChange('employees')}
+              title="Karyawan (Pegawai)"
+            >
+              <span className="menu-icon"><UsersIcon /></span>
+              {!isSidebarCollapsed && <span className="menu-label">Karyawan (Pegawai)</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Bagian Bawah Sidebar (Info Tenant & Akun) */}
+        <div className="sidebar-footer">
+          {!isSidebarCollapsed ? (
+            <>
+              <div className="tenant-badge">
+                <span className="badge-dot"></span>
+                <span className="tenant-name">{tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri'}</span>
+              </div>
+              <div className="actor-info">
+                <span className="actor-icon"><UserIcon /></span>
+                <span className="actor-email">{actorEmail}</span>
+              </div>
+              <div className="sidebar-actions">
+                <button type="button" className="switch-tenant-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
+                  Ganti Tenant ⇄
+                </button>
+                <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
+                  Logout / Keluar <LogOutIcon />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="sidebar-actions-collapsed">
+              <button
+                type="button"
+                className="action-icon-btn logout-icon-btn"
+                onClick={() => setIsLogoutConfirmOpen(true)}
+                title="Logout / Keluar"
+              >
+                <LogOutIcon size={18} />
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* 2. AREA UTAMA KONTEN (KANAN) */}
+      <div className="dashboard-content">
+
+        {/* FLOATING TOAST NOTIFICATIONS (Notifikasi Melayang) */}
+        <div className="toast-container">
+          {successMsg && (
+            <div className="toast toast-success" onClick={() => setSuccessMsg('')}>
+              <div className="toast-icon">✓</div>
+              <div className="toast-body">
+                <div className="toast-title">Sukses</div>
+                <div className="toast-desc">{successMsg}</div>
+              </div>
+              <button className="toast-close" onClick={(e) => { e.stopPropagation(); setSuccessMsg(''); }}>×</button>
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="toast toast-error" onClick={() => setErrorMsg('')}>
+              <div className="toast-icon">✗</div>
+              <div className="toast-body">
+                <div className="toast-title">Kesalahan</div>
+                <div className="toast-desc">{errorMsg}</div>
+              </div>
+              <button className="toast-close" onClick={(e) => { e.stopPropagation(); setErrorMsg(''); }}>×</button>
+            </div>
+          )}
+        </div>
+
+        {/* Header Halaman Aktif */}
+        <div className="content-header">
+          <div className="page-header-info">
+            <h1 className="page-header-title">
+              {activeTab === 'employees' ? 'Kelola Karyawan' : activeTab === 'departments' ? 'Kelola Departemen' : 'Kelola Jabatan'}
+            </h1>
+            <p className="page-header-desc">
+              Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} multi-tenant.
+            </p>
+          </div>
+
           <button className="btn-primary" onClick={openCreateModal}>
             + Tambah {activeTab === 'employees' ? 'Karyawan' : activeTab === 'departments' ? 'Departemen' : 'Jabatan'}
           </button>
-        </div>
-
-        {/* 3. PANEL FILTER PENCARIAN (Berdasarkan Tab Aktif) */}
-        <div className="filters-panel glass-panel">
-          <h3>🔍 Filter Pencarian</h3>
-          <div className="filters-grid">
-            
-            {/* Filter Khusus Tab Karyawan */}
-            {activeTab === 'employees' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Lengkap</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.fullName}
-                    onChange={(e) => setEmpFilters({...empFilters, fullName: e.target.value})}
-                    placeholder="Cari nama..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>NIK / Nomor Karyawan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.employeeNumber}
-                    onChange={(e) => setEmpFilters({...empFilters, employeeNumber: e.target.value})}
-                    placeholder="Cari NIK..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Email</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={empFilters.email}
-                    onChange={(e) => setEmpFilters({...empFilters, email: e.target.value})}
-                    placeholder="Cari email..."
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Filter Khusus Tab Departemen */}
-            {activeTab === 'departments' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Departemen</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={deptFilters.name}
-                    onChange={(e) => setDeptFilters({...deptFilters, name: e.target.value})}
-                    placeholder="Cari departemen..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Kode Singkatan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={deptFilters.code}
-                    onChange={(e) => setDeptFilters({...deptFilters, code: e.target.value})}
-                    placeholder="Cari kode..."
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Filter Khusus Tab Jabatan */}
-            {activeTab === 'jobs' && (
-              <>
-                <div className="filter-input-group">
-                  <label>Nama Jabatan</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={jobFilters.title}
-                    onChange={(e) => setJobFilters({...jobFilters, title: e.target.value})}
-                    placeholder="Cari jabatan..."
-                  />
-                </div>
-                <div className="filter-input-group">
-                  <label>Golongan / Grade</label>
-                  <input 
-                    type="text" 
-                    className="custom-input"
-                    value={jobFilters.grade}
-                    onChange={(e) => setJobFilters({...jobFilters, grade: e.target.value})}
-                    placeholder="Cari golongan..."
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          
-          <div className="filter-actions">
-            <button className="btn-secondary" onClick={() => {
-              // Bersihkan seluruh isian kolom filter
-              setEmpFilters({ fullName: '', employeeNumber: '', email: '' });
-              setDeptFilters({ name: '', code: '' });
-              setJobFilters({ title: '', grade: '' });
-            }}>
-              Clear Filters
-            </button>
-            <button className="btn-primary" onClick={fetchData}>
-              Terapkan Filter
-            </button>
-          </div>
         </div>
 
         {/* 4. TABEL UTAMA DATA */}
@@ -475,37 +639,244 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <thead>
               {/* Header Kolom Karyawan */}
               {activeTab === 'employees' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>No. Telepon</th>
-                  <th>Departemen</th>
-                  <th>Jabatan (Grade)</th>
-                  <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>No. Telepon</th>
+                    <th>Departemen</th>
+                    <th>Jabatan (Grade)</th>
+                    <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.id}
+                        onChange={(e) => setEmpFilters({ ...empFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.employeeNumber}
+                        onChange={(e) => setEmpFilters({ ...empFilters, employeeNumber: e.target.value })}
+                        placeholder="Filter NIK..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.fullName}
+                        onChange={(e) => setEmpFilters({ ...empFilters, fullName: e.target.value })}
+                        placeholder="Filter nama..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.email}
+                        onChange={(e) => setEmpFilters({ ...empFilters, email: e.target.value })}
+                        placeholder="Filter email..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.phoneNumber}
+                        onChange={(e) => setEmpFilters({ ...empFilters, phoneNumber: e.target.value })}
+                        placeholder="Filter telepon..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.departmentName}
+                        onChange={(e) => setEmpFilters({ ...empFilters, departmentName: e.target.value })}
+                        placeholder="Filter divisi..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.jobTitle}
+                        onChange={(e) => setEmpFilters({ ...empFilters, jobTitle: e.target.value })}
+                        placeholder="Filter jabatan..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={empFilters.joinedAt}
+                        onChange={(e) => setEmpFilters({ ...empFilters, joinedAt: e.target.value })}
+                        placeholder="Filter tanggal..."
+                      />
+                    </th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={empFilters.status}
+                        onChange={(e) => setEmpFilters({ ...empFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
+                    <th>
+                      <button
+                        type="button"
+                        className="clear-filters-btn"
+                        onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
 
               {/* Header Kolom Departemen */}
               {activeTab === 'departments' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={deptFilters.id}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={deptFilters.name}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, name: e.target.value })}
+                        placeholder="Filter nama..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={deptFilters.code}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, code: e.target.value })}
+                        placeholder="Filter kode..."
+                      />
+                    </th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={deptFilters.status}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
+                    <th>
+                      <button
+                        type="button"
+                        className="clear-filters-btn"
+                        onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
 
               {/* Header Kolom Jabatan */}
               {activeTab === 'jobs' && (
-                <tr>
-                  <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
-                  <th>Aksi</th>
-                </tr>
+                <>
+                  <tr>
+                    <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                  <tr className="table-filter-row">
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={jobFilters.id}
+                        onChange={(e) => setJobFilters({ ...jobFilters, id: e.target.value })}
+                        placeholder="Filter ID..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={jobFilters.title}
+                        onChange={(e) => setJobFilters({ ...jobFilters, title: e.target.value })}
+                        placeholder="Filter jabatan..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        className="table-filter-input"
+                        value={jobFilters.grade}
+                        onChange={(e) => setJobFilters({ ...jobFilters, grade: e.target.value })}
+                        placeholder="Filter grade..."
+                      />
+                    </th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={jobFilters.status}
+                        onChange={(e) => setJobFilters({ ...jobFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
+                    <th>
+                      <button
+                        type="button"
+                        className="clear-filters-btn"
+                        onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
+                        title="Clear Filters"
+                      >
+                        ✕
+                      </button>
+                    </th>
+                  </tr>
+                </>
               )}
             </thead>
             <tbody>
@@ -525,9 +896,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </td>
                   <td>{emp.joinedAt}</td>
                   <td>
+                    <span className={emp.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {emp.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(emp)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(emp.id)}>🗑️</button>
+                      <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title="Ubah Data"><EditIcon /></button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title="Hapus Data"><TrashIcon /></button>
                     </div>
                   </td>
                 </tr>
@@ -542,9 +918,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <span className="tag-code">{dept.code}</span>
                   </td>
                   <td>
+                    <span className={dept.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {dept.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(dept)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(dept.id)}>🗑️</button>
+                      <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title="Ubah Data"><EditIcon /></button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title="Hapus Data"><TrashIcon /></button>
                     </div>
                   </td>
                 </tr>
@@ -559,9 +940,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     <span className="tag-grade">{job.grade}</span>
                   </td>
                   <td>
+                    <span className={job.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
+                      {job.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-buttons">
-                      <button className="action-btn edit-btn" onClick={() => openEditModal(job)}>✏️</button>
-                      <button className="action-btn delete-btn" onClick={() => handleDelete(job.id)}>🗑️</button>
+                      <button className="action-btn edit-btn" onClick={() => openEditModal(job)} title="Ubah Data"><EditIcon /></button>
+                      <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)} title="Hapus Data"><TrashIcon /></button>
                     </div>
                   </td>
                 </tr>
@@ -571,12 +957,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {((activeTab === 'employees' && employees.length === 0) ||
                 (activeTab === 'departments' && departments.length === 0) ||
                 (activeTab === 'jobs' && jobs.length === 0)) && (
-                <tr>
-                  <td colSpan={10} className="empty-row">
-                    Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
-                  </td>
-                </tr>
-              )}
+                  <tr>
+                    <td colSpan={10} className="empty-row">
+                      Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>
@@ -588,22 +974,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               Menampilkan Halaman <strong>{pagination.page + 1}</strong> dari <strong>{pagination.totalPages || 1}</strong> ({pagination.totalElements} data)
             </div>
             <div className="pagination-actions">
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
                 ◀ Sebelumnya
               </button>
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 disabled={pagination.isLast || pagination.totalPages <= currentPage + 1}
                 onClick={() => setCurrentPage(currentPage + 1)}
               >
                 Berikutnya ▶
               </button>
               {/* Dropdown Ukuran/Batas Baris per Halaman */}
-              <select 
+              <select
                 className="custom-input page-size-select"
                 value={pageSize}
                 onChange={(e) => {
@@ -628,60 +1014,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <h2>{editingId ? 'Edit' : 'Tambah'} {modalType === 'employee' ? 'Karyawan' : modalType === 'department' ? 'Departemen' : 'Jabatan'}</h2>
               <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>×</button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="modal-form">
               {/* Form Khusus Karyawan */}
               {modalType === 'employee' && (
-                <>
+                <div className="form-grid-2col">
                   <div className="form-group">
                     <label className="form-label">NIK / Nomor Karyawan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.employeeNumber}
-                      onChange={(e) => setEmpForm({...empForm, employeeNumber: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, employeeNumber: e.target.value })}
                       placeholder="e.g. EMP-2026-001"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nama Lengkap</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.fullName}
-                      onChange={(e) => setEmpForm({...empForm, fullName: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, fullName: e.target.value })}
                       placeholder="e.g. Ahmad Fauzi"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       className="custom-input"
                       value={empForm.email}
-                      onChange={(e) => setEmpForm({...empForm, email: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })}
                       placeholder="e.g. ahmad@company.com"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">No. Telepon</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={empForm.phoneNumber}
-                      onChange={(e) => setEmpForm({...empForm, phoneNumber: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, phoneNumber: e.target.value })}
                       placeholder="e.g. 08123456789"
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Departemen</label>
-                    <select 
+                    <select
                       className="custom-input"
                       value={empForm.departmentId}
-                      onChange={(e) => setEmpForm({...empForm, departmentId: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, departmentId: e.target.value })}
                       required
                     >
                       <option value="">-- Pilih Departemen --</option>
@@ -692,10 +1078,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </div>
                   <div className="form-group">
                     <label className="form-label">Jabatan (Grade)</label>
-                    <select 
+                    <select
                       className="custom-input"
                       value={empForm.jobId}
-                      onChange={(e) => setEmpForm({...empForm, jobId: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, jobId: e.target.value })}
                       required
                     >
                       <option value="">-- Pilih Jabatan --</option>
@@ -706,15 +1092,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   </div>
                   <div className="form-group">
                     <label className="form-label">Tanggal Bergabung</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       className="custom-input"
                       value={empForm.joinedAt}
-                      onChange={(e) => setEmpForm({...empForm, joinedAt: e.target.value})}
+                      onChange={(e) => setEmpForm({ ...empForm, joinedAt: e.target.value })}
                       required
                     />
                   </div>
-                </>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={empForm.status}
+                      onChange={(e) => setEmpForm({ ...empForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
+                  </div>
+                </div>
               )}
 
               {/* Form Khusus Departemen */}
@@ -722,25 +1120,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <div className="form-group">
                     <label className="form-label">Nama Departemen</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={deptForm.name}
-                      onChange={(e) => setDeptForm({...deptForm, name: e.target.value})}
+                      onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })}
                       placeholder="e.g. Information Technology"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Kode Singkatan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={deptForm.code}
-                      onChange={(e) => setDeptForm({...deptForm, code: e.target.value})}
+                      onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value })}
                       placeholder="e.g. IT"
                       required
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={deptForm.status}
+                      onChange={(e) => setDeptForm({ ...deptForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
                   </div>
                 </>
               )}
@@ -750,25 +1160,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <div className="form-group">
                     <label className="form-label">Nama Posisi / Jabatan</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={jobForm.title}
-                      onChange={(e) => setJobForm({...jobForm, title: e.target.value})}
+                      onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
                       placeholder="e.g. Senior Backend Engineer"
                       required
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Golongan (Grade)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="custom-input"
                       value={jobForm.grade}
-                      onChange={(e) => setJobForm({...jobForm, grade: e.target.value})}
+                      onChange={(e) => setJobForm({ ...jobForm, grade: e.target.value })}
                       placeholder="e.g. SE3"
                       required
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Keaktifan</label>
+                    <select
+                      className="custom-input"
+                      value={jobForm.status}
+                      onChange={(e) => setJobForm({ ...jobForm, status: parseInt(e.target.value) })}
+                      required
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
                   </div>
                 </>
               )}
@@ -778,6 +1200,73 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <button type="submit" className="btn-primary">Simpan</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. DIALOG KONFIRMASI HAPUS KUSTOM */}
+      {isConfirmOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-content confirm-modal glass-panel">
+            <div className="confirm-icon-wrapper confirm-warning-icon">
+              <WarningIcon />
+            </div>
+            <div className="confirm-body">
+              <h3>Konfirmasi Penghapusan</h3>
+              <p>Apakah Anda benar-benar yakin ingin menghapus data ini secara permanen?</p>
+              <span className="confirm-subtext">Tindakan ini tidak dapat dibatalkan.</span>
+            </div>
+            <div className="modal-actions confirm-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setIsConfirmOpen(false);
+                  setDeleteTargetId(null);
+                }}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="btn-danger"
+                onClick={executeDelete}
+              >
+                Ya, Hapus Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. DIALOG KONFIRMASI LOGOUT KUSTOM */}
+      {isLogoutConfirmOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-content confirm-modal glass-panel">
+            <div className="confirm-icon-wrapper confirm-warning-icon">
+              <LogOutIcon size={48} />
+            </div>
+            <div className="confirm-body">
+              <h3>Konfirmasi Keluar</h3>
+              <p>Apakah Anda benar-benar yakin ingin keluar dari sesi admin saat ini?</p>
+              <span className="confirm-subtext">Anda perlu login kembali untuk mengakses data dashboard.</span>
+            </div>
+            <div className="modal-actions confirm-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setIsLogoutConfirmOpen(false)}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="btn-danger"
+                onClick={onLogout}
+              >
+                Ya, Keluar
+              </button>
+            </div>
           </div>
         </div>
       )}
