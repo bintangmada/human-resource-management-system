@@ -160,20 +160,19 @@ mvn -f backend/employee-service/pom.xml clean package -DskipTests
 
 ---
 
-## 📖 6. Swagger & OpenAPI Documentation (Uji Coba API)
+## 📖 6. Cara Menguji API Secara Langsung (Swagger UI)
 
-Setelah aplikasi Spring Boot berhasil berjalan (`EMPLOYEE BACKEND IS RUNNING`):
+Setelah aplikasi Spring Boot berhasil dijalankan:
 
-### A. Alamat URL Akses
-*   **Swagger UI (Interaktif)**:
-    👉 [http://localhost:8020/swagger-ui.html](http://localhost:8020/swagger-ui.html)
-*   **OpenAPI Specification (JSON Raw Data)**:
-    👉 [http://localhost:8020/v3/api-docs](http://localhost:8020/v3/api-docs)
+1.  **Buka Halaman Uji Coba API (Swagger UI)**:
+    Klik link berikut di browser Anda untuk membuka antarmuka interaktif:
+    👉 **[http://localhost:8020/swagger-ui.html](http://localhost:8020/swagger-ui.html)**
 
-### B. Catatan Penting Penggunaan di Swagger UI (Multi-Tenancy)
-Aplikasi HRMS ini dirancang dengan isolasi multi-tenant yang ketat. Oleh karena itu, setiap kali Anda memanggil endpoint API melalui tombol **"Try it out"** di Swagger UI:
-1.  Anda **wajib** mengisi kolom parameter header **`X-Tenant-ID`**.
-2.  Gunakan nilai sampel berikut untuk melakukan pengetesan:
-    *   `X-Tenant-ID`: `1` (untuk Perusahaan/Tenant A)
-    *   `X-Tenant-ID`: `2` (untuk Perusahaan/Tenant B)
-3.  Jika parameter header ini kosong atau tidak disertakan, server akan membalas dengan status error **`400 Bad Request`** atau **`401 Unauthorized`**.
+2.  **Cara Mencoba Endpoint**:
+    *   Pilih salah satu endpoint API (misalnya: `GET /api/v1/employees`).
+    *   Klik tombol **"Try it out"** di sebelah kanan.
+    *   **Penting**: Isi kolom parameter **`X-Tenant-ID`** dengan angka `1` atau `2` (ini adalah ID perusahaan sampel Anda).
+    *   Klik tombol biru **"Execute"**.
+    *   Hasil respons database akan langsung muncul di bagian bawah.
+
+*(Catatan: Anda wajib mengisi `X-Tenant-ID` agar sistem tahu database perusahaan mana yang ingin Anda akses).*
