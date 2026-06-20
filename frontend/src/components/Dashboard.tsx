@@ -134,9 +134,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
 
   // 3. STATE UNTUK FILTER PENCARIAN (Input User)
-  const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '' });
-  const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '' });
-  const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '' });
+  const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' });
+  const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '', status: '' });
+  const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '', status: '' });
 
   // 4. STATE UNTUK PAGINASI & PENGURUTAN (Sorting)
   const [currentPage, setCurrentPage] = useState<number>(0);         // Halaman aktif (0-indexed untuk backend Spring Boot)
@@ -201,7 +201,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   const fetchData = async () => {
     try {
       if (activeTab === 'employees') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
           id: empFilters.id,
           fullName: empFilters.fullName,
           employeeNumber: empFilters.employeeNumber,
@@ -214,12 +214,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (empFilters.status !== '') {
+          queryParams.status = empFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<EmployeeResponse[]>>(`/employees?${query.toString()}`);
         setEmployees(res.data);
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'departments') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
           id: deptFilters.id,
           name: deptFilters.name,
           code: deptFilters.code,
@@ -227,12 +231,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (deptFilters.status !== '') {
+          queryParams.status = deptFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<DepartmentResponse[]>>(`/departments?${query.toString()}`);
         setDepartments(res.data);
         if (res.pagination) setPagination(res.pagination);
       } else if (activeTab === 'jobs') {
-        const query = new URLSearchParams({
+        const queryParams: any = {
           id: jobFilters.id,
           title: jobFilters.title,
           grade: jobFilters.grade,
@@ -240,7 +248,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
           size: pageSize.toString(),
           sortBy,
           sortDir
-        });
+        };
+        if (jobFilters.status !== '') {
+          queryParams.status = jobFilters.status;
+        }
+        const query = new URLSearchParams(queryParams);
         const res = await apiRequest<ApiResponse<JobResponse[]>>(`/jobs?${query.toString()}`);
         setJobs(res.data);
         if (res.pagination) setPagination(res.pagination);
@@ -675,12 +687,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter tanggal..."
                       />
                     </th>
-                    <th></th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={empFilters.status}
+                        onChange={(e) => setEmpFilters({ ...empFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
                     <th>
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '' })}
+                        onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
                         title="Clear Filters"
                       >
                         ✕
@@ -728,12 +751,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter kode..."
                       />
                     </th>
-                    <th></th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={deptFilters.status}
+                        onChange={(e) => setDeptFilters({ ...deptFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
                     <th>
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setDeptFilters({ id: '', name: '', code: '' })}
+                        onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
                         title="Clear Filters"
                       >
                         ✕
@@ -781,12 +815,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                         placeholder="Filter grade..."
                       />
                     </th>
-                    <th></th>
+                    <th>
+                      <select
+                        className="table-filter-input"
+                        value={jobFilters.status}
+                        onChange={(e) => setJobFilters({ ...jobFilters, status: e.target.value })}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">Semua</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                      </select>
+                    </th>
                     <th>
                       <button
                         type="button"
                         className="clear-filters-btn"
-                        onClick={() => setJobFilters({ id: '', title: '', grade: '' })}
+                        onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
                         title="Clear Filters"
                       >
                         ✕

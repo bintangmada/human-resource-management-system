@@ -88,13 +88,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<DepartmentResponse> getAllDepartments(Long tenantId, String id, String name, String code, Pageable pageable) {
+    public Page<DepartmentResponse> getAllDepartments(Long tenantId, Integer status, String id, String name, String code, Pageable pageable) {
         String cleanId = (id == null || id.trim().isEmpty()) ? null : "%" + id.trim() + "%";
         String cleanName = (name == null || name.trim().isEmpty()) ? null : "%" + name.trim().toLowerCase() + "%";
         String cleanCode = (code == null || code.trim().isEmpty()) ? null : "%" + code.trim().toLowerCase() + "%";
 
         return departmentRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanId, cleanName, cleanCode, pageable
+                tenantId, 0, status, cleanId, cleanName, cleanCode, pageable
         ).map(this::mapToResponse);
     }
 

@@ -34,7 +34,7 @@ public interface DepartmentService {
     /**
      * Mendapatkan daftar semua departemen dengan paginasi dan filter.
      */
-    Page<DepartmentResponse> getAllDepartments(Long tenantId, String id, String name, String code, Pageable pageable);
+    Page<DepartmentResponse> getAllDepartments(Long tenantId, Integer status, String id, String name, String code, Pageable pageable);
 
     /**
      * Mendapatkan detail satu departemen berdasarkan ID dengan validasi kepemilikan tenant.

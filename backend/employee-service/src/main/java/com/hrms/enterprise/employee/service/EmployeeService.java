@@ -35,6 +35,7 @@ public interface EmployeeService {
      */
     Page<EmployeeResponse> getAllEmployees(
             Long tenantId,
+            Integer status,
             String id,
             String fullName,
             String employeeNumber,

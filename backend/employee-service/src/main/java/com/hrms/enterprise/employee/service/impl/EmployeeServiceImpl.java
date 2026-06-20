@@ -132,6 +132,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(readOnly = true)
     public Page<EmployeeResponse> getAllEmployees(
             Long tenantId,
+            Integer status,
             String id,
             String fullName,
             String employeeNumber,
@@ -152,7 +153,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         String cleanJoinedAt = (joinedAt == null || joinedAt.trim().isEmpty()) ? null : "%" + joinedAt.trim().toLowerCase() + "%";
 
         return employeeRepository.findAllByTenantIdAndDeletedStatusAndFilters(
-                tenantId, 0, cleanId, cleanFullName, cleanEmployeeNumber, cleanEmail,
+                tenantId, 0, status, cleanId, cleanFullName, cleanEmployeeNumber, cleanEmail,
                 cleanPhoneNumber, cleanDepartmentName, cleanJobTitle, cleanJoinedAt, pageable
         ).map(this::mapToResponse);
     }

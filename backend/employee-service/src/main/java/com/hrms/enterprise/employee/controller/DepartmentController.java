@@ -73,6 +73,7 @@ public class DepartmentController {
     @GetMapping
     public ResponseEntity<ApiResponse<java.util.List<DepartmentResponse>>> getAllDepartments(
             @RequestHeader(value = "X-Tenant-ID", defaultValue = "1") Long tenantId,
+            @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "code", required = false) String code,
@@ -86,7 +87,7 @@ public class DepartmentController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<DepartmentResponse> pageResult = departmentService.getAllDepartments(tenantId, id, name, code, pageable);
+        Page<DepartmentResponse> pageResult = departmentService.getAllDepartments(tenantId, status, id, name, code, pageable);
 
         ApiResponse.PaginationMetadata pagination = ApiResponse.PaginationMetadata.builder()
                 .page(pageResult.getNumber())

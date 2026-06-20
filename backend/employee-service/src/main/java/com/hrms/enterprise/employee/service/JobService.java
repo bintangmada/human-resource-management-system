@@ -44,7 +44,7 @@ public interface JobService {
      * @param pageable Pengaturan paginasi (halaman, ukuran, sorting)
      * @return Halaman (Page) posisi jabatan
      */
-    Page<JobResponse> getAllJobs(Long tenantId, String id, String title, String grade, Pageable pageable);
+    Page<JobResponse> getAllJobs(Long tenantId, Integer status, String id, String title, String grade, Pageable pageable);
 
     /**
      * Mendapatkan detail satu posisi jabatan berdasarkan ID.

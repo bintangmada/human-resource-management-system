@@ -31,6 +31,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
            "LEFT JOIN Department d ON e.departmentId = d.id " +
            "LEFT JOIN Job j ON e.jobId = j.id " +
            "WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
+           "AND (:status IS NULL OR e.status = :status) " +
            "AND (:id IS NULL OR CAST(e.id AS string) LIKE :id) " +
            "AND (:fullName IS NULL OR LOWER(e.fullName) LIKE :fullName) " +
            "AND (:employeeNumber IS NULL OR LOWER(e.employeeNumber) LIKE :employeeNumber) " +
@@ -42,6 +43,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Page<Employee> findAllByTenantIdAndDeletedStatusAndFilters(
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
+            @Param("status") Integer status,
             @Param("id") String id,
             @Param("fullName") String fullName,
             @Param("employeeNumber") String employeeNumber,
