@@ -103,4 +103,21 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * Digunakan untuk mencegah penghapusan jabatan yang masih digunakan oleh karyawan (Relational Integrity).
      */
     boolean existsByJobIdAndTenantIdAndDeletedStatus(Long jobId, Long tenantId, Integer deletedStatus);
+
+    /**
+     * Menghitung jumlah karyawan aktif dalam suatu tenant.
+     */
+    long countByTenantIdAndDeletedStatus(Long tenantId, Integer deletedStatus);
+
+    /**
+     * Menghitung jumlah karyawan aktif dalam tenant berdasarkan nama jabatan.
+     */
+    @Query("SELECT COUNT(e) FROM Employee e " +
+           "JOIN Job j ON e.jobId = j.id " +
+           "WHERE e.tenantId = :tenantId AND e.deletedStatus = :deletedStatus " +
+           "AND LOWER(j.title) = LOWER(:jobTitle)")
+    long countByTenantIdAndDeletedStatusAndJobTitle(
+            @Param("tenantId") Long tenantId,
+            @Param("deletedStatus") Integer deletedStatus,
+            @Param("jobTitle") String jobTitle);
 }

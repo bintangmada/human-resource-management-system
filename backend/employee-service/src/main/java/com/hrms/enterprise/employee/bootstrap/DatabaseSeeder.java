@@ -6,6 +6,7 @@ import com.hrms.enterprise.employee.entity.Job;
 import com.hrms.enterprise.employee.repository.DepartmentRepository;
 import com.hrms.enterprise.employee.repository.EmployeeRepository;
 import com.hrms.enterprise.employee.repository.JobRepository;
+import com.hrms.enterprise.employee.repository.TenantRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -22,13 +23,16 @@ import java.util.List;
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
+    private final TenantRepository tenantRepository;
     private final DepartmentRepository departmentRepository;
     private final JobRepository jobRepository;
     private final EmployeeRepository employeeRepository;
 
-    public DatabaseSeeder(DepartmentRepository departmentRepository,
+    public DatabaseSeeder(TenantRepository tenantRepository,
+                          DepartmentRepository departmentRepository,
                           JobRepository jobRepository,
                           EmployeeRepository employeeRepository) {
+        this.tenantRepository = tenantRepository;
         this.departmentRepository = departmentRepository;
         this.jobRepository = jobRepository;
         this.employeeRepository = employeeRepository;
@@ -36,10 +40,43 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Melakukan seeding hanya jika database masih kosong
-        if (departmentRepository.count() == 0 && jobRepository.count() == 0 && employeeRepository.count() == 0) {
-            System.out.println("=== MEMULAI PROSES DATABASE SEEDING (20 DATA) ===");
+        // Seeding Tenants secara terpisah jika tabel penyewa kosong
+        if (tenantRepository.count() == 0) {
+            System.out.println("=== MEMULAI SEEDING TENANT DEFAULT ===");
+            com.hrms.enterprise.employee.entity.Tenant t1 = com.hrms.enterprise.employee.entity.Tenant.builder()
+                    .companyName("PT. Teknologi Nusantara")
+                    .subdomain("teknologi-nusantara")
+                    .ownerName("Ahmad Fauzi")
+                    .ownerEmail("admin@tenant1.com")
+                    .plan("ENTERPRISE")
+                    .expiryDate(java.time.LocalDateTime.now().plusYears(1))
+                    .maxEmployees(200)
+                    .status(1)
+                    .deletedStatus(0)
+                    .createdBy("system_seeder")
+                    .build();
+            
+            com.hrms.enterprise.employee.entity.Tenant t2 = com.hrms.enterprise.employee.entity.Tenant.builder()
+                    .companyName("PT. Finance Mandiri")
+                    .subdomain("finance-mandiri")
+                    .ownerName("Budi Santoso")
+                    .ownerEmail("budi.santoso@tenant2.com")
+                    .plan("PROFESSIONAL")
+                    .expiryDate(java.time.LocalDateTime.now().plusMonths(6))
+                    .maxEmployees(100)
+                    .status(1)
+                    .deletedStatus(0)
+                    .createdBy("system_seeder")
+                    .build();
+            
+            tenantRepository.save(t1);
+            tenantRepository.save(t2);
+            System.out.println("=== SEEDING TENANT BERHASIL ===");
+        }
 
+        // Seeding data internal (Departemen, Jabatan, Pegawai) untuk tenant 1 jika kosong
+        if (departmentRepository.count() == 0 && jobRepository.count() == 0 && employeeRepository.count() == 0) {
+            System.out.println("=== MEMULAI SEEDING INTERNAL EMPLOYEES (20 DATA) ===");
             Long tenantId1 = 1L;
             String actor = "seeder@hrms.com";
 
