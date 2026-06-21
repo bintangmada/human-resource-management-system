@@ -431,6 +431,10 @@ export const Login: React.FC<LoginProps> = ({
               <div className="register-toggle-link" onClick={() => { setStep('register'); setError(''); }}>
                 {t.noAccountYet}
               </div>
+
+              <div className="owner-portal-link" onClick={() => handleLookup('admin')}>
+                🔑 {lang === 'id' ? 'Masuk sebagai SaaS Owner (Platform Admin)' : 'Login as SaaS Owner (Platform Admin)'}
+              </div>
             </form>
           </>
         )}

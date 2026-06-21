@@ -87,7 +87,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   // Currency & Billing Cycle State
   const [currency, setCurrency] = React.useState<'USD' | 'IDR'>('USD');
-  const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'semi-annually' | 'yearly'>('monthly');
+  const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'semi-annually' | 'yearly' | 'custom'>('monthly');
+  const [customDays, setCustomDays] = React.useState<number>(45);
 
   // Pricing Calculator State
   const [calcAdmins, setCalcAdmins] = React.useState<number>(1);
@@ -125,6 +126,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       multiplier = 12;
       discount = 0.20; // 20%
       periodLabel = lang === 'id' ? '/ Tahun' : '/ Year';
+    } else if (billingCycle === 'custom') {
+      multiplier = customDays / 30;
+      // Dynamic discount based on duration (in days)
+      if (customDays >= 365) {
+        discount = 0.20; // 20%
+      } else if (customDays >= 180) {
+        discount = 0.10; // 10%
+      } else if (customDays >= 90) {
+        discount = 0.05; // 5%
+      } else {
+        discount = 0;
+      }
+      periodLabel = lang === 'id' ? `/ ${customDays} Hari` : `/ ${customDays} Days`;
     }
 
     const totalRaw = monthlyRate * multiplier;
@@ -135,7 +149,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       total: totalDiscounted,
       effectiveMonthly,
       periodLabel,
-      discountPercent: discount * 100,
+      discountPercent: Math.round(discount * 100),
     };
   };
 
@@ -473,8 +487,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {lang === 'id' ? '1 Tahunan' : 'Yearly'}
               <span className="discount-badge">20% Off</span>
             </button>
+            <button 
+              className={`toggle-btn ${billingCycle === 'custom' ? 'active' : ''}`}
+              onClick={() => setBillingCycle('custom')}
+            >
+              {lang === 'id' ? 'Kustom' : 'Custom'}
+            </button>
           </div>
         </div>
+
+        {/* Custom Days Input Panel */}
+        {billingCycle === 'custom' && (
+          <div className="custom-days-container glass-panel">
+            <div className="custom-days-header">
+              <span className="custom-days-label">
+                {lang === 'id' ? 'Tentukan Durasi Layanan (Hari):' : 'Specify Service Duration (Days):'}
+              </span>
+            </div>
+            <div className="custom-days-control">
+              <input 
+                type="range" 
+                min="1" 
+                max="730" 
+                value={customDays} 
+                onChange={(e) => setCustomDays(parseInt(e.target.value) || 30)}
+                className="custom-days-slider"
+              />
+              <div className="custom-days-input-wrapper">
+                <input 
+                  type="number" 
+                  min="1" 
+                  max="730" 
+                  value={customDays} 
+                  onChange={(e) => setCustomDays(Math.max(1, Math.min(730, parseInt(e.target.value) || 1)))}
+                  className="custom-days-input"
+                />
+                <span className="custom-days-unit">{lang === 'id' ? 'Hari' : 'Days'}</span>
+              </div>
+            </div>
+            <div className="custom-days-hint">
+              {customDays >= 365 ? (
+                <span className="discount-applied text-success">✓ {lang === 'id' ? 'Diskon 20% otomatis aktif (≥ 365 hari)' : 'Auto 20% discount active (≥ 365 days)'}</span>
+              ) : customDays >= 180 ? (
+                <span className="discount-applied text-success">✓ {lang === 'id' ? 'Diskon 10% otomatis aktif (≥ 180 hari)' : 'Auto 10% discount active (≥ 180 days)'}</span>
+              ) : customDays >= 90 ? (
+                <span className="discount-applied text-success">✓ {lang === 'id' ? 'Diskon 5% otomatis aktif (≥ 90 hari)' : 'Auto 5% discount active (≥ 90 days)'}</span>
+              ) : (
+                <span className="text-muted">{lang === 'id' ? 'Diskon aktif setelah 90 hari atau lebih.' : 'Discounts apply at 90 days or more.'}</span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="pricing-grid">
           {/* Trial Card */}
