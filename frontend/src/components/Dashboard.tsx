@@ -8,6 +8,7 @@ import {
   PaginationMetadata
 } from '../types';
 import './Dashboard.css';
+import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
 const BrandIcon = () => (
@@ -140,26 +141,44 @@ const TrashIcon = () => (
   </svg>
 );
 
-/**
- * Interface DashboardProps:
- * Menentukan props yang harus dikirim oleh App.tsx ke Dashboard.
- * Di sini kita memerlukan:
- * - tenantId: ID tenant aktif saat ini.
- * - actorEmail: Email aktor yang sedang login.
- * - onLogout: Fungsi callback untuk keluar/kembali ke halaman login simulator.
- */
 interface DashboardProps {
   tenantId: string;
   actorEmail: string;
   onLogout: () => void;
+  lang: Language;
+  changeLang: (l: Language) => void;
+  theme: 'dark' | 'light';
+  setTheme: (t: 'dark' | 'light') => void;
 }
 
 // Menentukan tipe data tab yang didukung
 type ActiveTab = 'employees' | 'departments' | 'jobs';
 
-export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
-  const tenantName = tenantId === '1' ? 'PT. Teknologi Nusantara' : 'PT. Finance Mandiri';
+  const [tenantName, setTenantName] = useState<string>('Loading...');
+  const t = translations[lang];
+  const actorName = localStorage.getItem('hrms_actor_name') || 'Employee';
+  const actorRole = localStorage.getItem('hrms_actor_role') || 'Staff';
+
+  useEffect(() => {
+    const fetchTenantDetails = async () => {
+      try {
+        const response = await apiRequest<{ data: any[] }>('/tenants');
+        if (response && response.data) {
+          const current = response.data.find((t: any) => t.id.toString() === tenantId);
+          if (current) {
+            setTenantName(current.companyName);
+          } else {
+            setTenantName(`Tenant ID: ${tenantId}`);
+          }
+        }
+      } catch (e) {
+        setTenantName(tenantId === '1' ? 'PT. Teknologi Nusantara' : tenantId === '2' ? 'PT. Finance Mandiri' : `Tenant ID: ${tenantId}`);
+      }
+    };
+    fetchTenantDetails();
+  }, [tenantId]);
 
   // 1. STATE UNTUK TAB AKTIF
   // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
@@ -188,38 +207,55 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     employees: string[];
     departments: string[];
     jobs: string[];
-  }>({
-    employees: ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions'],
-    departments: ['id', 'name', 'code', 'status', 'actions'],
-    jobs: ['id', 'title', 'grade', 'status', 'actions']
+  }>(() => {
+    const saved = localStorage.getItem('hrms_visible_columns');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.employees) && Array.isArray(parsed.departments) && Array.isArray(parsed.jobs)) {
+          return parsed;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return {
+      employees: ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions'],
+      departments: ['id', 'name', 'code', 'status', 'actions'],
+      jobs: ['id', 'title', 'grade', 'status', 'actions']
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('hrms_visible_columns', JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
 
   const getTabColumnDefinitions = () => {
     if (activeTab === 'employees') {
       return [
         { key: 'id', label: 'ID' },
-        { key: 'nik', label: 'NIK' },
-        { key: 'fullName', label: 'Nama Lengkap' },
-        { key: 'email', label: 'Email' },
-        { key: 'phoneNumber', label: 'No. Telepon' },
-        { key: 'departmentName', label: 'Departemen' },
-        { key: 'jobTitle', label: 'Jabatan (Grade)' },
-        { key: 'joinedAt', label: 'Bergabung' },
-        { key: 'status', label: 'Status' }
+        { key: 'nik', label: t.nik },
+        { key: 'fullName', label: t.fullName },
+        { key: 'email', label: t.email },
+        { key: 'phoneNumber', label: t.phoneNumber },
+        { key: 'departmentName', label: t.departments },
+        { key: 'jobTitle', label: `${t.jobs} (Grade)` },
+        { key: 'joinedAt', label: t.joinedDate },
+        { key: 'status', label: t.statusActive }
       ];
     } else if (activeTab === 'departments') {
       return [
         { key: 'id', label: 'ID' },
-        { key: 'name', label: 'Nama Departemen' },
-        { key: 'code', label: 'Kode Singkatan' },
-        { key: 'status', label: 'Status' }
+        { key: 'name', label: t.deptName },
+        { key: 'code', label: t.shortcutCode },
+        { key: 'status', label: t.statusActive }
       ];
     } else {
       return [
         { key: 'id', label: 'ID' },
-        { key: 'title', label: 'Nama Jabatan' },
-        { key: 'grade', label: 'Golongan (Grade)' },
-        { key: 'status', label: 'Status' }
+        { key: 'title', label: t.jobTitle },
+        { key: 'grade', label: t.grade },
+        { key: 'status', label: t.statusActive }
       ];
     }
   };
@@ -291,14 +327,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
 
   // State untuk melipat sidebar (Collapse/Expand)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  // State untuk Mode Gelap/Terang (Theme Toggle)
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark');
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   // State & Effect untuk Dropdown Kustom (Page Size & Status Filters)
   const [activeDropdown, setActiveDropdown] = useState<'empStatus' | 'deptStatus' | 'jobStatus' | 'pageSize' | 'columnSelector' | null>(null);
@@ -390,7 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         if (res.pagination) setPagination(res.pagination);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Gagal memuat data dari server!');
+      setErrorMsg(err.message || (lang === 'id' ? 'Gagal memuat data dari server!' : 'Failed to load data from server!'));
     }
   };
 
@@ -459,11 +487,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
     setIsConfirmOpen(false);
     try {
       await apiRequest(`/${activeTab}/${deleteTargetId}/delete`, { method: 'POST' });
-      setSuccessMsg('Data berhasil dihapus secara aman!');
+      setSuccessMsg(lang === 'id' ? 'Data berhasil dihapus secara aman!' : 'Data deleted safely and successfully!');
       setDeleteTargetId(null);
       fetchData(); // Muat ulang data tabel
     } catch (err: any) {
-      setErrorMsg(err.message || 'Gagal menghapus data!');
+      setErrorMsg(err.message || (lang === 'id' ? 'Gagal menghapus data!' : 'Failed to delete data!'));
       setDeleteTargetId(null);
     }
   };
@@ -559,11 +587,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
       }
 
       await apiRequest(endpoint, { method, body });
-      setSuccessMsg(editingId ? 'Data berhasil diperbarui!' : 'Data baru berhasil ditambahkan!');
+      setSuccessMsg(editingId 
+        ? (lang === 'id' ? 'Data berhasil diperbarui!' : 'Data updated successfully!')
+        : (lang === 'id' ? 'Data baru berhasil ditambahkan!' : 'New data added successfully!')
+      );
       setIsModalOpen(false); // Tutup dialog modal
       fetchData();          // Muat ulang tabel data
     } catch (err: any) {
-      setErrorMsg(err.message || 'Gagal menyimpan data!');
+      setErrorMsg(err.message || (lang === 'id' ? 'Gagal menyimpan data!' : 'Failed to save data!'));
     }
   };
 
@@ -593,12 +624,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
   return (
     <div className="dashboard-layout">
       {/* 1. SIDEBAR DI SEBELAH KIRI */}
-      {/* 1. SIDEBAR DI SEBELAH KIRI */}
       <aside className={`sidebar glass-panel ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <BrandIcon />
           {!isSidebarCollapsed && <span className="brand-title">HRMS Portal</span>}
           <div className="sidebar-brand-actions" style={{ display: 'flex', gap: '6px', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={() => changeLang(lang === 'id' ? 'en' : 'id')}
+              title={lang === 'id' ? "Switch to English" : "Ubah ke Bahasa Indonesia"}
+              style={{ fontSize: '11px', fontWeight: 'bold' }}
+            >
+              {lang === 'id' ? 'EN' : 'ID'}
+            </button>
             <button
               type="button"
               className="theme-toggle-btn"
@@ -621,38 +660,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         <div className="sidebar-menu">
           {/* Kelompok Menu: Konfigurasi Data Master */}
           <div className="menu-group">
-            <div className="menu-group-title">KONFIGURASI DATA MASTER</div>
+            <div className="menu-group-title">{lang === 'id' ? 'KONFIGURASI DATA MASTER' : 'MASTER DATA CONFIGURATION'}</div>
             <button
               type="button"
               className={`menu-item-btn ${activeTab === 'departments' ? 'active' : ''}`}
               onClick={() => handleTabChange('departments')}
-              title="Departemen"
+              title={t.departments}
             >
               <span className="menu-icon"><FolderIcon /></span>
-              {!isSidebarCollapsed && <span className="menu-label">Departemen</span>}
+              {!isSidebarCollapsed && <span className="menu-label">{t.departments}</span>}
             </button>
             <button
               type="button"
               className={`menu-item-btn ${activeTab === 'jobs' ? 'active' : ''}`}
               onClick={() => handleTabChange('jobs')}
-              title="Posisi Jabatan"
+              title={t.jobs}
             >
               <span className="menu-icon"><BriefcaseIcon /></span>
-              {!isSidebarCollapsed && <span className="menu-label">Posisi Jabatan</span>}
+              {!isSidebarCollapsed && <span className="menu-label">{t.jobs}</span>}
             </button>
           </div>
 
           {/* Kelompok Menu: Data Transaksi */}
           <div className="menu-group">
-            <div className="menu-group-title">DATA TRANSAKSI</div>
+            <div className="menu-group-title">{lang === 'id' ? 'DATA TRANSAKSI' : 'TRANSACTION DATA'}</div>
             <button
               type="button"
               className={`menu-item-btn ${activeTab === 'employees' ? 'active' : ''}`}
               onClick={() => handleTabChange('employees')}
-              title="Karyawan (Pegawai)"
+              title={t.employees}
             >
               <span className="menu-icon"><UsersIcon /></span>
-              {!isSidebarCollapsed && <span className="menu-label">Karyawan (Pegawai)</span>}
+              {!isSidebarCollapsed && <span className="menu-label">{t.employeeSub}</span>}
             </button>
           </div>
         </div>
@@ -667,14 +706,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               </div>
               <div className="actor-info">
                 <span className="actor-icon"><UserIcon /></span>
-                <span className="actor-email">{actorEmail}</span>
+                <div className="actor-details">
+                  <span className="actor-name">{actorName}</span>
+                  <span className="actor-role-badge">{actorRole}</span>
+                </div>
               </div>
               <div className="sidebar-actions">
                 <button type="button" className="switch-tenant-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
-                  Ganti Tenant ⇄
+                  {t.switchTenant}
                 </button>
                 <button type="button" className="logout-btn" onClick={() => setIsLogoutConfirmOpen(true)}>
-                  Logout / Keluar <LogOutIcon />
+                  {t.logout} <LogOutIcon />
                 </button>
               </div>
             </>
@@ -684,7 +726,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 type="button"
                 className="action-icon-btn logout-icon-btn"
                 onClick={() => setIsLogoutConfirmOpen(true)}
-                title="Logout / Keluar"
+                title={t.logout}
               >
                 <LogOutIcon size={18} />
               </button>
@@ -702,7 +744,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <div className="toast toast-success" onClick={() => setSuccessMsg('')}>
               <div className="toast-icon">✓</div>
               <div className="toast-body">
-                <div className="toast-title">Sukses</div>
+                <div className="toast-title">{lang === 'id' ? 'Sukses' : 'Success'}</div>
                 <div className="toast-desc">{successMsg}</div>
               </div>
               <button className="toast-close" onClick={(e) => { e.stopPropagation(); setSuccessMsg(''); }}>×</button>
@@ -713,7 +755,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             <div className="toast toast-error" onClick={() => setErrorMsg('')}>
               <div className="toast-icon">✗</div>
               <div className="toast-body">
-                <div className="toast-title">Kesalahan</div>
+                <div className="toast-title">{lang === 'id' ? 'Kesalahan' : 'Error'}</div>
                 <div className="toast-desc">{errorMsg}</div>
               </div>
               <button className="toast-close" onClick={(e) => { e.stopPropagation(); setErrorMsg(''); }}>×</button>
@@ -725,10 +767,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         <div className="content-header">
           <div className="page-header-info">
             <h1 className="page-header-title">
-              {activeTab === 'employees' ? 'Kelola Karyawan' : activeTab === 'departments' ? 'Kelola Departemen' : 'Kelola Jabatan'}
+              {activeTab === 'employees' ? t.manageEmployees : activeTab === 'departments' ? t.manageDepartments : t.manageJobs}
             </h1>
             <p className="page-header-desc">
-              Halaman operasional untuk mengelola {activeTab === 'employees' ? 'data transaksi karyawan' : 'data konfigurasi master'} {tenantName}.
+              {activeTab === 'employees' ? t.employeesDesc : t.masterDesc} {tenantName}.
             </p>
           </div>
 
@@ -744,12 +786,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 }}
               >
                 <ColumnsIcon />
-                <span>Kolom</span>
+                <span>{t.column}</span>
                 <ChevronDownIcon />
               </button>
               {activeDropdown === 'columnSelector' && (
                 <div className="column-selector-menu">
-                  <div className="column-selector-header">Tampilkan Kolom</div>
+                  <div className="column-selector-header">{t.showColumn}</div>
                   <ul className="column-selector-list">
                     {getTabColumnDefinitions().map((col) => (
                       <li key={col.key} onClick={(e) => { e.stopPropagation(); toggleColumnVisibility(col.key); }}>
@@ -767,7 +809,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
             </div>
 
             <button className="btn-primary" onClick={openCreateModal}>
-              + Tambah {activeTab === 'employees' ? 'Karyawan' : activeTab === 'departments' ? 'Departemen' : 'Jabatan'}
+              + {activeTab === 'employees' ? t.addEmployee : activeTab === 'departments' ? t.addDepartment : t.addJob}
             </button>
           </div>
         </div>
@@ -781,15 +823,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <tr>
                     {visibleColumns.employees.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.employees.includes('nik') && <th onClick={() => handleSort('employeeNumber')}>NIK {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.employees.includes('fullName') && <th onClick={() => handleSort('fullName')}>Nama Lengkap {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.employees.includes('email') && <th onClick={() => handleSort('email')}>Email {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.employees.includes('phoneNumber') && <th>No. Telepon</th>}
-                    {visibleColumns.employees.includes('departmentName') && <th>Departemen</th>}
-                    {visibleColumns.employees.includes('jobTitle') && <th>Jabatan (Grade)</th>}
-                    {visibleColumns.employees.includes('joinedAt') && <th onClick={() => handleSort('joinedAt')}>Bergabung {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.employees.includes('status') && <th>Status</th>}
-                    {visibleColumns.employees.includes('actions') && <th>Aksi</th>}
+                    {visibleColumns.employees.includes('nik') && <th onClick={() => handleSort('employeeNumber')}>{t.nik} {sortBy === 'employeeNumber' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('fullName') && <th onClick={() => handleSort('fullName')}>{t.fullName} {sortBy === 'fullName' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('email') && <th onClick={() => handleSort('email')}>{t.email} {sortBy === 'email' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('phoneNumber') && <th>{t.phoneNumber}</th>}
+                    {visibleColumns.employees.includes('departmentName') && <th>{t.departments}</th>}
+                    {visibleColumns.employees.includes('jobTitle') && <th>{t.jobs} (Grade)</th>}
+                    {visibleColumns.employees.includes('joinedAt') && <th onClick={() => handleSort('joinedAt')}>{t.joinedDate} {sortBy === 'joinedAt' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.employees.includes('status') && <th>{t.status}</th>}
+                    {visibleColumns.employees.includes('actions') && <th>{t.actions}</th>}
                   </tr>
                   <tr className="table-filter-row">
                     {visibleColumns.employees.includes('id') && (
@@ -799,7 +841,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.id}
                           onChange={(e) => setEmpFilters({ ...empFilters, id: e.target.value })}
-                          placeholder="Filter ID..."
+                          placeholder={lang === 'id' ? "Filter ID..." : "Filter ID..."}
                         />
                       </th>
                     )}
@@ -810,7 +852,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.employeeNumber}
                           onChange={(e) => setEmpFilters({ ...empFilters, employeeNumber: e.target.value })}
-                          placeholder="Filter NIK..."
+                          placeholder={lang === 'id' ? "Filter NIK..." : "Filter ID..."}
                         />
                       </th>
                     )}
@@ -821,7 +863,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.fullName}
                           onChange={(e) => setEmpFilters({ ...empFilters, fullName: e.target.value })}
-                          placeholder="Filter nama..."
+                          placeholder={lang === 'id' ? "Filter nama..." : "Filter name..."}
                         />
                       </th>
                     )}
@@ -832,7 +874,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.email}
                           onChange={(e) => setEmpFilters({ ...empFilters, email: e.target.value })}
-                          placeholder="Filter email..."
+                          placeholder={lang === 'id' ? "Filter email..." : "Filter email..."}
                         />
                       </th>
                     )}
@@ -843,7 +885,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.phoneNumber}
                           onChange={(e) => setEmpFilters({ ...empFilters, phoneNumber: e.target.value })}
-                          placeholder="Filter telepon..."
+                          placeholder={lang === 'id' ? "Filter telepon..." : "Filter phone..."}
                         />
                       </th>
                     )}
@@ -854,7 +896,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.departmentName}
                           onChange={(e) => setEmpFilters({ ...empFilters, departmentName: e.target.value })}
-                          placeholder="Filter divisi..."
+                          placeholder={lang === 'id' ? "Filter departemen..." : "Filter department..."}
                         />
                       </th>
                     )}
@@ -865,7 +907,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.jobTitle}
                           onChange={(e) => setEmpFilters({ ...empFilters, jobTitle: e.target.value })}
-                          placeholder="Filter jabatan..."
+                          placeholder={lang === 'id' ? "Filter jabatan..." : "Filter job..."}
                         />
                       </th>
                     )}
@@ -876,7 +918,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={empFilters.joinedAt}
                           onChange={(e) => setEmpFilters({ ...empFilters, joinedAt: e.target.value })}
-                          placeholder="Filter tanggal..."
+                          placeholder={lang === 'id' ? "Filter tanggal..." : "Filter date..."}
                         />
                       </th>
                     )}
@@ -892,16 +934,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             }}
                           >
                             <span>
-                              {empFilters.status === '1' ? 'Aktif' : empFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                              {empFilters.status === '1' ? t.active : empFilters.status === '0' ? t.inactive : t.all}
                             </span>
                             <ChevronDownIcon />
                           </button>
                           {activeDropdown === 'empStatus' && (
                             <ul className="table-dropdown-menu">
                               {[
-                                { value: '', label: 'Semua' },
-                                { value: '1', label: 'Aktif' },
-                                { value: '0', label: 'Tidak Aktif' }
+                                { value: '', label: t.all },
+                                { value: '1', label: t.active },
+                                { value: '0', label: t.inactive }
                               ].map((opt) => (
                                 <li
                                   key={opt.value}
@@ -926,7 +968,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             type="button"
                             className="clear-filters-btn"
                             onClick={() => setEmpFilters({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' })}
-                            title="Reset Pencarian"
+                            title={t.resetFilter}
                           >
                             <ResetIcon />
                           </button>
@@ -942,10 +984,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <tr>
                     {visibleColumns.departments.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.departments.includes('name') && <th onClick={() => handleSort('name')}>Nama Departemen {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.departments.includes('code') && <th onClick={() => handleSort('code')}>Kode Singkatan {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.departments.includes('status') && <th>Status</th>}
-                    {visibleColumns.departments.includes('actions') && <th>Aksi</th>}
+                    {visibleColumns.departments.includes('name') && <th onClick={() => handleSort('name')}>{t.deptName} {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.departments.includes('code') && <th onClick={() => handleSort('code')}>{t.shortcutCode} {sortBy === 'code' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.departments.includes('status') && <th>{t.status}</th>}
+                    {visibleColumns.departments.includes('actions') && <th>{t.actions}</th>}
                   </tr>
                   <tr className="table-filter-row">
                     {visibleColumns.departments.includes('id') && (
@@ -955,7 +997,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={deptFilters.id}
                           onChange={(e) => setDeptFilters({ ...deptFilters, id: e.target.value })}
-                          placeholder="Filter ID..."
+                          placeholder={lang === 'id' ? "Filter ID..." : "Filter ID..."}
                         />
                       </th>
                     )}
@@ -966,7 +1008,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={deptFilters.name}
                           onChange={(e) => setDeptFilters({ ...deptFilters, name: e.target.value })}
-                          placeholder="Filter nama..."
+                          placeholder={lang === 'id' ? "Filter nama..." : "Filter name..."}
                         />
                       </th>
                     )}
@@ -977,7 +1019,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={deptFilters.code}
                           onChange={(e) => setDeptFilters({ ...deptFilters, code: e.target.value })}
-                          placeholder="Filter kode..."
+                          placeholder={lang === 'id' ? "Filter kode..." : "Filter code..."}
                         />
                       </th>
                     )}
@@ -993,16 +1035,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             }}
                           >
                             <span>
-                              {deptFilters.status === '1' ? 'Aktif' : deptFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                              {deptFilters.status === '1' ? t.active : deptFilters.status === '0' ? t.inactive : t.all}
                             </span>
                             <ChevronDownIcon />
                           </button>
                           {activeDropdown === 'deptStatus' && (
                             <ul className="table-dropdown-menu">
                               {[
-                                { value: '', label: 'Semua' },
-                                { value: '1', label: 'Aktif' },
-                                { value: '0', label: 'Tidak Aktif' }
+                                { value: '', label: t.all },
+                                { value: '1', label: t.active },
+                                { value: '0', label: t.inactive }
                               ].map((opt) => (
                                 <li
                                   key={opt.value}
@@ -1027,7 +1069,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             type="button"
                             className="clear-filters-btn"
                             onClick={() => setDeptFilters({ id: '', name: '', code: '', status: '' })}
-                            title="Reset Pencarian"
+                            title={t.resetFilter}
                           >
                             <ResetIcon />
                           </button>
@@ -1043,10 +1085,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 <>
                   <tr>
                     {visibleColumns.jobs.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.jobs.includes('title') && <th onClick={() => handleSort('title')}>Nama Jabatan {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.jobs.includes('grade') && <th onClick={() => handleSort('grade')}>Golongan (Grade) {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
-                    {visibleColumns.jobs.includes('status') && <th>Status</th>}
-                    {visibleColumns.jobs.includes('actions') && <th>Aksi</th>}
+                    {visibleColumns.jobs.includes('title') && <th onClick={() => handleSort('title')}>{t.jobTitle} {sortBy === 'title' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.jobs.includes('grade') && <th onClick={() => handleSort('grade')}>{t.grade} {sortBy === 'grade' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.jobs.includes('status') && <th>{t.status}</th>}
+                    {visibleColumns.jobs.includes('actions') && <th>{t.actions}</th>}
                   </tr>
                   <tr className="table-filter-row">
                     {visibleColumns.jobs.includes('id') && (
@@ -1056,7 +1098,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={jobFilters.id}
                           onChange={(e) => setJobFilters({ ...jobFilters, id: e.target.value })}
-                          placeholder="Filter ID..."
+                          placeholder={lang === 'id' ? "Filter ID..." : "Filter ID..."}
                         />
                       </th>
                     )}
@@ -1067,7 +1109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={jobFilters.title}
                           onChange={(e) => setJobFilters({ ...jobFilters, title: e.target.value })}
-                          placeholder="Filter jabatan..."
+                          placeholder={lang === 'id' ? "Filter jabatan..." : "Filter job..."}
                         />
                       </th>
                     )}
@@ -1078,7 +1120,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           className="table-filter-input"
                           value={jobFilters.grade}
                           onChange={(e) => setJobFilters({ ...jobFilters, grade: e.target.value })}
-                          placeholder="Filter grade..."
+                          placeholder={lang === 'id' ? "Filter grade..." : "Filter grade..."}
                         />
                       </th>
                     )}
@@ -1094,16 +1136,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             }}
                           >
                             <span>
-                              {jobFilters.status === '1' ? 'Aktif' : jobFilters.status === '0' ? 'Tidak Aktif' : 'Semua'}
+                              {jobFilters.status === '1' ? t.active : jobFilters.status === '0' ? t.inactive : t.all}
                             </span>
                             <ChevronDownIcon />
                           </button>
                           {activeDropdown === 'jobStatus' && (
                             <ul className="table-dropdown-menu">
                               {[
-                                { value: '', label: 'Semua' },
-                                { value: '1', label: 'Aktif' },
-                                { value: '0', label: 'Tidak Aktif' }
+                                { value: '', label: t.all },
+                                { value: '1', label: t.active },
+                                { value: '0', label: t.inactive }
                               ].map((opt) => (
                                 <li
                                   key={opt.value}
@@ -1128,7 +1170,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                             type="button"
                             className="clear-filters-btn"
                             onClick={() => setJobFilters({ id: '', title: '', grade: '', status: '' })}
-                            title="Reset Pencarian"
+                            title={t.resetFilter}
                           >
                             <ResetIcon />
                           </button>
@@ -1162,15 +1204,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   {visibleColumns.employees.includes('status') && (
                     <td>
                       <span className={emp.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                        {emp.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                        {emp.status === 1 ? t.active : t.inactive}
                       </span>
                     </td>
                   )}
                   {visibleColumns.employees.includes('actions') && (
                     <td>
                       <div className="action-buttons">
-                        <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title="Ubah Data"><EditIcon /></button>
-                        <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title="Hapus Data"><TrashIcon /></button>
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(emp)} title={lang === 'id' ? 'Ubah Data' : 'Edit Data'}><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(emp.id)} title={lang === 'id' ? 'Hapus Data' : 'Delete Data'}><TrashIcon /></button>
                       </div>
                     </td>
                   )}
@@ -1190,15 +1232,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   {visibleColumns.departments.includes('status') && (
                     <td>
                       <span className={dept.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                        {dept.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                        {dept.status === 1 ? t.active : t.inactive}
                       </span>
                     </td>
                   )}
                   {visibleColumns.departments.includes('actions') && (
                     <td>
                       <div className="action-buttons">
-                        <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title="Ubah Data"><EditIcon /></button>
-                        <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title="Hapus Data"><TrashIcon /></button>
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(dept)} title={lang === 'id' ? 'Ubah Data' : 'Edit Data'}><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(dept.id)} title={lang === 'id' ? 'Hapus Data' : 'Delete Data'}><TrashIcon /></button>
                       </div>
                     </td>
                   )}
@@ -1218,28 +1260,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   {visibleColumns.jobs.includes('status') && (
                     <td>
                       <span className={job.status === 1 ? 'tag-status-active' : 'tag-status-inactive'}>
-                        {job.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                        {job.status === 1 ? t.active : t.inactive}
                       </span>
                     </td>
                   )}
                   {visibleColumns.jobs.includes('actions') && (
                     <td>
                       <div className="action-buttons">
-                        <button className="action-btn edit-btn" onClick={() => openEditModal(job)} title="Ubah Data"><EditIcon /></button>
-                        <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)} title="Hapus Data"><TrashIcon /></button>
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(job)} title={lang === 'id' ? 'Ubah Data' : 'Edit Data'}><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(job.id)} title={lang === 'id' ? 'Hapus Data' : 'Delete Data'}><TrashIcon /></button>
                       </div>
                     </td>
                   )}
                 </tr>
               ))}
 
-              {/* Menampilkan pesan jika array data kosong */}
               {((activeTab === 'employees' && employees.length === 0) ||
                 (activeTab === 'departments' && departments.length === 0) ||
                 (activeTab === 'jobs' && jobs.length === 0)) && (
                   <tr>
                     <td colSpan={visibleColumns[activeTab].length} className="empty-row">
-                      Data tidak ditemukan. Silakan tambahkan data baru atau sesuaikan filter Anda.
+                      {t.noData}
                     </td>
                   </tr>
                 )}
@@ -1251,7 +1292,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         {pagination && (
           <div className="pagination-panel glass-panel">
             <div className="pagination-info">
-              Menampilkan Halaman <strong>{pagination.page + 1}</strong> dari <strong>{pagination.totalPages || 1}</strong> ({pagination.totalElements} data)
+              {lang === 'id' ? (
+                <>Menampilkan Halaman <strong>{pagination.page + 1}</strong> dari <strong>{pagination.totalPages || 1}</strong> ({pagination.totalElements} data)</>
+              ) : (
+                <>Showing Page <strong>{pagination.page + 1}</strong> of <strong>{pagination.totalPages || 1}</strong> ({pagination.totalElements} records)</>
+              )}
             </div>
             <div className="pagination-actions">
               <button
@@ -1259,14 +1304,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
-                ◀ Sebelumnya
+                {lang === 'id' ? '◀ Sebelumnya' : '◀ Previous'}
               </button>
               <button
                 className="btn-secondary"
                 disabled={pagination.isLast || pagination.totalPages <= currentPage + 1}
                 onClick={() => setCurrentPage(currentPage + 1)}
               >
-                Berikutnya ▶
+                {lang === 'id' ? 'Berikutnya ▶' : 'Next ▶'}
               </button>
               {/* Dropdown Ukuran/Batas Baris per Halaman (Desain Kustom Modern) */}
               <div className="custom-dropdown-container">
@@ -1277,9 +1322,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     e.stopPropagation();
                     setActiveDropdown(activeDropdown === 'pageSize' ? null : 'pageSize');
                   }}
-                  title="Pilih jumlah baris data per halaman"
+                  title={lang === 'id' ? "Pilih jumlah baris data per halaman" : "Select number of records per page"}
                 >
-                  <span>{pageSize} data / hal</span>
+                  <span>{lang === 'id' ? `${pageSize} data / hal` : `${pageSize} records / page`}</span>
                   <ChevronDownIcon />
                 </button>
                 {activeDropdown === 'pageSize' && (
@@ -1294,7 +1339,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                           setActiveDropdown(null);
                         }}
                       >
-                        {size} data / hal
+                        {lang === 'id' ? `${size} data / hal` : `${size} records / page`}
                       </li>
                     ))}
                   </ul>
@@ -1310,7 +1355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
         <div className="modal-backdrop">
           <div className="modal-content glass-panel">
             <div className="modal-header">
-              <h2>{editingId ? 'Edit' : 'Tambah'} {modalType === 'employee' ? 'Karyawan' : modalType === 'department' ? 'Departemen' : 'Jabatan'}</h2>
+              <h2>{editingId ? (lang === 'id' ? 'Edit' : 'Edit') : (lang === 'id' ? 'Tambah' : 'Add')} {modalType === 'employee' ? t.employees : modalType === 'department' ? t.departments : t.jobs}</h2>
               <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>×</button>
             </div>
 
@@ -1319,7 +1364,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {modalType === 'employee' && (
                 <div className="form-grid-2col">
                   <div className="form-group">
-                    <label className="form-label">NIK / Nomor Karyawan</label>
+                    <label className="form-label">{t.nik}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1330,7 +1375,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Nama Lengkap</label>
+                    <label className="form-label">{t.fullName}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1341,7 +1386,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Email</label>
+                    <label className="form-label">{t.email}</label>
                     <input
                       type="email"
                       className="custom-input"
@@ -1352,7 +1397,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">No. Telepon</label>
+                    <label className="form-label">{t.phoneNumber}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1362,35 +1407,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Departemen</label>
+                    <label className="form-label">{t.departments}</label>
                     <select
                       className="custom-input"
                       value={empForm.departmentId}
                       onChange={(e) => setEmpForm({ ...empForm, departmentId: e.target.value })}
                       required
                     >
-                      <option value="">-- Pilih Departemen --</option>
+                      <option value="">{t.selectDept}</option>
                       {departments.map(d => (
                         <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Jabatan (Grade)</label>
+                    <label className="form-label">{t.jobs} (Grade)</label>
                     <select
                       className="custom-input"
                       value={empForm.jobId}
                       onChange={(e) => setEmpForm({ ...empForm, jobId: e.target.value })}
                       required
                     >
-                      <option value="">-- Pilih Jabatan --</option>
+                      <option value="">{t.selectJob}</option>
                       {jobs.map(j => (
                         <option key={j.id} value={j.id}>{j.title} ({j.grade})</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Tanggal Bergabung</label>
+                    <label className="form-label">{t.joinedDate}</label>
                     <input
                       type="date"
                       className="custom-input"
@@ -1400,15 +1445,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Status Keaktifan</label>
+                    <label className="form-label">{t.statusActive}</label>
                     <select
                       className="custom-input"
                       value={empForm.status}
                       onChange={(e) => setEmpForm({ ...empForm, status: parseInt(e.target.value) })}
                       required
                     >
-                      <option value={1}>Aktif</option>
-                      <option value={0}>Tidak Aktif</option>
+                      <option value={1}>{t.active}</option>
+                      <option value={0}>{t.inactive}</option>
                     </select>
                   </div>
                 </div>
@@ -1418,7 +1463,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {modalType === 'department' && (
                 <>
                   <div className="form-group">
-                    <label className="form-label">Nama Departemen</label>
+                    <label className="form-label">{t.deptName}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1429,7 +1474,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Kode Singkatan</label>
+                    <label className="form-label">{t.shortcutCode}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1440,15 +1485,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Status Keaktifan</label>
+                    <label className="form-label">{t.statusActive}</label>
                     <select
                       className="custom-input"
                       value={deptForm.status}
                       onChange={(e) => setDeptForm({ ...deptForm, status: parseInt(e.target.value) })}
                       required
                     >
-                      <option value={1}>Aktif</option>
-                      <option value={0}>Tidak Aktif</option>
+                      <option value={1}>{t.active}</option>
+                      <option value={0}>{t.inactive}</option>
                     </select>
                   </div>
                 </>
@@ -1458,7 +1503,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               {modalType === 'job' && (
                 <>
                   <div className="form-group">
-                    <label className="form-label">Nama Posisi / Jabatan</label>
+                    <label className="form-label">{t.jobTitle}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1469,7 +1514,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Golongan (Grade)</label>
+                    <label className="form-label">{t.grade}</label>
                     <input
                       type="text"
                       className="custom-input"
@@ -1480,23 +1525,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Status Keaktifan</label>
+                    <label className="form-label">{t.statusActive}</label>
                     <select
                       className="custom-input"
                       value={jobForm.status}
                       onChange={(e) => setJobForm({ ...jobForm, status: parseInt(e.target.value) })}
                       required
                     >
-                      <option value={1}>Aktif</option>
-                      <option value={0}>Tidak Aktif</option>
+                      <option value={1}>{t.active}</option>
+                      <option value={0}>{t.inactive}</option>
                     </select>
                   </div>
                 </>
               )}
 
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
-                <button type="submit" className="btn-primary">Simpan</button>
+                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>{t.cancel}</button>
+                <button type="submit" className="btn-primary">{t.save}</button>
               </div>
             </form>
           </div>
@@ -1511,9 +1556,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <WarningIcon />
             </div>
             <div className="confirm-body">
-              <h3>Konfirmasi Penghapusan</h3>
-              <p>Apakah Anda benar-benar yakin ingin menghapus data ini secara permanen?</p>
-              <span className="confirm-subtext">Data yang dihapus tidak dapat dikembalikan.</span>
+              <h3>{t.deleteConfirm}</h3>
+              <p>{t.deleteConfirmText}</p>
+              <span className="confirm-subtext">{t.deleteWarningText}</span>
             </div>
             <div className="modal-actions confirm-actions">
               <button
@@ -1524,14 +1569,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                   setDeleteTargetId(null);
                 }}
               >
-                Batal
+                {t.cancel}
               </button>
               <button
                 type="button"
                 className="btn-danger"
                 onClick={executeDelete}
               >
-                Ya, Hapus Data
+                {t.delete}
               </button>
             </div>
           </div>
@@ -1546,9 +1591,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
               <LogOutIcon size={48} />
             </div>
             <div className="confirm-body">
-              <h3>Konfirmasi Keluar</h3>
-              <p>Apakah Anda benar-benar yakin ingin keluar dari sesi admin saat ini?</p>
-              <span className="confirm-subtext">Anda perlu login kembali untuk mengakses data dashboard.</span>
+              <h3>{lang === 'id' ? 'Konfirmasi Keluar' : 'Confirm Logout'}</h3>
+              <p>{lang === 'id' ? 'Apakah Anda benar-benar yakin ingin keluar dari sesi admin saat ini?' : 'Are you absolutely sure you want to log out from the current admin session?'}</p>
+              <span className="confirm-subtext">{lang === 'id' ? 'Anda perlu login kembali untuk mengakses data dashboard.' : 'You will need to log in again to access the dashboard data.'}</span>
             </div>
             <div className="modal-actions confirm-actions">
               <button
@@ -1556,14 +1601,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLo
                 className="btn-secondary"
                 onClick={() => setIsLogoutConfirmOpen(false)}
               >
-                Batal
+                {t.cancel}
               </button>
               <button
                 type="button"
                 className="btn-danger"
                 onClick={onLogout}
               >
-                Ya, Keluar
+                {lang === 'id' ? 'Ya, Keluar' : 'Yes, Log Out'}
               </button>
             </div>
           </div>
