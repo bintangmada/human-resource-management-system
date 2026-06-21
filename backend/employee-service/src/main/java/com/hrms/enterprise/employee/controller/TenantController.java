@@ -18,7 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/tenants")
 @Validated
-@CrossOrigin(origins = "*")
 public class TenantController {
 
     private final TenantService tenantService;
@@ -28,8 +27,8 @@ public class TenantController {
     }
 
     /**
-     * Endpoint Publik: Mendaftarkan Tenant (Perusahaan Klien) baru di portal SaaS.
-     */
+      * Endpoint Publik: Mendaftarkan Tenant (Perusahaan Klien) baru di portal SaaS.
+      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<TenantResponse>> registerTenant(@RequestBody TenantRequest request) {
         TenantResponse response = tenantService.registerTenant(request);
@@ -38,8 +37,8 @@ public class TenantController {
     }
 
     /**
-     * Endpoint Publik: Mengecek keabsahan subdomain saat memuat login screen terisolasi.
-     */
+      * Endpoint Publik: Mengecek keabsahan subdomain saat memuat login screen terisolasi.
+      */
     @GetMapping("/lookup")
     public ResponseEntity<ApiResponse<TenantLookupResponse>> lookupTenant(@RequestParam String subdomain) {
         TenantLookupResponse response = tenantService.lookupTenant(subdomain);
@@ -47,8 +46,8 @@ public class TenantController {
     }
 
     /**
-     * Endpoint Master Admin: Mendapatkan seluruh daftar tenant aktif di ekosistem SaaS.
-     */
+      * Endpoint Master Admin: Mendapatkan seluruh daftar tenant aktif di ekosistem SaaS.
+      */
     @GetMapping
     public ResponseEntity<ApiResponse<List<TenantResponse>>> getAllTenants() {
         List<TenantResponse> response = tenantService.getAllTenants();
@@ -56,8 +55,8 @@ public class TenantController {
     }
 
     /**
-     * Endpoint Master Admin: Mengirimkan email peringatan tagihan/jatuh tempo secara manual.
-     */
+      * Endpoint Master Admin: Mengirimkan email peringatan tagihan/jatuh tempo secara manual.
+      */
     @PostMapping("/{id}/alert")
     public ResponseEntity<ApiResponse<Void>> triggerExpiryAlert(@PathVariable Long id) {
         tenantService.triggerExpiryAlert(id);

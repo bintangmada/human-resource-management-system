@@ -1012,6 +1012,99 @@
   font-weight: 500;
 }
 
+/* Custom Days Controls */
+.custom-days-container {
+  max-width: 600px;
+  margin: -1.5rem auto 3rem auto;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  animation: slideDownFade 0.25s ease-out;
+}
+
+.custom-days-header {
+  text-align: left;
+}
+
+.custom-days-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.custom-days-control {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.custom-days-slider {
+  flex: 1;
+  min-width: 200px;
+  accent-color: var(--primary);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-light);
+  cursor: pointer;
+}
+
+.custom-days-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+[data-theme='light'] .custom-days-input-wrapper {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.custom-days-input {
+  width: 60px;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+
+/* Remove spinner buttons from number input */
+.custom-days-input::-webkit-outer-spin-button,
+.custom-days-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.custom-days-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.custom-days-unit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.custom-days-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.custom-days-hint .discount-applied {
+  color: #10b981;
+}
+
 /* Pricing & Packages */
 .pricing-grid {
   display: grid;

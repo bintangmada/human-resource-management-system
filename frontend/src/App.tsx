@@ -16,6 +16,7 @@ function App() {
 
   // State navigasi halaman ketika belum login
   const [view, setView] = useState<'landing' | 'login' | 'register'>('landing');
+  const [initialPlan, setInitialPlan] = useState<'TRIAL' | 'PROFESSIONAL' | 'ENTERPRISE'>('TRIAL');
 
   // State Bahasa (Language State) - Persisten di LocalStorage
   const [lang, setLang] = useState<Language>(() => {
@@ -106,7 +107,10 @@ function App() {
       ) : view === 'landing' ? (
         <LandingPage 
           onNavigateToLogin={() => setView('login')}
-          onNavigateToRegister={() => setView('register')}
+          onNavigateToRegister={(plan) => {
+            if (plan) setInitialPlan(plan);
+            setView('register');
+          }}
           lang={lang}
           changeLang={changeLang}
           theme={theme}
@@ -120,6 +124,7 @@ function App() {
           theme={theme}
           setTheme={setTheme}
           initialStep={view === 'register' ? 'register' : 'domain'}
+          initialPlan={initialPlan}
           onBackToLanding={() => setView('landing')}
         />
       )}

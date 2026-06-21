@@ -248,12 +248,21 @@
   box-shadow: 0 0 0 2px var(--primary-glow);
 }
 
+.subdomain-prefix-protocol {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding-left: 16px;
+  font-weight: 500;
+  user-select: none;
+}
+
 .subdomain-input-wrapper .subdomain-input {
   flex: 1;
   border: none;
   background: transparent;
   outline: none;
   border-radius: 0;
+  padding-left: 4px;
 }
 
 .subdomain-suffix {
@@ -316,8 +325,93 @@
 
 /* Extended self-registration form styles */
 .login-card.register-wide {
-  max-width: 580px;
-  transition: max-width 0.4s ease;
+  max-width: 820px;
+  padding: 24px 32px;
+  gap: 16px;
+  transition: all 0.4s ease;
+}
+
+.login-header.compact-header {
+  gap: 6px;
+}
+
+.logo-icon.compact-logo {
+  font-size: 32px;
+  padding: 8px;
+  margin-bottom: 0px;
+}
+
+.login-header.compact-header h2 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.login-header.compact-header p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Registration Grid Layout */
+.registration-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.registration-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.registration-grid-form .form-group {
+  margin-bottom: 0;
+}
+
+/* Pricing Notice Bar */
+.pricing-notice-bar {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px dashed rgba(99, 102, 241, 0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 8px 0;
+}
+
+/* Compact delegates inputs */
+.compact-delegates {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compact-delegates .dual-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 8px;
+}
+
+.compact-delegates .dual-inputs input {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .login-card.register-wide {
+    max-width: 480px;
+    padding: 24px;
+  }
+  .registration-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .compact-delegates .dual-inputs {
+    grid-template-columns: 1fr;
+  }
 }
 
 .delegate-toggle-wrapper {
@@ -571,6 +665,22 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.owner-portal-link {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-smooth);
+  font-weight: 500;
+  display: block;
+}
+
+.owner-portal-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 

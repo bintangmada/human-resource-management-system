@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Login.css';
 import { Language, translations } from '../utils/i18n';
 import { apiRequest } from '../utils/api';
@@ -10,6 +10,7 @@ interface LoginProps {
   theme: 'dark' | 'light';
   setTheme: (t: 'dark' | 'light') => void;
   initialStep?: 'domain' | 'register';
+  initialPlan?: 'TRIAL' | 'PROFESSIONAL' | 'ENTERPRISE';
   onBackToLanding?: () => void;
 }
 
@@ -88,6 +89,7 @@ export const Login: React.FC<LoginProps> = ({
   theme, 
   setTheme,
   initialStep = 'domain',
+  initialPlan = 'TRIAL',
   onBackToLanding
 }) => {
   const [step, setStep] = useState<LoginStep>(initialStep);
@@ -96,7 +98,7 @@ export const Login: React.FC<LoginProps> = ({
   useEffect(() => {
     setStep(initialStep);
   }, [initialStep]);
-  
+
   // Input States
   const [inputSubdomain, setInputSubdomain] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -108,7 +110,7 @@ export const Login: React.FC<LoginProps> = ({
   const [newSubdomain, setNewSubdomain] = useState<string>('');
   const [ownerName, setOwnerName] = useState<string>('');
   const [ownerEmail, setOwnerEmail] = useState<string>('');
-  const [plan, setPlan] = useState<string>('TRIAL');
+  const [plan, setPlan] = useState<string>(initialPlan);
   const [hrName, setHrName] = useState<string>('');
   const [hrEmail, setHrEmail] = useState<string>('');
   const [financeName, setFinanceName] = useState<string>('');
@@ -116,6 +118,12 @@ export const Login: React.FC<LoginProps> = ({
   const [showDelegates, setShowDelegates] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+
+  useEffect(() => {
+    if (initialPlan) {
+      setPlan(initialPlan);
+    }
+  }, [initialPlan]);
 
   // Custom Dropdown States & Refs
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState<boolean>(false);
@@ -135,12 +143,10 @@ export const Login: React.FC<LoginProps> = ({
 
   const t = translations[lang];
 
-  // Helper to extract subdomain from hostname (e.g. teknologi-nusantara.localhost)
   const detectSubdomain = (): string | null => {
     const hostname = window.location.hostname;
     const parts = hostname.split('.');
-    
-    // If hostname is "company.localhost" or "company.domain.com"
+
     if (parts.length > 1 && parts[parts.length - 1] === 'localhost') {
       return parts[0];
     }
@@ -150,55 +156,7 @@ export const Login: React.FC<LoginProps> = ({
     return null;
   };
 
-  // Run domain lookup on mount if subdomain is detected in URL
-  useEffect(() => {
-    const subdomainInUrl = detectSubdomain();
-    if (subdomainInUrl) {
-      handleLookup(subdomainInUrl, true);
-    }
-  }, []);
-
-  // Auto-dismiss error alerts after 4 seconds
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        setError('');
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
-  // Clear error message when user modifies input fields
-  useEffect(() => {
-    setError('');
-  }, [inputSubdomain, email, companyName, newSubdomain, ownerName, ownerEmail]);
-
-  // Check subdomain availability for registration form
-  useEffect(() => {
-    if (!newSubdomain.trim() || step !== 'register') {
-      setSubdomainStatus('idle');
-      return;
-    }
-
-    const delayDebounce = setTimeout(async () => {
-      setSubdomainStatus('checking');
-      try {
-        const formatted = newSubdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
-        const response = await apiRequest<{ data: any }>(`/tenants/lookup?subdomain=${formatted}`);
-        if (response && response.data) {
-          setSubdomainStatus('taken');
-        } else {
-          setSubdomainStatus('available');
-        }
-      } catch (err) {
-        setSubdomainStatus('available');
-      }
-    }, 500);
-
-    return () => clearTimeout(delayDebounce);
-  }, [newSubdomain, step]);
-
-  const handleLookup = async (sub: string, isAutoDetected = false) => {
+  const handleLookup = useCallback(async (sub: string, isAutoDetected = false) => {
     setError('');
     const formatted = sub.toLowerCase().replace(/[^a-z0-9-]/g, '');
     if (!formatted) {
@@ -230,14 +188,62 @@ export const Login: React.FC<LoginProps> = ({
         setEmail(response.data.id === 1 ? 'admin@tenant1.com' : 'budi.santoso@tenant2.com');
         setStep('login');
       }
-    } catch (err: any) {
+    } catch {
       if (!isAutoDetected) {
         setError(lang === 'id' ? 'Kode perusahaan tidak ditemukan!' : 'Company code not found!');
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [lang]);
+
+  // Run domain lookup on mount if subdomain is detected in URL
+  useEffect(() => {
+    const subdomainInUrl = detectSubdomain();
+    if (subdomainInUrl) {
+      handleLookup(subdomainInUrl, true);
+    }
+  }, [handleLookup]);
+
+  // Auto-dismiss error alerts after 4 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Clear error message when user modifies input fields
+  useEffect(() => {
+    setError('');
+  }, [inputSubdomain, email, companyName, newSubdomain, ownerName, ownerEmail]);
+
+  // Check subdomain availability for registration form
+  useEffect(() => {
+    if (!newSubdomain.trim() || step !== 'register') {
+      setSubdomainStatus('idle');
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setSubdomainStatus('checking');
+      try {
+        const formatted = newSubdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        const response = await apiRequest<{ data: unknown }>(`/tenants/lookup?subdomain=${formatted}`);
+        if (response && response.data) {
+          setSubdomainStatus('taken');
+        } else {
+          setSubdomainStatus('available');
+        }
+      } catch {
+        setSubdomainStatus('available');
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [newSubdomain, step]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,8 +334,9 @@ export const Login: React.FC<LoginProps> = ({
         setSuccess('');
       }, 2500);
 
-    } catch (err: any) {
-      setError(err.message || (lang === 'id' ? 'Pendaftaran gagal!' : 'Registration failed!'));
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : '';
+      setError(errMsg || (lang === 'id' ? 'Pendaftaran gagal!' : 'Registration failed!'));
     } finally {
       setIsLoading(false);
     }
@@ -337,7 +344,6 @@ export const Login: React.FC<LoginProps> = ({
 
   return (
     <div className="login-container">
-      {/* Floating Language Switcher */}
       {/* Floating Language & Theme Controls */}
       <div className="login-top-controls">
         <div className="login-lang-switch">
@@ -410,18 +416,24 @@ export const Login: React.FC<LoginProps> = ({
             <form onSubmit={(e) => { e.preventDefault(); handleLookup(inputSubdomain); }} className="login-form" noValidate>
               <div className="form-group">
                 <label className="form-label">
-                  {lang === 'id' ? 'Kode Perusahaan Anda' : 'Your Company Code'}
+                  {lang === 'id' ? 'Workspace / URL Portal Perusahaan' : 'Company Workspace / Portal URL'}
                 </label>
                 <div className="subdomain-input-wrapper">
+                  <span className="subdomain-prefix-protocol">https://</span>
                   <input 
                     type="text" 
                     className="custom-input subdomain-input"
                     value={inputSubdomain}
                     onChange={(e) => setInputSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    placeholder={lang === 'id' ? 'contoh: teknologi-nusantara' : 'example: teknologi-nusantara'}
+                    placeholder={lang === 'id' ? 'nama-workspace' : 'workspace-name'}
                   />
                   <span className="subdomain-suffix">.hrms.com</span>
                 </div>
+                <p className="form-helper-text" style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                  {lang === 'id' 
+                    ? '⚠️ Ini adalah alamat web unik kantor Anda (bukan domain email). Contoh: jika email Anda budi@teknologi.com dan portal Anda teknologi.hrms.com, masukkan "teknologi".'
+                    : '⚠️ This is your unique office workspace URL (not email domain). E.g. if your email is budi@teknologi.com and your portal is teknologi.hrms.com, enter "teknologi".'}
+                </p>
               </div>
 
               <button type="submit" className="btn-primary btn-block">
@@ -430,6 +442,10 @@ export const Login: React.FC<LoginProps> = ({
 
               <div className="register-toggle-link" onClick={() => { setStep('register'); setError(''); }}>
                 {t.noAccountYet}
+              </div>
+
+              <div className="owner-portal-link" onClick={() => handleLookup('admin')}>
+                🔑 {lang === 'id' ? 'Masuk sebagai SaaS Owner (Platform Admin)' : 'Login as SaaS Owner (Platform Admin)'}
               </div>
             </form>
           </>
@@ -473,8 +489,8 @@ export const Login: React.FC<LoginProps> = ({
         {/* --- STEP 3: REGISTER NEW TENANT --- */}
         {step === 'register' && (
           <>
-            <div className="login-header">
-              <div className="logo-icon"><BuildingIcon /></div>
+            <div className="login-header compact-header">
+              <div className="logo-icon compact-logo"><BuildingIcon /></div>
               <h2>HRMS Enterprise</h2>
               <p>{t.registerTenant}</p>
             </div>
@@ -482,178 +498,192 @@ export const Login: React.FC<LoginProps> = ({
             {error && <div className="login-error-msg">{error}</div>}
             {success && <div className="login-success-msg">{success}</div>}
 
-            <form onSubmit={handleRegister} className="login-form" noValidate>
-              <div className="form-group">
-                <label className="form-label">{t.companyLegalName}</label>
-                <input 
-                  type="text" 
-                  className="custom-input"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder={t.enterCompanyName}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">{t.subdomainPrefix}</label>
-                <div className="subdomain-input-wrapper">
-                  <input 
-                    type="text" 
-                    className="custom-input subdomain-input"
-                    value={newSubdomain}
-                    onChange={(e) => setNewSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    placeholder={t.enterSubdomain}
-                  />
-                  <span className="subdomain-suffix">.hrms.com</span>
-                </div>
+            <form onSubmit={handleRegister} className="login-form registration-grid-form" noValidate>
+              <div className="registration-grid">
                 
-                {newSubdomain.trim() && (
-                  <div className={`subdomain-status-indicator ${subdomainStatus}`}>
-                    {subdomainStatus === 'checking' && <span className="status-item"><SpinnerIcon /> {t.subdomainChecking}</span>}
-                    {subdomainStatus === 'available' && <span className="status-item text-success"><CheckIcon /> {t.subdomainChecked}</span>}
-                    {subdomainStatus === 'taken' && <span className="status-item text-danger"><CrossIcon /> {t.subdomainTaken}</span>}
+                {/* Column 1: Company Info */}
+                <div className="registration-col">
+                  <div className="form-group">
+                    <label className="form-label">{t.companyLegalName}</label>
+                    <input 
+                      type="text" 
+                      className="custom-input"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder={t.enterCompanyName}
+                    />
                   </div>
-                )}
-              </div>
 
-              <div className="form-group" ref={planDropdownRef} style={{ position: 'relative' }}>
-                <label className="form-label">{lang === 'id' ? 'Pilih Paket Layanan' : 'Choose Service Plan'}</label>
-                <div 
-                  className={`custom-select-trigger ${isPlanDropdownOpen ? 'open' : ''}`}
-                  onClick={() => setIsPlanDropdownOpen(!isPlanDropdownOpen)}
-                >
-                  <span>
-                    {plan === 'TRIAL' && (lang === 'id' ? 'TRIAL (30 Hari, 50 User)' : 'TRIAL (30 Days, 50 Users)')}
-                    {plan === 'PROFESSIONAL' && (lang === 'id' ? 'PROFESSIONAL (100 User)' : 'PROFESSIONAL (100 Users)')}
-                    {plan === 'ENTERPRISE' && (lang === 'id' ? 'ENTERPRISE (200 User)' : 'ENTERPRISE (200 Users)')}
-                  </span>
-                  <svg className="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M19.5 8.25l-7.5 7.5-7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                
-                {isPlanDropdownOpen && (
-                  <div className="custom-select-dropdown">
-                    <div 
-                      className={`custom-select-option ${plan === 'TRIAL' ? 'selected' : ''}`}
-                      onClick={() => {
-                        setPlan('TRIAL');
-                        setIsPlanDropdownOpen(false);
-                      }}
-                    >
-                      {lang === 'id' ? 'TRIAL (30 Hari, 50 User)' : 'TRIAL (30 Days, 50 Users)'}
-                    </div>
-                    <div 
-                      className={`custom-select-option ${plan === 'PROFESSIONAL' ? 'selected' : ''}`}
-                      onClick={() => {
-                        setPlan('PROFESSIONAL');
-                        setIsPlanDropdownOpen(false);
-                      }}
-                    >
-                      {lang === 'id' ? 'PROFESSIONAL (100 User)' : 'PROFESSIONAL (100 Users)'}
-                    </div>
-                    <div 
-                      className={`custom-select-option ${plan === 'ENTERPRISE' ? 'selected' : ''}`}
-                      onClick={() => {
-                        setPlan('ENTERPRISE');
-                        setIsPlanDropdownOpen(false);
-                      }}
-                    >
-                      {lang === 'id' ? 'ENTERPRISE (200 User)' : 'ENTERPRISE (200 Users)'}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="form-group" style={{ marginTop: '8px' }}>
-                <label className="form-label">{t.ownerFullName}</label>
-                <input 
-                  type="text" 
-                  className="custom-input"
-                  value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
-                  placeholder={t.enterOwnerName}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">{t.ownerWorkEmail}</label>
-                <input 
-                  type="email" 
-                  className="custom-input"
-                  value={ownerEmail}
-                  onChange={(e) => setOwnerEmail(e.target.value)}
-                  placeholder={t.enterOwnerEmail}
-                />
-              </div>
-
-              {/* Toggle optional delegates */}
-              <div className="delegate-toggle-wrapper">
-                <label className="checkbox-toggle-label">
-                  <input 
-                    type="checkbox" 
-                    checked={showDelegates} 
-                    onChange={(e) => setShowDelegates(e.target.checked)} 
-                  />
-                  <span className="checkbox-toggle-text">
-                    {lang === 'id' ? '👥 Daftarkan Utusan HR & Finance (Opsional)' : '👥 Add HR & Finance Delegates (Optional)'}
-                  </span>
-                </label>
-              </div>
-
-              {showDelegates && (
-                <div className="delegate-collapsible-panel">
-                  {/* HR Delegate */}
-                  <div className="delegate-field-group">
-                    <label className="form-label">{lang === 'id' ? 'Utusan HR Admin' : 'HR Admin Delegate'}</label>
-                    <div className="dual-inputs">
+                  <div className="form-group">
+                    <label className="form-label">
+                      {lang === 'id' ? 'Workspace / Subdomain Perusahaan Baru' : 'New Company Workspace / Subdomain'}
+                    </label>
+                    <div className="subdomain-input-wrapper">
+                      <span className="subdomain-prefix-protocol">https://</span>
                       <input 
                         type="text" 
-                        className="custom-input" 
-                        placeholder={lang === 'id' ? 'Nama Lengkap HR' : 'HR Full Name'} 
-                        value={hrName} 
-                        onChange={(e) => setHrName(e.target.value)} 
+                        className="custom-input subdomain-input"
+                        value={newSubdomain}
+                        onChange={(e) => setNewSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        placeholder={t.enterSubdomain}
                       />
-                      <input 
-                        type="email" 
-                        className="custom-input" 
-                        placeholder={lang === 'id' ? 'Email Kerja HR' : 'HR Work Email'} 
-                        value={hrEmail} 
-                        onChange={(e) => setHrEmail(e.target.value)} 
-                      />
+                      <span className="subdomain-suffix">.hrms.com</span>
                     </div>
+                    
+                    {newSubdomain.trim() && (
+                      <div className={`subdomain-status-indicator ${subdomainStatus}`}>
+                        {subdomainStatus === 'checking' && <span className="status-item"><SpinnerIcon /> {t.subdomainChecking}</span>}
+                        {subdomainStatus === 'available' && <span className="status-item text-success"><CheckIcon /> {t.subdomainChecked}</span>}
+                        {subdomainStatus === 'taken' && <span className="status-item text-danger"><CrossIcon /> {t.subdomainTaken}</span>}
+                      </div>
+                    )}
+                    <p className="form-helper-text" style={{ marginTop: '4px', fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                      {lang === 'id' 
+                        ? '⚠️ Nama subdomain unik untuk alamat login karyawan Anda.'
+                        : '⚠️ Specify a unique subdomain for employee login.'}
+                    </p>
                   </div>
 
-                  {/* Finance Delegate */}
-                  <div className="delegate-field-group" style={{ marginTop: '14px' }}>
-                    <label className="form-label">{lang === 'id' ? 'Utusan Finance Admin' : 'Finance Admin Delegate'}</label>
-                    <div className="dual-inputs">
-                      <input 
-                        type="text" 
-                        className="custom-input" 
-                        placeholder={lang === 'id' ? 'Nama Lengkap Finance' : 'Finance Full Name'} 
-                        value={financeName} 
-                        onChange={(e) => setFinanceName(e.target.value)} 
-                      />
-                      <input 
-                        type="email" 
-                        className="custom-input" 
-                        placeholder={lang === 'id' ? 'Email Kerja Finance' : 'Finance Work Email'} 
-                        value={financeEmail} 
-                        onChange={(e) => setFinanceEmail(e.target.value)} 
-                      />
+                  <div className="form-group" ref={planDropdownRef} style={{ position: 'relative' }}>
+                    <label className="form-label">{lang === 'id' ? 'Pilih Paket Layanan' : 'Choose Service Plan'}</label>
+                    <div 
+                      className={`custom-select-trigger ${isPlanDropdownOpen ? 'open' : ''}`}
+                      onClick={() => setIsPlanDropdownOpen(!isPlanDropdownOpen)}
+                    >
+                      <span>
+                        {plan === 'TRIAL' && (lang === 'id' ? 'TRIAL (30 Hari, 50 User)' : 'TRIAL (30 Days, 50 Users)')}
+                        {plan === 'PROFESSIONAL' && (lang === 'id' ? 'PROFESSIONAL (100 User)' : 'PROFESSIONAL (100 Users)')}
+                        {plan === 'ENTERPRISE' && (lang === 'id' ? 'ENTERPRISE (200 User)' : 'ENTERPRISE (200 Users)')}
+                      </span>
+                      <svg className="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M19.5 8.25l-7.5 7.5-7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     </div>
+                    
+                    {isPlanDropdownOpen && (
+                      <div className="custom-select-dropdown">
+                        <div 
+                          className={`custom-select-option ${plan === 'TRIAL' ? 'selected' : ''}`}
+                          onClick={() => {
+                            setPlan('TRIAL');
+                            setIsPlanDropdownOpen(false);
+                          }}
+                        >
+                          {lang === 'id' ? 'TRIAL (30 Hari, 50 User)' : 'TRIAL (30 Days, 50 Users)'}
+                        </div>
+                        <div 
+                          className={`custom-select-option ${plan === 'PROFESSIONAL' ? 'selected' : ''}`}
+                          onClick={() => {
+                            setPlan('PROFESSIONAL');
+                            setIsPlanDropdownOpen(false);
+                          }}
+                        >
+                          {lang === 'id' ? 'PROFESSIONAL (100 User)' : 'PROFESSIONAL (100 Users)'}
+                        </div>
+                        <div 
+                          className={`custom-select-option ${plan === 'ENTERPRISE' ? 'selected' : ''}`}
+                          onClick={() => {
+                            setPlan('ENTERPRISE');
+                            setIsPlanDropdownOpen(false);
+                          }}
+                        >
+                          {lang === 'id' ? 'ENTERPRISE (200 User)' : 'ENTERPRISE (200 Users)'}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
 
-              <div className="pricing-notice-box-simple">
-                <span className="info-icon">💡</span>
-                <span className="info-text">
-                  {lang === 'id' 
-                    ? 'Tarif Lisensi Bulanan: Admin ($30), Finance ($25), HR ($15), Staff ($2)' 
-                    : 'Monthly License Pricing: Admin ($30), Finance ($25), HR ($15), Staff ($2)'}
-                </span>
+                {/* Column 2: Admin Info */}
+                <div className="registration-col">
+                  <div className="form-group">
+                    <label className="form-label">{t.ownerFullName}</label>
+                    <input 
+                      type="text" 
+                      className="custom-input"
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      placeholder={t.enterOwnerName}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">{t.ownerWorkEmail}</label>
+                    <input 
+                      type="email" 
+                      className="custom-input"
+                      value={ownerEmail}
+                      onChange={(e) => setOwnerEmail(e.target.value)}
+                      placeholder={t.enterOwnerEmail}
+                    />
+                  </div>
+
+                  {/* Toggle optional delegates */}
+                  <div className="delegate-toggle-wrapper">
+                    <label className="checkbox-toggle-label">
+                      <input 
+                        type="checkbox" 
+                        checked={showDelegates} 
+                        onChange={(e) => setShowDelegates(e.target.checked)} 
+                      />
+                      <span className="checkbox-toggle-text">
+                        {lang === 'id' ? '👥 Daftarkan Utusan HR & Finance' : '👥 Add HR & Finance Delegates'}
+                      </span>
+                    </label>
+                  </div>
+                  
+                  {showDelegates && (
+                    <div className="delegate-collapsible-panel compact-delegates">
+                      {/* HR Delegate */}
+                      <div className="delegate-field-group">
+                        <div className="dual-inputs">
+                          <input 
+                            type="text" 
+                            className="custom-input" 
+                            placeholder={lang === 'id' ? 'Nama HR' : 'HR Name'} 
+                            value={hrName} 
+                            onChange={(e) => setHrName(e.target.value)} 
+                          />
+                          <input 
+                            type="email" 
+                            className="custom-input" 
+                            placeholder={lang === 'id' ? 'Email HR' : 'HR Email'} 
+                            value={hrEmail} 
+                            onChange={(e) => setHrEmail(e.target.value)} 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Finance Delegate */}
+                      <div className="delegate-field-group" style={{ marginTop: '8px' }}>
+                        <div className="dual-inputs">
+                          <input 
+                            type="text" 
+                            className="custom-input" 
+                            placeholder={lang === 'id' ? 'Nama Finance' : 'Finance Name'} 
+                            value={financeName} 
+                            onChange={(e) => setFinanceName(e.target.value)} 
+                          />
+                          <input 
+                            type="email" 
+                            className="custom-input" 
+                            placeholder={lang === 'id' ? 'Email Finance' : 'Finance Email'} 
+                            value={financeEmail} 
+                            onChange={(e) => setFinanceEmail(e.target.value)} 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Pricing Info bar */}
+              <div className="pricing-notice-bar">
+                💡 {lang === 'id' 
+                  ? 'Tarif Lisensi Bulanan Kategori: Admin ($30), Finance ($25), HR ($15), Staff ($2)'
+                  : 'Monthly Category Rates: Admin ($30), Finance ($25), HR ($15), Staff ($2)'}
               </div>
 
               <div className="register-actions-simple">
@@ -661,7 +691,7 @@ export const Login: React.FC<LoginProps> = ({
                   {lang === 'id' ? 'Daftarkan Perusahaan ➔' : 'Register Company ➔'}
                 </button>
 
-                <div className="register-toggle-link" style={{ marginTop: '12px' }} onClick={() => { setStep('domain'); setError(''); }}>
+                <div className="register-toggle-link" style={{ marginTop: '10px' }} onClick={() => { setStep('domain'); setError(''); }}>
                   {t.alreadyHaveAccount}
                 </div>
               </div>
