@@ -67,7 +67,7 @@ const MoonIcon = () => (
 
 interface LandingPageProps {
   onNavigateToLogin: () => void;
-  onNavigateToRegister: () => void;
+  onNavigateToRegister: (planName?: 'TRIAL' | 'PROFESSIONAL' | 'ENTERPRISE') => void;
   lang: 'id' | 'en';
   changeLang: (lang: 'id' | 'en') => void;
   theme: 'dark' | 'light';
@@ -231,7 +231,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <button className="btn-login-flat" onClick={onNavigateToLogin}>
             {lang === 'id' ? 'Log In' : 'Log In'}
           </button>
-          <button className="btn-get-started" onClick={onNavigateToRegister}>
+          <button className="btn-get-started" onClick={() => onNavigateToRegister('TRIAL')}>
             {lang === 'id' ? 'Get Started' : 'Get Started'}
           </button>
         </div>
@@ -266,7 +266,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
 
           <div className="hero-ctas">
-            <button className="btn-cta-primary" onClick={onNavigateToRegister}>
+            <button className="btn-cta-primary" onClick={() => onNavigateToRegister('TRIAL')}>
               {lang === 'id' ? 'Get Started' : 'Get Started'} <span className="arrow">➔</span>
             </button>
             <button className="btn-cta-secondary" onClick={() => alert('Simulasi Video Demo')}>
@@ -558,7 +558,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <li>✓ Default Department Seeding</li>
               <li>✓ Attendance & Work Logs</li>
             </ul>
-            <button className="btn-pricing-action" onClick={onNavigateToRegister}>
+            <button className="btn-pricing-action" onClick={() => onNavigateToRegister('TRIAL')}>
               {lang === 'id' ? 'Coba Gratis Sekarang' : 'Start Free Trial'}
             </button>
           </div>
@@ -634,14 +634,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <button onClick={() => setCalcStaff(calcStaff + 1)}>+</button>
                 </div>
               </div>
-            </div>
-
-            <button className="btn-pricing-action primary" onClick={onNavigateToRegister}>
+            <button 
+              className="btn-pricing-action primary" 
+              onClick={() => {
+                const totalUsers = calcAdmins + calcFinance + calcHr + calcStaff;
+                onNavigateToRegister(totalUsers > 100 ? 'ENTERPRISE' : 'PROFESSIONAL');
+              }}
+            >
               {lang === 'id' ? 'Daftar Perusahaan Mandiri' : 'Register Now'}
             </button>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* About Us Section */}
       <section id="about" className="landing-section about-section">

@@ -154,7 +154,7 @@ interface DashboardProps {
 // Menentukan tipe data tab yang didukung
 type ActiveTab = 'employees' | 'departments' | 'jobs';
 
-export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
   const [tenantName, setTenantName] = useState<string>('Loading...');
   const t = translations[lang];

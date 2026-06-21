@@ -118,7 +118,6 @@ export const MasterDashboard: React.FC<MasterDashboardProps> = ({
   const [companyName, setCompanyName] = useState<string>('');
   const [subdomain, setSubdomain] = useState<string>('');
   const [plan, setPlan] = useState<string>('TRIAL');
-  const [maxEmployees, setMaxEmployees] = useState<number>(50);
   
   // Delegates
   const [ownerName, setOwnerName] = useState<string>('');
@@ -192,7 +191,6 @@ export const MasterDashboard: React.FC<MasterDashboardProps> = ({
       setCompanyName('');
       setSubdomain('');
       setPlan('TRIAL');
-      setMaxEmployees(50);
       setOwnerName('');
       setOwnerEmail('');
       setHrName('');
