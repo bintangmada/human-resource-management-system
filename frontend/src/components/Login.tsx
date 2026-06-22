@@ -11,6 +11,7 @@ interface LoginProps {
   setTheme: (t: 'dark' | 'light') => void;
   initialStep?: 'domain' | 'register';
   initialPlan?: 'TRIAL' | 'PROFESSIONAL' | 'ENTERPRISE';
+  initialSubdomain?: string;
   onBackToLanding?: () => void;
 }
 
@@ -90,6 +91,7 @@ export const Login: React.FC<LoginProps> = ({
   setTheme,
   initialStep = 'domain',
   initialPlan = 'TRIAL',
+  initialSubdomain = '',
   onBackToLanding
 }) => {
   const [step, setStep] = useState<LoginStep>(initialStep);
@@ -204,6 +206,13 @@ export const Login: React.FC<LoginProps> = ({
       handleLookup(subdomainInUrl, true);
     }
   }, [handleLookup]);
+
+  // Run domain lookup when initialSubdomain prop is provided (e.g. by Easter Egg)
+  useEffect(() => {
+    if (initialSubdomain) {
+      handleLookup(initialSubdomain, true);
+    }
+  }, [initialSubdomain, handleLookup]);
 
   // Auto-dismiss error alerts after 4 seconds
   useEffect(() => {
@@ -442,10 +451,6 @@ export const Login: React.FC<LoginProps> = ({
 
               <div className="register-toggle-link" onClick={() => { setStep('register'); setError(''); }}>
                 {t.noAccountYet}
-              </div>
-
-              <div className="owner-portal-link" onClick={() => handleLookup('admin')}>
-                🔑 {lang === 'id' ? 'Masuk sebagai SaaS Owner (Platform Admin)' : 'Login as SaaS Owner (Platform Admin)'}
               </div>
             </form>
           </>
