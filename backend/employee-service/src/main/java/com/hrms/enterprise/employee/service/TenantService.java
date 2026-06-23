@@ -22,4 +22,7 @@ public interface TenantService {
     
     // Kirim email peringatan jatuh tempo manual/otomatis
     void triggerExpiryAlert(Long id);
+
+    // Verifikasi email konfirmasi untuk aktivasi tenant baru
+    void confirmEmail(String subdomain, String token);
 }

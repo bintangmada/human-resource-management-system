@@ -58,4 +58,8 @@ public class Employee extends BaseEntity {
     // Tanggal pertama kali karyawan resmi bergabung di perusahaan
     @Column(name = "joined_at", nullable = false)
     private LocalDate joinedAt;
+
+    // Password terenkripsi untuk autentikasi JWT
+    @Column(name = "password", length = 100)
+    private String password;
 }

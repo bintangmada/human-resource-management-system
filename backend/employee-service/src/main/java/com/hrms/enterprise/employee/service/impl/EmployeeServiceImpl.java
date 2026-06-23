@@ -30,13 +30,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final JobRepository jobRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                DepartmentRepository departmentRepository,
-                               JobRepository jobRepository) {
+                               JobRepository jobRepository,
+                               org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.jobRepository = jobRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -74,6 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .joinedAt(request.getJoinedAt())
                 .status(request.getStatus() != null ? request.getStatus() : 1)
                 .createdBy(actor) // Audit log manual
+                .password(passwordEncoder.encode("password123")) // Default password for new registrations
                 .build();
 
         Employee savedEmployee = employeeRepository.save(employee);

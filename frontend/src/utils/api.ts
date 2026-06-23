@@ -44,6 +44,12 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
     ...options.headers,                          // Menggabungkan custom header jika ada
   };
 
+  // Sisipkan token JWT jika pengguna sudah terotentikasi
+  const token = localStorage.getItem('hrms_jwt_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   // 4. Menyusun konfigurasi request HTTP
   const config: RequestInit = {
     method: options.method || 'GET',             // Jika method kosong, default ke GET

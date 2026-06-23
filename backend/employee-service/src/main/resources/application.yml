@@ -63,3 +63,8 @@ springdoc:
     path: /v3/api-docs
   # Shows only our actual rest endpoints and excludes spring default ones (like /error)
   paths-to-match: /api/v1/**
+
+# Custom Application Properties
+app:
+  base-url: ${HRMS_BASE_URL:http://localhost:8020}
+

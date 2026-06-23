@@ -62,4 +62,13 @@ public class TenantController {
         tenantService.triggerExpiryAlert(id);
         return ResponseEntity.ok(ApiResponse.success("Billing expiry alert triggered successfully.", null));
     }
+
+    /**
+      * Endpoint Publik: Memverifikasi email registrasi tenant baru.
+      */
+    @GetMapping("/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirmEmail(@RequestParam String subdomain, @RequestParam String token) {
+        tenantService.confirmEmail(subdomain, token);
+        return ResponseEntity.ok(ApiResponse.success("Email verified successfully! Your tenant workspace is now active.", null));
+    }
 }

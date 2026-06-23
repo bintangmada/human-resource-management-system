@@ -72,14 +72,19 @@ Proses pendaftaran tenant baru dilakukan secara mandiri oleh calon klien langsun
     5. (Opsional) Mendaftarkan utusan awal HR / Finance jika disertakan.
 ```
 
-### Mekanisme Federated Tenant Email Filter
-Untuk menyaring akses dan meniadakan portal login ganda, sistem melakukan filter email otomatis pada saat proses Login:
-1. **Resolusi Kode Perusahaan:** Pengguna memasukkan Kode Perusahaan (Step 1) yang disinkronkan ke database `/tenants/lookup`.
-2. **Pencarian Aktor Karyawan:** Saat pengguna memasukkan email (Step 2), sistem melakukan request ke `/api/v1/employees?email={email}` dengan menyematkan header `X-Tenant-ID`.
-3. **Penyaringan Akses:**
-   * Jika email ditemukan di database karyawan tenant tersebut, sistem mengizinkan login, membaca profil nama lengkap dan jabatan (`jobTitle`), menyimpan data sesi di `localStorage`, lalu mengarahkan ke dashboard.
-   * Jika email tidak ditemukan atau tidak terdaftar di tenant tersebut, sistem memblokir akses dan memunculkan pesan eror: `"Email Anda tidak terdaftar di perusahaan ini!"`.
-4. **Fleksibilitas Pengelolaan Member:** Setelah Administrator/Owner masuk ke dashboard, mereka dapat mendaftarkan perwakilan departemen (HR, Finance, IT, Staff) melalui menu kelola karyawan. Setiap akun baru yang terdaftar akan langsung bisa login menggunakan alur filter terpusat ini.
+### Mekanisme Autentikasi Secure JWT & Isolasi Tenant
+Untuk memastikan keamanan tingkat enterprise, aplikasi menggunakan autentikasi berbasis stateless JSON Web Token (JWT):
+1. **Resolusi Kode Perusahaan (Step 1):** Pengguna memasukkan Kode Perusahaan (subdomain) yang divalidasi ke database via `/api/v1/tenants/lookup`.
+2. **Kredensial & Autentikasi (Step 2):** Pengguna memasukkan email dan password mereka. Request dikirim melalui `POST /api/v1/auth/login`.
+3. **Verifikasi Kredensial di Backend:**
+   * Backend memverifikasi email pengguna secara global dari `Employee` repository (atau static credential jika Master Admin `admin@hrms.com`).
+   * Password diverifikasi menggunakan `BCryptPasswordEncoder`.
+   * Jika valid, backend merakit JWT token yang disandi dengan algoritma HMAC-SHA256, berisi klaim aman: `tenantId`, `email`, dan `roles`.
+4. **Penyimpanan Token & Sesi:** Frontend React menerima response login sukses, menyimpan JWT token (`hrms_jwt_token`) ke LocalStorage, dan mengarahkan pengguna ke dashboard yang sesuai.
+5. **Request Interceptor & Context Wrapper:**
+   * Di frontend, modul `api.ts` secara otomatis menyisipkan header `Authorization: Bearer <token>` pada semua request HTTP.
+   * Di backend, `JwtAuthenticationFilter` memvalidasi token dan mengisi konteks keamanan Spring Security (`SecurityContextHolder`).
+   * Sebuah servlet request wrapper (`TenantSecurityRequestWrapper`) menyadap parameter `@RequestHeader("X-Tenant-ID")` dan `@RequestHeader("X-User-Email")` dan menggantinya dengan data yang telah divalidasi dari JWT token. Hal ini mencegah spoofing data tenant oleh pengguna nakal.
 
 ---
 
@@ -89,8 +94,8 @@ Untuk menyaring akses dan meniadakan portal login ganda, sistem melakukan filter
 1. Buka halaman login di browser (`http://localhost:5173`).
 2. Masukkan subdomain: **`admin`** lalu tekan Enter / klik lookup.
 3. Halaman login akan berubah menyesuaikan branding **SaaS Owner Administration**.
-4. Gunakan email pre-filled **`admin@hrms.com`** lalu klik **Masuk Ke Dashboard**.
-5. Anda akan masuk ke dashboard monitoring.
+4. Masukkan email **`admin@hrms.com`** dan Password default **`admin123`** atau **`superadmin`** lalu klik **Masuk Ke Dashboard**.
+5. Anda akan masuk ke dashboard monitoring SaaS Owner.
 
 ### Langkah B: Simulasi Klien Melakukan Pendaftaran Mandiri (Self-Service)
 1. Buka halaman login di browser (`http://localhost:5173`).
@@ -103,12 +108,12 @@ Untuk menyaring akses dan meniadakan portal login ganda, sistem melakukan filter
    * **Utusan 2 (HR Admin):** Siska Amalia (`siska@jaya.com`)
    * **Utusan 3 (Finance Admin):** Anton Wijaya (`anton@jaya.com`)
 4. Klik **Daftarkan Perusahaan & Utusan**.
-5. Setelah pendaftaran sukses, sistem otomatis menginisialisasi perusahaan, 3 departemen dasar, dan 3 akun utusan yang didaftarkan.
+5. Setelah pendaftaran sukses, sistem otomatis menginisialisasi perusahaan, 3 departemen dasar, dan 3 akun utusan yang didaftarkan. Password default untuk semua akun baru adalah **`password123`**.
 6. Anda (SaaS Owner) dapat melihat peningkatan estimasi pendapatan dan data PT. Jaya Abadi langsung di Master Admin Dashboard.
 
 ### Langkah C: Mencoba Login dari Sisi Klien (Tenant Admin)
 1. Logout dari Master Admin.
 2. Masukkan subdomain tenant baru yang Anda buat: **`jaya-abadi`**
 3. Sistem akan mengenali perusahaan **PT. Jaya Abadi**.
-4. Masuk menggunakan email admin utama klien: **`budi@jaya.com`**
-5. Anda akan masuk ke dashboard khusus PT. Jaya Abadi dengan isolasi data penuh.
+4. Masuk menggunakan email admin utama klien: **`budi@jaya.com`** dan password **`password123`**.
+5. Anda akan masuk ke dashboard khusus PT. Jaya Abadi dengan isolasi data penuh berbasis JWT.

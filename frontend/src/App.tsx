@@ -71,6 +71,8 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('hrms_tenant_id');
     localStorage.removeItem('hrms_actor_email');
+    localStorage.removeItem('hrms_jwt_token');
+    localStorage.removeItem('hrms_user_name');
     setSession(null);
     setView('landing');
   };
