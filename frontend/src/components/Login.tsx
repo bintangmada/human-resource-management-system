@@ -104,6 +104,7 @@ export const Login: React.FC<LoginProps> = ({
   // Input States
   const [inputSubdomain, setInputSubdomain] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   
@@ -262,6 +263,19 @@ export const Login: React.FC<LoginProps> = ({
       setError(t.loginError);
       return;
     }
+
+    // Enforce master password validation for SaaS Owner
+    if (resolvedTenant.id === 0) {
+      if (!password) {
+        setError(lang === 'id' ? 'Password Master Admin wajib diisi!' : 'Master Admin password is required!');
+        return;
+      }
+      if (password !== 'admin123' && password !== 'superadmin') {
+        setError(lang === 'id' ? 'Password Master Admin tidak valid!' : 'Invalid Master Admin password!');
+        return;
+      }
+    }
+
     setError('');
     setIsLoading(true);
 
@@ -480,11 +494,32 @@ export const Login: React.FC<LoginProps> = ({
                 />
               </div>
 
+              {resolvedTenant.id === 0 && (
+                <div className="form-group" style={{ marginTop: '16px' }}>
+                  <label className="form-label" htmlFor="admin-password">
+                    {lang === 'id' ? 'Password Master Admin:' : 'Master Admin Password:'}
+                  </label>
+                  <input 
+                    type="password" 
+                    id="admin-password"
+                    className="custom-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                  <p className="form-helper-text" style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {lang === 'id' 
+                      ? '🔑 Gunakan password default: admin123'
+                      : '🔑 Use default password: admin123'}
+                  </p>
+                </div>
+              )}
+
               <button type="submit" className="btn-primary btn-block">
                 {t.enterDashboard}
               </button>
 
-              <div className="register-toggle-link" onClick={() => { setStep('domain'); setResolvedTenant(null); setError(''); }}>
+              <div className="register-toggle-link" onClick={() => { setStep('domain'); setResolvedTenant(null); setPassword(''); setError(''); }}>
                 {lang === 'id' ? '← Ganti Perusahaan' : '← Change Company'}
               </div>
             </form>
