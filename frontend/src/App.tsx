@@ -17,6 +17,7 @@ function App() {
   // State navigasi halaman ketika belum login
   const [view, setView] = useState<'landing' | 'login' | 'register'>('landing');
   const [initialPlan, setInitialPlan] = useState<'TRIAL' | 'PROFESSIONAL' | 'ENTERPRISE'>('TRIAL');
+  const [initialSubdomain, setInitialSubdomain] = useState<string>('');
 
   // State Bahasa (Language State) - Persisten di LocalStorage
   const [lang, setLang] = useState<Language>(() => {
@@ -115,6 +116,10 @@ function App() {
           changeLang={changeLang}
           theme={theme}
           setTheme={setTheme}
+          onMasterAdminSecretLogin={() => {
+            setInitialSubdomain('admin');
+            setView('login');
+          }}
         />
       ) : (
         <Login 
@@ -125,7 +130,11 @@ function App() {
           setTheme={setTheme}
           initialStep={view === 'register' ? 'register' : 'domain'}
           initialPlan={initialPlan}
-          onBackToLanding={() => setView('landing')}
+          initialSubdomain={initialSubdomain}
+          onBackToLanding={() => {
+            setInitialSubdomain('');
+            setView('landing');
+          }}
         />
       )}
     </div>

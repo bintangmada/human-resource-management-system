@@ -128,6 +128,7 @@ export const MasterDashboard: React.FC<MasterDashboardProps> = ({
   const [financeEmail, setFinanceEmail] = useState<string>('');
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
 
   const t = masterTranslations[lang];
 
@@ -260,7 +261,7 @@ export const MasterDashboard: React.FC<MasterDashboardProps> = ({
           </div>
           <div className="user-profile">
             <span>{actorEmail}</span>
-            <button className="btn-logout" onClick={onLogout}>{t.logout}</button>
+            <button className="btn-logout" onClick={() => setIsLogoutConfirmOpen(true)}>{t.logout}</button>
           </div>
         </div>
       </nav>
@@ -572,6 +573,43 @@ export const MasterDashboard: React.FC<MasterDashboardProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DIALOG KONFIRMASI LOGOUT KUSTOM */}
+      {isLogoutConfirmOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-content confirm-modal glass-panel">
+            <div className="confirm-icon-wrapper confirm-warning-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--error)' }}>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </div>
+            <div className="confirm-body">
+              <h3>{lang === 'id' ? 'Konfirmasi Keluar' : 'Confirm Logout'}</h3>
+              <p>{lang === 'id' ? 'Apakah Anda benar-benar yakin ingin keluar dari sesi master admin saat ini?' : 'Are you absolutely sure you want to log out from the current master admin session?'}</p>
+              <span className="confirm-subtext">{lang === 'id' ? 'Anda perlu login kembali untuk mengakses data master dashboard.' : 'You will need to log in again to access the master dashboard data.'}</span>
+            </div>
+            <div className="modal-actions confirm-actions">
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setIsLogoutConfirmOpen(false)}
+              >
+                {lang === 'id' ? 'Batal' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                className="btn-submit"
+                style={{ backgroundColor: 'var(--error)' }}
+                onClick={onLogout}
+              >
+                {lang === 'id' ? 'Ya, Keluar' : 'Yes, Log Out'}
+              </button>
+            </div>
           </div>
         </div>
       )}

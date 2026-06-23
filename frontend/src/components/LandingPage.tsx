@@ -72,6 +72,7 @@ interface LandingPageProps {
   changeLang: (lang: 'id' | 'en') => void;
   theme: 'dark' | 'light';
   setTheme: (theme: 'dark' | 'light') => void;
+  onMasterAdminSecretLogin?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -81,6 +82,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   changeLang,
   theme,
   setTheme,
+  onMasterAdminSecretLogin,
 }) => {
   const [activeSection, setActiveSection] = React.useState<string>('home');
   const [isScrolled, setIsScrolled] = React.useState<boolean>(false);
@@ -185,8 +187,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Secret Master Admin Login Click Tracker
+  const clickTracker = React.useRef<{ count: number; lastTime: number }>({ count: 0, lastTime: 0 });
+
+  const handleLandingPageClick = () => {
+    const now = Date.now();
+    if (now - clickTracker.current.lastTime > 2000) {
+      // Reset if more than 2 seconds since last click
+      clickTracker.current.count = 1;
+    } else {
+      clickTracker.current.count += 1;
+    }
+    clickTracker.current.lastTime = now;
+
+    if (clickTracker.current.count >= 5) {
+      clickTracker.current.count = 0; // Reset
+      if (onMasterAdminSecretLogin) {
+        onMasterAdminSecretLogin();
+      }
+    }
+  };
+
   return (
-    <div className="landing-container">
+    <div className="landing-container" onClick={handleLandingPageClick}>
       {/* Background decorations */}
       <div className="landing-bg-decorations">
         <div className="blob blob-1"></div>
