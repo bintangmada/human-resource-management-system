@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.hrms.enterprise.employee.service.EmailService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.UUID;
+
 /**
  * Implementasi TenantService yang mengelola alur pendaftaran,
  * resolusi subdomain, pemantauan status, dan inisialisasi data default.
@@ -30,15 +34,21 @@ public class TenantServiceImpl implements TenantService {
     private final DepartmentRepository departmentRepository;
     private final JobRepository jobRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     public TenantServiceImpl(TenantRepository tenantRepository,
                              DepartmentRepository departmentRepository,
                              JobRepository jobRepository,
-                             EmployeeRepository employeeRepository) {
+                             EmployeeRepository employeeRepository,
+                             EmailService emailService,
+                             PasswordEncoder passwordEncoder) {
         this.tenantRepository = tenantRepository;
         this.departmentRepository = departmentRepository;
         this.jobRepository = jobRepository;
         this.employeeRepository = employeeRepository;
+        this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -64,6 +74,7 @@ public class TenantServiceImpl implements TenantService {
             selectedPlan = "TRIAL";
         }
 
+        String verificationToken = UUID.randomUUID().toString();
         Tenant tenant = Tenant.builder()
                 .companyName(request.getCompanyName())
                 .subdomain(request.getSubdomain())
@@ -72,8 +83,10 @@ public class TenantServiceImpl implements TenantService {
                 .plan(selectedPlan)
                 .expiryDate(expiry)
                 .maxEmployees(maxEmp)
-                .status(1)
+                .status(0) // 0 = INACTIVE (Pending email verification)
                 .deletedStatus(0)
+                .verificationToken(verificationToken)
+                .emailVerified(false)
                 .createdBy("system_register")
                 .build();
         
@@ -140,6 +153,11 @@ public class TenantServiceImpl implements TenantService {
         Job savedJobHrManager = jobRepository.save(jobHrManager);
         Job savedJobFinManager = jobRepository.save(jobFinManager);
 
+        // Generate password default acak untuk masing-masing akun
+        String adminPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String hrPassword = null;
+        String financePassword = null;
+
         // 5. SEEDING OTOMATIS: Akun Karyawan Admin Pertama (Super Admin Tenant)
         Employee adminEmployee = Employee.builder()
                 .tenantId(tenantId)
@@ -153,12 +171,14 @@ public class TenantServiceImpl implements TenantService {
                 .createdBy("system_register")
                 .status(1)
                 .deletedStatus(0)
+                .password(passwordEncoder.encode(adminPassword))
                 .build();
         employeeRepository.save(adminEmployee);
 
         // 6. SEEDING OPTIONAL: Akun Karyawan HR Admin Kedua
         if (request.getHrName() != null && !request.getHrName().trim().isEmpty() &&
             request.getHrEmail() != null && !request.getHrEmail().trim().isEmpty()) {
+            hrPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
             Employee hrEmployee = Employee.builder()
                     .tenantId(tenantId)
                     .employeeNumber("EMP-" + tenantId + "-002")
@@ -171,6 +191,7 @@ public class TenantServiceImpl implements TenantService {
                     .createdBy("system_register")
                     .status(1)
                     .deletedStatus(0)
+                    .password(passwordEncoder.encode(hrPassword))
                     .build();
             employeeRepository.save(hrEmployee);
         }
@@ -178,6 +199,7 @@ public class TenantServiceImpl implements TenantService {
         // 7. SEEDING OPTIONAL: Akun Karyawan Finance Admin Ketiga
         if (request.getFinanceName() != null && !request.getFinanceName().trim().isEmpty() &&
             request.getFinanceEmail() != null && !request.getFinanceEmail().trim().isEmpty()) {
+            financePassword = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
             Employee finEmployee = Employee.builder()
                     .tenantId(tenantId)
                     .employeeNumber("EMP-" + tenantId + "-003")
@@ -190,9 +212,14 @@ public class TenantServiceImpl implements TenantService {
                     .createdBy("system_register")
                     .status(1)
                     .deletedStatus(0)
+                    .password(passwordEncoder.encode(financePassword))
                     .build();
             employeeRepository.save(finEmployee);
         }
+
+        // Kirim email verifikasi untuk aktivasi Tenant dengan menyertakan password default acak
+        emailService.sendVerificationEmail(request.getOwnerEmail(), request.getOwnerName(), request.getSubdomain(), verificationToken,
+                adminPassword, hrPassword, financePassword);
 
         return mapToTenantResponse(savedTenant);
     }
@@ -255,5 +282,27 @@ public class TenantServiceImpl implements TenantService {
                 .financeCount(financeCount)
                 .staffCount(staffCount)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void confirmEmail(String subdomain, String token) {
+        Tenant tenant = tenantRepository.findBySubdomainAndDeletedStatus(subdomain, 0)
+                .orElseThrow(() -> new IllegalArgumentException("Tenant dengan subdomain '" + subdomain + "' tidak ditemukan."));
+        
+        if (Boolean.TRUE.equals(tenant.getEmailVerified())) {
+            throw new IllegalStateException("Email tenant untuk subdomain '" + subdomain + "' sudah pernah diverifikasi.");
+        }
+        
+        if (tenant.getVerificationToken() == null || !tenant.getVerificationToken().equals(token)) {
+            throw new IllegalArgumentException("Token verifikasi email tidak valid.");
+        }
+        
+        tenant.setEmailVerified(true);
+        tenant.setStatus(1); // Aktifkan Tenant
+        tenant.setVerificationToken(null); // Bersihkan token
+        tenantRepository.save(tenant);
+        
+        System.out.println(">>> [TENANT AKTIVASI] Tenant dengan subdomain '" + subdomain + "' berhasil diaktifkan.");
     }
 }

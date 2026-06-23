@@ -49,4 +49,13 @@ public class Tenant extends BaseEntity {
     @Builder.Default
     @Column(name = "max_employees", nullable = false)
     private Integer maxEmployees = 50;
+
+    // Token verifikasi email registrasi
+    @Column(name = "verification_token", length = 100)
+    private String verificationToken;
+
+    // Status apakah email telah diverifikasi
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
 }

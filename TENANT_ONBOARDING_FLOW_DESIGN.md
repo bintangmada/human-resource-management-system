@@ -75,14 +75,19 @@ sequenceDiagram
         BE-->>FE: Return Error (Subdomain is already taken)
         FE-->>User: Tampilkan error ke pengguna
     else Subdomain tersedia
-        BE->>DB: Insert ke tabel `tenants` -> Generate tenant_id (misal: 105)
+        BE->>DB: Insert ke tabel `tenants` (status=0, email_verified=false, verification_token=UUID) -> Generate tenant_id (misal: 105)
         BE->>DB: Seed data departemen default dengan tenantId = 105
         BE->>DB: Seed data jabatan default dengan tenantId = 105
-        BE->>DB: Buat akun Admin utama dengan tenantId = 105
-        BE-->>FE: Return Registration Success
-        FE-->>User: Tampilkan sukses, arahkan ke <subdomain>.hrms.com/login
+        BE->>DB: Buat akun Admin utama (EMP-105-001) dengan password default BCrypt
+        BE->>User: Kirim email konfirmasi berisi link /confirm?subdomain=teknologi-nusantara&token=UUID
+        BE-->>FE: Return Registration Success (Status Pending Email Verification)
+        FE-->>User: Tampilkan instruksi sukses, minta pengguna memeriksa kotak masuk email
     end
 
+    Note over User, DB: ALUR AKTIVASI EMAIL (EMAIL CONFIRMATION)
+    User->>BE: Klik tautan verifikasi email (GET /api/v1/tenants/confirm?subdomain=teknologi-nusantara&token=UUID)
+    BE->>DB: Verifikasi token & ubah status tenant (status=1, email_verified=true, token=null)
+    BE-->>User: Tampilkan halaman sukses Aktivasi Tenant, arahkan ke <subdomain>.hrms.com/login
     Note over User, DB: ALUR LOGIN TERISOLASI (LOGIN FLOW)
     User->>FE: Buka http://teknologi-nusantara.hrms.com/login
     FE->>BE: GET /api/v1/tenants/lookup?subdomain=teknologi-nusantara

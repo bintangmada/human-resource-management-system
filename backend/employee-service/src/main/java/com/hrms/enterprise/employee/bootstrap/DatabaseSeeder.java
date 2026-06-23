@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 /**
  * Seeder Database untuk menginisialisasi 20 data awal secara otomatis
  * ketika aplikasi dijalankan jika database dalam kondisi kosong.
@@ -27,15 +29,18 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final DepartmentRepository departmentRepository;
     private final JobRepository jobRepository;
     private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DatabaseSeeder(TenantRepository tenantRepository,
                           DepartmentRepository departmentRepository,
                           JobRepository jobRepository,
-                          EmployeeRepository employeeRepository) {
+                          EmployeeRepository employeeRepository,
+                          PasswordEncoder passwordEncoder) {
         this.tenantRepository = tenantRepository;
         this.departmentRepository = departmentRepository;
         this.jobRepository = jobRepository;
         this.employeeRepository = employeeRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -143,6 +148,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             };
 
             List<Employee> employees = new ArrayList<>();
+            String defaultPasswordHash = passwordEncoder.encode("password123");
             for (int i = 0; i < 20; i++) {
                 String emailLocal = empNames[i].toLowerCase().replace(" ", ".");
                 employees.add(Employee.builder()
@@ -157,6 +163,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdBy(actor)
                         .status(1)
                         .deletedStatus(0)
+                        .password(defaultPasswordHash)
                         .build());
             }
             employeeRepository.saveAll(employees);
@@ -197,6 +204,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .createdBy(actor)
                     .status(1)
                     .deletedStatus(0)
+                    .password(passwordEncoder.encode("password123"))
                     .build();
             employeeRepository.save(empTenant2);
 

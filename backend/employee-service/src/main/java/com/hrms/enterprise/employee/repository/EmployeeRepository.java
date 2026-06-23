@@ -120,4 +120,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             @Param("tenantId") Long tenantId,
             @Param("deletedStatus") Integer deletedStatus,
             @Param("jobTitle") String jobTitle);
+
+    /**
+     * Menemukan Karyawan aktif berdasarkan email (pencarian global di seluruh tenant).
+     * Digunakan untuk proses login terpusat.
+     */
+    Optional<Employee> findByEmailAndDeletedStatus(String email, Integer deletedStatus);
 }

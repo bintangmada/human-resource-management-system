@@ -255,7 +255,7 @@ export const Login: React.FC<LoginProps> = ({
     return () => clearTimeout(delayDebounce);
   }, [newSubdomain, step]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resolvedTenant) return;
 
@@ -264,28 +264,43 @@ export const Login: React.FC<LoginProps> = ({
       return;
     }
 
-    // Enforce master password validation for SaaS Owner
-    if (resolvedTenant.id === 0) {
-      if (!password) {
-        setError(lang === 'id' ? 'Password Master Admin wajib diisi!' : 'Master Admin password is required!');
-        return;
-      }
-      if (password !== 'admin123' && password !== 'superadmin') {
-        setError(lang === 'id' ? 'Password Master Admin tidak valid!' : 'Invalid Master Admin password!');
-        return;
-      }
+    if (!password) {
+      setError(lang === 'id' ? 'Password wajib diisi!' : 'Password is required!');
+      return;
     }
 
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Store active tenant and email in LocalStorage
-      localStorage.setItem('hrms_tenant_id', resolvedTenant.id.toString());
-      localStorage.setItem('hrms_actor_email', email);
+    try {
+      const response = await apiRequest<{ data: { token: string; email: string; tenantId: number; fullName: string } }>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: {
+            email: email.trim(),
+            password: password
+          }
+        }
+      );
+
+      if (response && response.data) {
+        const { token, email: resEmail, tenantId, fullName } = response.data;
+        // Simpan sesi autentikasi ke LocalStorage
+        localStorage.setItem('hrms_jwt_token', token);
+        localStorage.setItem('hrms_tenant_id', tenantId.toString());
+        localStorage.setItem('hrms_actor_email', resEmail);
+        localStorage.setItem('hrms_user_name', fullName);
+
+        setIsLoading(false);
+        onLoginSuccess(tenantId.toString(), resEmail);
+      } else {
+        throw new Error(lang === 'id' ? 'Respon autentikasi tidak valid' : 'Invalid authentication response');
+      }
+    } catch (err: any) {
       setIsLoading(false);
-      onLoginSuccess(resolvedTenant.id.toString(), email);
-    }, 450);
+      setError(err.message || (lang === 'id' ? 'Gagal login, silakan periksa kembali email dan password Anda.' : 'Login failed, please check your credentials.'));
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -494,26 +509,30 @@ export const Login: React.FC<LoginProps> = ({
                 />
               </div>
 
-              {resolvedTenant.id === 0 && (
-                <div className="form-group" style={{ marginTop: '16px' }}>
-                  <label className="form-label" htmlFor="admin-password">
-                    {lang === 'id' ? 'Password Master Admin:' : 'Master Admin Password:'}
-                  </label>
-                  <input 
-                    type="password" 
-                    id="admin-password"
-                    className="custom-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                  />
-                  <p className="form-helper-text" style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {lang === 'id' 
+              <div className="form-group" style={{ marginTop: '16px' }}>
+                <label className="form-label" htmlFor="admin-password">
+                  {lang === 'id' ? 'Kata Sandi / Password:' : 'Password:'}
+                </label>
+                <input 
+                  type="password" 
+                  id="admin-password"
+                  className="custom-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                <p className="form-helper-text" style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {resolvedTenant.id === 0 ? (
+                    lang === 'id' 
                       ? '🔑 Gunakan password default: admin123'
-                      : '🔑 Use default password: admin123'}
-                  </p>
-                </div>
-              )}
+                      : '🔑 Use default password: admin123'
+                  ) : (
+                    lang === 'id' 
+                      ? '🔑 Gunakan password default karyawan: password123'
+                      : '🔑 Use default employee password: password123'
+                  )}
+                </p>
+              </div>
 
               <button type="submit" className="btn-primary btn-block">
                 {t.enterDashboard}
