@@ -1,6 +1,6 @@
-package com.hrms.enterprise.employee.service.impl;
+package com.hrms.enterprise.auth.service.impl;
 
-import com.hrms.enterprise.employee.service.EmailService;
+import com.hrms.enterprise.auth.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

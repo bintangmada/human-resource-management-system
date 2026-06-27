@@ -1,0 +1,45 @@
+server:
+  port: 8020
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # Route to Auth Service
+        - id: auth-service
+          uri: http://localhost:8021
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/tenants/register, /api/v1/tenants/confirm, /api/v1/tenants/lookup
+            
+        # Route to Employee Service (tenants other endpoints)
+        - id: tenant-service-other
+          uri: http://localhost:8022
+          predicates:
+            - Path=/api/v1/tenants, /api/v1/tenants/*/alert
+            
+        # Route to Employee Service (business endpoints)
+        - id: employee-service
+          uri: http://localhost:8022
+          predicates:
+            - Path=/api/v1/employees/**, /api/v1/departments/**, /api/v1/jobs/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
