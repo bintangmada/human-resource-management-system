@@ -46,3 +46,29 @@ export interface EmployeeResponse {
   joinedAt: string;
   status: number;
 }
+
+export interface AttendanceResponse {
+  id: number;
+  employeeId: number;
+  employeeName?: string; // Optional field for displaying employee name in tables
+  date: string;
+  clockIn?: string;
+  clockOut?: string;
+  clockInLatitude?: number;
+  clockInLongitude?: number;
+  clockOutLatitude?: number;
+  clockOutLongitude?: number;
+  clockInStatus?: string;
+  clockOutStatus?: string;
+  notes?: string;
+}
+
+export interface GeofenceSettingResponse {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radiusMeter: number;
+  isActive: boolean;
+}
+

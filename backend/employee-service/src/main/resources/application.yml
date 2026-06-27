@@ -62,7 +62,7 @@ spring:
 
 # Server runtime port assignment
 server:
-  port: 8020
+  port: 8022
   error:
     include-message: always
 

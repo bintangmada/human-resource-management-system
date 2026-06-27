@@ -38,6 +38,12 @@ spring:
           predicates:
             - Path=/api/v1/employees/**, /api/v1/departments/**, /api/v1/jobs/**
 
+        # Route to Attendance Service
+        - id: attendance-service
+          uri: http://localhost:8023
+          predicates:
+            - Path=/api/v1/attendance/**, /api/v1/geofence/**
+
 management:
   endpoints:
     web:

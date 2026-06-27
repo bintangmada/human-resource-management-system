@@ -32,6 +32,7 @@
         <module>api-gateway</module>
         <module>auth-service</module>
         <module>employee-service</module>
+        <module>attendance-service</module>
     </modules>
 
     <dependencyManagement>
