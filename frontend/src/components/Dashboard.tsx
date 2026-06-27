@@ -5,7 +5,9 @@ import {
   DepartmentResponse,
   JobResponse,
   ApiResponse,
-  PaginationMetadata
+  PaginationMetadata,
+  AttendanceResponse,
+  GeofenceSettingResponse
 } from '../types';
 import './Dashboard.css';
 import { Language, translations } from '../utils/i18n';
@@ -152,12 +154,12 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs';
+type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
   const [tenantName, setTenantName] = useState<string>('Loading...');
-  const t = translations[lang];
+  const t = translations[lang] as any; // Cast as any for new keys
   const actorName = localStorage.getItem('hrms_actor_name') || 'Employee';
   const actorRole = localStorage.getItem('hrms_actor_role') || 'Staff';
 
@@ -188,6 +190,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
+  const [attendances, setAttendances] = useState<AttendanceResponse[]>([]);
+  const [geofences, setGeofences] = useState<GeofenceSettingResponse[]>([]);
+
+  // Self-service attendance state
+  const [myEmployeeId, setMyEmployeeId] = useState<number | null>(null);
+  const [myEmployeeName, setMyEmployeeName] = useState<string>('');
+  const [employeeMap, setEmployeeMap] = useState<Record<number, string>>({});
+  const [todayAttendance, setTodayAttendance] = useState<AttendanceResponse | null>(null);
+  const [selfNotes, setSelfNotes] = useState<string>('');
+  const [selfGeoLocation, setSelfGeoLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selfGeoError, setSelfGeoError] = useState<string>('');
 
   // State untuk menyimpan metadata paginasi (halaman aktif, total halaman, total data, dll.)
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
@@ -196,23 +209,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
   const [empFilters, setEmpFilters] = useState({ id: '', fullName: '', employeeNumber: '', email: '', phoneNumber: '', departmentName: '', jobTitle: '', joinedAt: '', status: '' });
   const [deptFilters, setDeptFilters] = useState({ id: '', name: '', code: '', status: '' });
   const [jobFilters, setJobFilters] = useState({ id: '', title: '', grade: '', status: '' });
+  const [attendanceFilters, setAttendanceFilters] = useState({ employeeId: '', startDate: '', endDate: '' });
+  const [geofenceFilters, setGeofenceFilters] = useState({ name: '' });
+
+  // 3b. STATE UNTUK GEOLOCATION CLOCK-IN CLOCK-OUT
+  const detectSelfLocation = () => {
+    setSelfGeoError('');
+    if (!navigator.geolocation) {
+      setSelfGeoError(lang === 'id' ? 'Geolocation tidak didukung browser Anda.' : 'Geolocation is not supported by your browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setSelfGeoLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        let msg = 'Error';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = lang === 'id' ? 'Izin lokasi ditolak.' : 'Location permission denied.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = lang === 'id' ? 'Informasi lokasi tidak tersedia.' : 'Location position unavailable.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = lang === 'id' ? 'Waktu pendeteksian lokasi habis.' : 'Location detection timeout.';
+        }
+        setSelfGeoError(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   // Helper checks to see if search filters are active
   const isEmpFiltered = Object.values(empFilters).some(val => val !== '');
   const isDeptFiltered = Object.values(deptFilters).some(val => val !== '');
   const isJobFiltered = Object.values(jobFilters).some(val => val !== '');
+  const isAttendanceFiltered = Object.values(attendanceFilters).some(val => val !== '');
+  const isGeofenceFiltered = Object.values(geofenceFilters).some(val => val !== '');
+
 
   // State untuk visibilitas kolom tabel
   const [visibleColumns, setVisibleColumns] = useState<{
     employees: string[];
     departments: string[];
     jobs: string[];
+    attendance: string[];
+    geofence: string[];
   }>(() => {
     const saved = localStorage.getItem('hrms_visible_columns');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.employees) && Array.isArray(parsed.departments) && Array.isArray(parsed.jobs)) {
+        if (parsed && Array.isArray(parsed.employees) && Array.isArray(parsed.departments) && Array.isArray(parsed.jobs) && Array.isArray(parsed.attendance) && Array.isArray(parsed.geofence)) {
           return parsed;
         }
       } catch (e) {
@@ -222,7 +271,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
     return {
       employees: ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions'],
       departments: ['id', 'name', 'code', 'status', 'actions'],
-      jobs: ['id', 'title', 'grade', 'status', 'actions']
+      jobs: ['id', 'title', 'grade', 'status', 'actions'],
+      attendance: ['id', 'date', 'employee', 'clockInTime', 'clockInStatus', 'clockOutTime', 'clockOutStatus', 'notes'],
+      geofence: ['id', 'officeName', 'latitude', 'longitude', 'radius', 'status', 'actions']
     };
   });
 
@@ -250,11 +301,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         { key: 'code', label: t.shortcutCode },
         { key: 'status', label: t.statusActive }
       ];
-    } else {
+    } else if (activeTab === 'jobs') {
       return [
         { key: 'id', label: 'ID' },
         { key: 'title', label: t.jobTitle },
         { key: 'grade', label: t.grade },
+        { key: 'status', label: t.statusActive }
+      ];
+    } else if (activeTab === 'attendance') {
+      return [
+        { key: 'id', label: 'ID' },
+        { key: 'date', label: t.date },
+        { key: 'employee', label: t.employee },
+        { key: 'clockInTime', label: t.clockInTime },
+        { key: 'clockInStatus', label: t.clockInStatus },
+        { key: 'clockOutTime', label: t.clockOutTime },
+        { key: 'clockOutStatus', label: t.clockOutStatus },
+        { key: 'notes', label: t.notes }
+      ];
+    } else {
+      return [
+        { key: 'id', label: 'ID' },
+        { key: 'officeName', label: t.officeName },
+        { key: 'latitude', label: t.latitude },
+        { key: 'longitude', label: t.longitude },
+        { key: 'radius', label: t.radius },
         { key: 'status', label: t.statusActive }
       ];
     }
@@ -275,7 +346,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         ? ['id', 'nik', 'fullName', 'email', 'phoneNumber', 'departmentName', 'jobTitle', 'joinedAt', 'status', 'actions']
         : activeTab === 'departments'
           ? ['id', 'name', 'code', 'status', 'actions']
-          : ['id', 'title', 'grade', 'status', 'actions'];
+          : activeTab === 'jobs'
+            ? ['id', 'title', 'grade', 'status', 'actions']
+            : activeTab === 'attendance'
+              ? ['id', 'date', 'employee', 'clockInTime', 'clockInStatus', 'clockOutTime', 'clockOutStatus', 'notes']
+              : ['id', 'officeName', 'latitude', 'longitude', 'radius', 'status', 'actions'];
 
       const nextList = isVisible
         ? currentList.filter((k) => k !== columnKey)
@@ -296,7 +371,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
 
   // 5. STATE UNTUK MODAL DIALOG (Tambah & Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);              // Penanda modal terbuka/tertutup
-  const [modalType, setModalType] = useState<'employee' | 'department' | 'job'>('employee'); // Jenis form modal
+  const [modalType, setModalType] = useState<'employee' | 'department' | 'job' | 'geofence'>('employee'); // Jenis form modal
   const [editingId, setEditingId] = useState<number | null>(null);    // ID record yang sedang diedit (null jika mode Tambah Baru)
 
   // 6. STATE UNTUK FORM INPUT (Binding values)
@@ -313,6 +388,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
 
   const [deptForm, setDeptForm] = useState({ name: '', code: '', status: 1 });
   const [jobForm, setJobForm] = useState({ title: '', grade: '', status: 1 });
+  const [geofenceForm, setGeofenceForm] = useState({ name: '', latitude: '', longitude: '', radiusMeter: '100', isActive: true });
 
   // 7. STATE UNTUK NOTIFIKASI
   const [errorMsg, setErrorMsg] = useState('');                       // Menyimpan pesan kesalahan
@@ -416,6 +492,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         const res = await apiRequest<ApiResponse<JobResponse[]>>(`/jobs?${query.toString()}`);
         setJobs(res.data);
         if (res.pagination) setPagination(res.pagination);
+      } else if (activeTab === 'attendance') {
+        const queryParams: any = {
+          page: currentPage.toString(),
+          size: pageSize.toString()
+        };
+        if (attendanceFilters.employeeId) {
+          queryParams.employeeId = attendanceFilters.employeeId;
+        }
+        if (attendanceFilters.startDate) {
+          queryParams.startDate = attendanceFilters.startDate;
+        }
+        if (attendanceFilters.endDate) {
+          queryParams.endDate = attendanceFilters.endDate;
+        }
+        const query = new URLSearchParams(queryParams);
+        const res = await apiRequest<ApiResponse<AttendanceResponse[]>>(`/attendance/history?${query.toString()}`);
+        setAttendances(res.data || []);
+        if (res.pagination) setPagination(res.pagination);
+      } else if (activeTab === 'geofence') {
+        const queryParams: any = {
+          page: currentPage.toString(),
+          size: pageSize.toString()
+        };
+        if (geofenceFilters.name) {
+          queryParams.search = geofenceFilters.name;
+        }
+        const query = new URLSearchParams(queryParams);
+        const res = await apiRequest<ApiResponse<GeofenceSettingResponse[]>>(`/geofence?${query.toString()}`);
+        setGeofences(res.data || []);
+        if (res.pagination) setPagination(res.pagination);
       }
     } catch (err: any) {
       setErrorMsg(err.message || (lang === 'id' ? 'Gagal memuat data dari server!' : 'Failed to load data from server!'));
@@ -425,7 +531,58 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
   // Reset pagination ke halaman pertama jika filter pencarian berubah
   useEffect(() => {
     setCurrentPage(0);
-  }, [empFilters, deptFilters, jobFilters]);
+  }, [empFilters, deptFilters, jobFilters, attendanceFilters, geofenceFilters]);
+
+  // Efek samping untuk memuat lookup nama karyawan & detail karyawan saya
+  const loadEmployeesForLookup = async () => {
+    try {
+      const res = await apiRequest<ApiResponse<EmployeeResponse[]>>('/employees?size=1000');
+      if (res && res.data) {
+        const map: Record<number, string> = {};
+        res.data.forEach(emp => {
+          map[emp.id] = `${emp.fullName} (${emp.employeeNumber})`;
+        });
+        setEmployeeMap(map);
+
+        const own = res.data.find(emp => emp.email.toLowerCase() === _actorEmail.toLowerCase());
+        if (own) {
+          setMyEmployeeId(own.id);
+          setMyEmployeeName(own.fullName);
+        }
+      }
+    } catch (err) {
+      console.error("Gagal memuat list karyawan", err);
+    }
+  };
+
+  const fetchTodayAttendance = async (empId: number) => {
+    try {
+      const res = await apiRequest<ApiResponse<AttendanceResponse>>(`/attendance/today?employeeId=${empId}`);
+      if (res && res.data) {
+        setTodayAttendance(res.data);
+      } else {
+        setTodayAttendance(null);
+      }
+    } catch (err) {
+      setTodayAttendance(null);
+    }
+  };
+
+  useEffect(() => {
+    loadEmployeesForLookup();
+  }, [tenantId]);
+
+  useEffect(() => {
+    if (myEmployeeId) {
+      fetchTodayAttendance(myEmployeeId);
+    }
+  }, [myEmployeeId, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'attendance') {
+      detectSelfLocation();
+    }
+  }, [activeTab]);
 
   /**
    * React hook `useEffect`:
@@ -439,7 +596,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, empFilters, deptFilters, jobFilters]);
+  }, [activeTab, currentPage, pageSize, sortBy, sortDir, tenantId, empFilters, deptFilters, jobFilters, attendanceFilters, geofenceFilters]);
 
   /**
    * Fungsi handleTabChange:
@@ -496,6 +653,68 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
     }
   };
 
+  const handleClockIn = async () => {
+    if (!selfGeoLocation) {
+      setErrorMsg(lang === 'id' ? 'Silakan deteksi lokasi GPS terlebih dahulu.' : 'Please detect your GPS location first.');
+      return;
+    }
+    if (!myEmployeeId) {
+      setErrorMsg(lang === 'id' ? 'ID Karyawan tidak ditemukan untuk email Anda.' : 'Employee ID not found for your email.');
+      return;
+    }
+    try {
+      const body = {
+        employeeId: myEmployeeId,
+        latitude: selfGeoLocation.lat,
+        longitude: selfGeoLocation.lng,
+        notes: selfNotes
+      };
+      const res = await apiRequest<ApiResponse<AttendanceResponse>>('/attendance/clock-in', {
+        method: 'POST',
+        body
+      });
+      if (res.success) {
+        setSuccessMsg(res.message || (lang === 'id' ? 'Berhasil Absen Masuk!' : 'Clock In Successful!'));
+        setSelfNotes('');
+        fetchTodayAttendance(myEmployeeId);
+        fetchData();
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || (lang === 'id' ? 'Gagal Absen Masuk!' : 'Clock In Failed!'));
+    }
+  };
+
+  const handleClockOut = async () => {
+    if (!selfGeoLocation) {
+      setErrorMsg(lang === 'id' ? 'Silakan deteksi lokasi GPS terlebih dahulu.' : 'Please detect your GPS location first.');
+      return;
+    }
+    if (!myEmployeeId) {
+      setErrorMsg(lang === 'id' ? 'ID Karyawan tidak ditemukan untuk email Anda.' : 'Employee ID not found for your email.');
+      return;
+    }
+    try {
+      const body = {
+        employeeId: myEmployeeId,
+        latitude: selfGeoLocation.lat,
+        longitude: selfGeoLocation.lng,
+        notes: selfNotes
+      };
+      const res = await apiRequest<ApiResponse<AttendanceResponse>>('/attendance/clock-out', {
+        method: 'POST',
+        body
+      });
+      if (res.success) {
+        setSuccessMsg(res.message || (lang === 'id' ? 'Berhasil Absen Keluar!' : 'Clock Out Successful!'));
+        setSelfNotes('');
+        fetchTodayAttendance(myEmployeeId);
+        fetchData();
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || (lang === 'id' ? 'Gagal Absen Keluar!' : 'Clock Out Failed!'));
+    }
+  };
+
   /**
    * Fungsi openCreateModal:
    * Membuka form modal kosong untuk menginputkan data baru.
@@ -503,7 +722,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
   const openCreateModal = () => {
     setErrorMsg('');
     setEditingId(null);
-    setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
+    setModalType(
+      activeTab === 'employees'
+        ? 'employee'
+        : activeTab === 'departments'
+        ? 'department'
+        : activeTab === 'jobs'
+        ? 'job'
+        : 'geofence'
+    );
 
     // Reset isian form ke nilai awal
     setEmpForm({
@@ -518,6 +745,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
     });
     setDeptForm({ name: '', code: '', status: 1 });
     setJobForm({ title: '', grade: '', status: 1 });
+    setGeofenceForm({ name: '', latitude: '', longitude: '', radiusMeter: '100', isActive: true });
 
     setIsModalOpen(true);
   };
@@ -529,7 +757,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
   const openEditModal = async (item: any) => {
     setErrorMsg('');
     setEditingId(item.id);
-    setModalType(activeTab === 'employees' ? 'employee' : activeTab === 'departments' ? 'department' : 'job');
+    setModalType(
+      activeTab === 'employees'
+        ? 'employee'
+        : activeTab === 'departments'
+        ? 'department'
+        : activeTab === 'jobs'
+        ? 'job'
+        : 'geofence'
+    );
 
     // Pindahkan isi baris tabel terpilih ke dalam state form input
     if (activeTab === 'employees') {
@@ -547,6 +783,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
       setDeptForm({ name: item.name, code: item.code, status: item.status });
     } else if (activeTab === 'jobs') {
       setJobForm({ title: item.title, grade: item.grade || '', status: item.status });
+    } else if (activeTab === 'geofence') {
+      setGeofenceForm({
+        name: item.name,
+        latitude: item.latitude.toString(),
+        longitude: item.longitude.toString(),
+        radiusMeter: item.radiusMeter.toString(),
+        isActive: item.isActive
+      });
     }
 
     setIsModalOpen(true);
@@ -583,6 +827,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         body = {
           ...jobForm,
           status: jobForm.status
+        };
+      } else if (activeTab === 'geofence') {
+        body = {
+          name: geofenceForm.name,
+          latitude: parseFloat(geofenceForm.latitude),
+          longitude: parseFloat(geofenceForm.longitude),
+          radiusMeter: parseFloat(geofenceForm.radiusMeter),
+          isActive: geofenceForm.isActive
         };
       }
 
@@ -679,6 +931,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               <span className="menu-icon"><BriefcaseIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">{t.jobs}</span>}
             </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'geofence' ? 'active' : ''}`}
+              onClick={() => handleTabChange('geofence')}
+              title={t.geofence}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.geofence}</span>}
+            </button>
           </div>
 
           {/* Kelompok Menu: Data Transaksi */}
@@ -692,6 +958,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
             >
               <span className="menu-icon"><UsersIcon /></span>
               {!isSidebarCollapsed && <span className="menu-label">{t.employeeSub}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+              onClick={() => handleTabChange('attendance')}
+              title={t.attendance}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.attendance}</span>}
             </button>
           </div>
         </div>
@@ -767,10 +1049,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         <div className="content-header">
           <div className="page-header-info">
             <h1 className="page-header-title">
-              {activeTab === 'employees' ? t.manageEmployees : activeTab === 'departments' ? t.manageDepartments : t.manageJobs}
+              {activeTab === 'employees'
+                ? t.manageEmployees
+                : activeTab === 'departments'
+                ? t.manageDepartments
+                : activeTab === 'jobs'
+                ? t.manageJobs
+                : activeTab === 'attendance'
+                ? t.manageAttendance
+                : t.manageGeofence}
             </h1>
             <p className="page-header-desc">
-              {activeTab === 'employees' ? t.employeesDesc : t.masterDesc} {tenantName}.
+              {activeTab === 'employees'
+                ? t.employeesDesc
+                : activeTab === 'departments' || activeTab === 'jobs'
+                ? t.masterDesc
+                : activeTab === 'attendance'
+                ? t.attendanceDesc
+                : t.geofenceDesc}{' '}
+              {tenantName}.
             </p>
           </div>
 
@@ -808,11 +1105,177 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               )}
             </div>
 
-            <button className="btn-primary" onClick={openCreateModal}>
-              + {activeTab === 'employees' ? t.addEmployee : activeTab === 'departments' ? t.addDepartment : t.addJob}
-            </button>
+            {activeTab !== 'attendance' && (
+              <button className="btn-primary" onClick={openCreateModal}>
+                + {activeTab === 'employees'
+                  ? t.addEmployee
+                  : activeTab === 'departments'
+                  ? t.addDepartment
+                  : activeTab === 'jobs'
+                  ? t.addJob
+                  : t.addGeofence}
+              </button>
+            )}
           </div>
         </div>
+
+        {/* SELF-SERVICE CLOCK IN/CLOCK OUT PANEL */}
+        {activeTab === 'attendance' && (
+          <div className="self-service-card glass-panel" style={{ marginBottom: '24px', padding: '24px', borderRadius: '12px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 500px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary-color)' }}>
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                {lang === 'id' ? 'Pusat Absensi Mandiri' : 'Self-Service Attendance Center'}
+              </h2>
+              
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '8px', marginBottom: '8px' }}>
+                  <span className="text-muted">{lang === 'id' ? 'Nama Karyawan:' : 'Employee Name:'}</span>
+                  <strong style={{ color: 'var(--text-color)' }}>{myEmployeeName || 'Guest / Admin'}</strong>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '8px', marginBottom: '8px' }}>
+                  <span className="text-muted">{lang === 'id' ? 'Tanggal Hari Ini:' : 'Today\'s Date:'}</span>
+                  <span style={{ color: 'var(--text-color)' }}>{new Date().toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '8px' }}>
+                  <span className="text-muted">{lang === 'id' ? 'Status Kehadiran:' : 'Attendance Status:'}</span>
+                  <div>
+                    {!todayAttendance ? (
+                      <span className="tag-status-inactive" style={{ display: 'inline-block' }}>
+                        {lang === 'id' ? 'Belum Absen Masuk' : 'Not Clocked In Yet'}
+                      </span>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        <span className="tag-status-active" style={{ display: 'inline-block' }}>
+                          {lang === 'id' ? `Masuk: ${todayAttendance.clockIn} (${todayAttendance.clockInStatus})` : `In: ${todayAttendance.clockIn} (${todayAttendance.clockInStatus})`}
+                        </span>
+                        {todayAttendance.clockOut ? (
+                          <span className="tag-status-active" style={{ display: 'inline-block', backgroundColor: 'var(--primary-color)' }}>
+                            {lang === 'id' ? `Keluar: ${todayAttendance.clockOut} (${todayAttendance.clockOutStatus})` : `Out: ${todayAttendance.clockOut} (${todayAttendance.clockOutStatus})`}
+                          </span>
+                        ) : (
+                          <span className="tag-status-inactive" style={{ display: 'inline-block', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }}>
+                            {lang === 'id' ? 'Belum Absen Keluar' : 'Not Clocked Out Yet'}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {(!todayAttendance || !todayAttendance.clockOut) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label className="form-label" style={{ marginBottom: '6px' }}>{t.notes}</label>
+                    <textarea
+                      className="custom-input"
+                      style={{ width: '100%', minHeight: '60px', resize: 'vertical' }}
+                      value={selfNotes}
+                      onChange={(e) => setSelfNotes(e.target.value)}
+                      placeholder={lang === 'id' ? 'Tulis catatan absen (misal: Tugas lapangan, WFH, dll)...' : 'Write clock notes (e.g. Field assignment, WFH, etc)...'}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    {!todayAttendance ? (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleClockIn}
+                        disabled={!selfGeoLocation}
+                        style={{ flex: 1, height: '42px', backgroundColor: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                          <polyline points="10 17 15 12 10 7"></polyline>
+                          <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        {t.clockIn}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleClockOut}
+                        disabled={!selfGeoLocation}
+                        style={{ flex: 1, height: '42px', backgroundColor: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        {t.clockOut}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '24px' }} className="self-service-geo-panel">
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                  {lang === 'id' ? 'Status Geokoding & GPS' : 'GPS & Geocoding Status'}
+                </h3>
+                
+                {selfGeoLocation ? (
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+                    <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: 600 }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+                      {lang === 'id' ? 'Lokasi Terdeteksi' : 'Location Detected'}
+                    </div>
+                    <div style={{ fontSize: '13px', fontFamily: 'monospace' }}>
+                      Lat: {selfGeoLocation.lat.toFixed(6)}<br />
+                      Lng: {selfGeoLocation.lng.toFixed(6)}
+                    </div>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${selfGeoLocation.lat},${selfGeoLocation.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: '#3b82f6', textDecoration: 'underline' }}
+                    >
+                      {lang === 'id' ? 'Lihat di Google Maps' : 'View on Google Maps'}
+                    </a>
+                  </div>
+                ) : (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '12px', borderRadius: '8px', marginBottom: '12px', color: '#ef4444' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: 600 }}>
+                      <span>⚠️</span>
+                      {lang === 'id' ? 'Lokasi Belum Terdeteksi' : 'Location Not Detected'}
+                    </div>
+                    <p style={{ fontSize: '12px', margin: 0 }}>
+                      {selfGeoError || (lang === 'id' ? 'Mengambil koordinat satelit GPS Anda...' : 'Retrieving your GPS satellite coordinates...')}
+                    </p>
+                  </div>
+                )}
+                
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  {lang === 'id' 
+                    ? '*Catatan: Anda harus berada di radius Geofence kantor untuk dapat melakukan absensi. Pastikan Anda mengizinkan akses lokasi.' 
+                    : '*Note: You must be within the office Geofence radius to perform attendance. Make sure you allow location access.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={detectSelfLocation}
+                style={{ width: '100%', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                🔄 {lang === 'id' ? 'Pindai Ulang Lokasi' : 'Rescan Location'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 4. TABEL UTAMA DATA */}
         <div className="table-container glass-panel">
@@ -1180,6 +1643,121 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
                   </tr>
                 </>
               )}
+
+              {/* Header Kolom Kehadiran */}
+              {activeTab === 'attendance' && (
+                <>
+                  <tr>
+                    {visibleColumns.attendance.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.attendance.includes('date') && <th onClick={() => handleSort('date')}>{t.date} {sortBy === 'date' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.attendance.includes('employee') && <th>{t.employee}</th>}
+                    {visibleColumns.attendance.includes('clockInTime') && <th>{t.clockInTime}</th>}
+                    {visibleColumns.attendance.includes('clockInStatus') && <th>{t.clockInStatus}</th>}
+                    {visibleColumns.attendance.includes('clockOutTime') && <th>{t.clockOutTime}</th>}
+                    {visibleColumns.attendance.includes('clockOutStatus') && <th>{t.clockOutStatus}</th>}
+                    {visibleColumns.attendance.includes('notes') && <th>{t.notes}</th>}
+                  </tr>
+                  <tr className="table-filter-row">
+                    {visibleColumns.attendance.includes('id') && <th></th>}
+                    {visibleColumns.attendance.includes('date') && (
+                      <th>
+                        <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
+                          <input
+                            type="date"
+                            className="table-filter-input"
+                            value={attendanceFilters.startDate}
+                            onChange={(e) => setAttendanceFilters({ ...attendanceFilters, startDate: e.target.value })}
+                            placeholder="Start"
+                          />
+                          <input
+                            type="date"
+                            className="table-filter-input"
+                            value={attendanceFilters.endDate}
+                            onChange={(e) => setAttendanceFilters({ ...attendanceFilters, endDate: e.target.value })}
+                            placeholder="End"
+                          />
+                        </div>
+                      </th>
+                    )}
+                    {visibleColumns.attendance.includes('employee') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={attendanceFilters.employeeId}
+                          onChange={(e) => setAttendanceFilters({ ...attendanceFilters, employeeId: e.target.value })}
+                          placeholder="Emp ID..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.attendance.includes('clockInTime') && <th></th>}
+                    {visibleColumns.attendance.includes('clockInStatus') && <th></th>}
+                    {visibleColumns.attendance.includes('clockOutTime') && <th></th>}
+                    {visibleColumns.attendance.includes('clockOutStatus') && <th></th>}
+                    {visibleColumns.attendance.includes('notes') && (
+                      <th>
+                        {isAttendanceFiltered && (
+                          <button
+                            type="button"
+                            className="clear-filters-btn"
+                            onClick={() => setAttendanceFilters({ employeeId: '', startDate: '', endDate: '' })}
+                            title={t.resetFilter}
+                          >
+                            <ResetIcon />
+                          </button>
+                        )}
+                      </th>
+                    )}
+                  </tr>
+                </>
+              )}
+
+              {/* Header Kolom Geofence */}
+              {activeTab === 'geofence' && (
+                <>
+                  <tr>
+                    {visibleColumns.geofence.includes('id') && <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.geofence.includes('officeName') && <th onClick={() => handleSort('name')}>{t.officeName} {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}</th>}
+                    {visibleColumns.geofence.includes('latitude') && <th>{t.latitude}</th>}
+                    {visibleColumns.geofence.includes('longitude') && <th>{t.longitude}</th>}
+                    {visibleColumns.geofence.includes('radius') && <th>{t.radius}</th>}
+                    {visibleColumns.geofence.includes('status') && <th>{t.statusActive}</th>}
+                    {visibleColumns.geofence.includes('actions') && <th>{t.actions}</th>}
+                  </tr>
+                  <tr className="table-filter-row">
+                    {visibleColumns.geofence.includes('id') && <th></th>}
+                    {visibleColumns.geofence.includes('officeName') && (
+                      <th>
+                        <input
+                          type="text"
+                          className="table-filter-input"
+                          value={geofenceFilters.name}
+                          onChange={(e) => setGeofenceFilters({ ...geofenceFilters, name: e.target.value })}
+                          placeholder="Filter name..."
+                        />
+                      </th>
+                    )}
+                    {visibleColumns.geofence.includes('latitude') && <th></th>}
+                    {visibleColumns.geofence.includes('longitude') && <th></th>}
+                    {visibleColumns.geofence.includes('radius') && <th></th>}
+                    {visibleColumns.geofence.includes('status') && <th></th>}
+                    {visibleColumns.geofence.includes('actions') && (
+                      <th>
+                        {isGeofenceFiltered && (
+                          <button
+                            type="button"
+                            className="clear-filters-btn"
+                            onClick={() => setGeofenceFilters({ name: '' })}
+                            title={t.resetFilter}
+                          >
+                            <ResetIcon />
+                          </button>
+                        )}
+                      </th>
+                    )}
+                  </tr>
+                </>
+              )}
             </thead>
             <tbody>
               {/* Loop Baris Karyawan */}
@@ -1275,9 +1853,69 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
                 </tr>
               ))}
 
+              {/* Loop Baris Kehadiran */}
+              {activeTab === 'attendance' && attendances.map((att) => (
+                <tr key={att.id}>
+                  {visibleColumns.attendance.includes('id') && <td>{att.id}</td>}
+                  {visibleColumns.attendance.includes('date') && <td>{att.date}</td>}
+                  {visibleColumns.attendance.includes('employee') && (
+                    <td>{employeeMap[att.employeeId] || `ID: ${att.employeeId}`}</td>
+                  )}
+                  {visibleColumns.attendance.includes('clockInTime') && <td>{att.clockIn || '-'}</td>}
+                  {visibleColumns.attendance.includes('clockInStatus') && (
+                    <td>
+                      {att.clockInStatus ? (
+                        <span className={att.clockInStatus === 'ON_TIME' ? 'tag-status-active' : 'tag-status-inactive'} style={att.clockInStatus !== 'ON_TIME' ? { backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' } : {}}>
+                          {att.clockInStatus}
+                        </span>
+                      ) : '-'}
+                    </td>
+                  )}
+                  {visibleColumns.attendance.includes('clockOutTime') && <td>{att.clockOut || '-'}</td>}
+                  {visibleColumns.attendance.includes('clockOutStatus') && (
+                    <td>
+                      {att.clockOutStatus ? (
+                        <span className={att.clockOutStatus === 'ON_TIME' ? 'tag-status-active' : 'tag-status-inactive'} style={att.clockOutStatus !== 'ON_TIME' ? { backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' } : {}}>
+                          {att.clockOutStatus}
+                        </span>
+                      ) : '-'}
+                    </td>
+                  )}
+                  {visibleColumns.attendance.includes('notes') && <td>{att.notes || '-'}</td>}
+                </tr>
+              ))}
+
+              {/* Loop Baris Geofence */}
+              {activeTab === 'geofence' && geofences.map((geo) => (
+                <tr key={geo.id}>
+                  {visibleColumns.geofence.includes('id') && <td>{geo.id}</td>}
+                  {visibleColumns.geofence.includes('officeName') && <td className="bold">{geo.name}</td>}
+                  {visibleColumns.geofence.includes('latitude') && <td>{geo.latitude}</td>}
+                  {visibleColumns.geofence.includes('longitude') && <td>{geo.longitude}</td>}
+                  {visibleColumns.geofence.includes('radius') && <td>{geo.radiusMeter} m</td>}
+                  {visibleColumns.geofence.includes('status') && (
+                    <td>
+                      <span className={geo.isActive ? 'tag-status-active' : 'tag-status-inactive'}>
+                        {geo.isActive ? t.active : t.inactive}
+                      </span>
+                    </td>
+                  )}
+                  {visibleColumns.geofence.includes('actions') && (
+                    <td>
+                      <div className="action-buttons">
+                        <button className="action-btn edit-btn" onClick={() => openEditModal(geo)} title={lang === 'id' ? 'Ubah Data' : 'Edit Data'}><EditIcon /></button>
+                        <button className="action-btn delete-btn" onClick={() => confirmDelete(geo.id)} title={lang === 'id' ? 'Hapus Data' : 'Delete Data'}><TrashIcon /></button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+
               {((activeTab === 'employees' && employees.length === 0) ||
                 (activeTab === 'departments' && departments.length === 0) ||
-                (activeTab === 'jobs' && jobs.length === 0)) && (
+                (activeTab === 'jobs' && jobs.length === 0) ||
+                (activeTab === 'attendance' && attendances.length === 0) ||
+                (activeTab === 'geofence' && geofences.length === 0)) && (
                   <tr>
                     <td colSpan={visibleColumns[activeTab].length} className="empty-row">
                       {t.noData}
@@ -1355,7 +1993,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         <div className="modal-backdrop">
           <div className="modal-content glass-panel">
             <div className="modal-header">
-              <h2>{editingId ? (lang === 'id' ? 'Edit' : 'Edit') : (lang === 'id' ? 'Tambah' : 'Add')} {modalType === 'employee' ? t.employees : modalType === 'department' ? t.departments : t.jobs}</h2>
+              <h2>
+                {editingId ? (lang === 'id' ? 'Edit' : 'Edit') : (lang === 'id' ? 'Tambah' : 'Add')}{' '}
+                {modalType === 'employee'
+                  ? t.employees
+                  : modalType === 'department'
+                  ? t.departments
+                  : modalType === 'job'
+                  ? t.jobs
+                  : t.geofence}
+              </h2>
               <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>×</button>
             </div>
 
@@ -1536,6 +2183,99 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
                       <option value={0}>{t.inactive}</option>
                     </select>
                   </div>
+                </>
+              )}
+
+              {/* Form Khusus Geofence */}
+              {modalType === 'geofence' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">{t.officeName}</label>
+                    <input
+                      type="text"
+                      className="custom-input"
+                      value={geofenceForm.name}
+                      onChange={(e) => setGeofenceForm({ ...geofenceForm, name: e.target.value })}
+                      placeholder="e.g. Kantor Pusat Jakarta"
+                      required
+                    />
+                  </div>
+                  <div className="form-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-group">
+                      <label className="form-label">{t.latitude}</label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="custom-input"
+                        value={geofenceForm.latitude}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, latitude: e.target.value })}
+                        placeholder="e.g. -6.200000"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">{t.longitude}</label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="custom-input"
+                        value={geofenceForm.longitude}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, longitude: e.target.value })}
+                        placeholder="e.g. 106.816666"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label">{t.radius} (meter)</label>
+                      <input
+                        type="number"
+                        className="custom-input"
+                        value={geofenceForm.radiusMeter}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, radiusMeter: e.target.value })}
+                        placeholder="e.g. 100"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">{t.statusActive}</label>
+                      <select
+                        className="custom-input"
+                        value={geofenceForm.isActive ? 'true' : 'false'}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, isActive: e.target.value === 'true' })}
+                        required
+                      >
+                        <option value="true">{t.active}</option>
+                        <option value="false">{t.inactive}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                          (position) => {
+                            setGeofenceForm({
+                              ...geofenceForm,
+                              latitude: position.coords.latitude.toString(),
+                              longitude: position.coords.longitude.toString()
+                            });
+                          },
+                          (error) => {
+                            setErrorMsg(lang === 'id' ? `Gagal mengambil lokasi: ${error.message}` : `Failed to get location: ${error.message}`);
+                          }
+                        );
+                      } else {
+                        setErrorMsg(lang === 'id' ? 'Geolocation tidak didukung oleh browser ini.' : 'Geolocation is not supported by this browser.');
+                      }
+                    }}
+                    style={{ width: '100%', marginTop: '16px', padding: '10px', fontSize: '13px' }}
+                  >
+                    📍 {lang === 'id' ? 'Gunakan Lokasi Saya Saat Ini' : 'Use My Current Location'}
+                  </button>
                 </>
               )}
 
