@@ -1,4 +1,4 @@
-package com.hrms.enterprise.employee.service;
+package com.hrms.enterprise.auth.service;
 
 /**
  * Interface EmailService:

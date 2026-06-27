@@ -1,4 +1,4 @@
-package com.hrms.enterprise.employee.entity;
+package com.hrms.enterprise.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

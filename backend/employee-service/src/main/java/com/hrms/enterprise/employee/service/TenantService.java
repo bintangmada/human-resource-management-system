@@ -11,18 +11,9 @@ import java.util.List;
  */
 public interface TenantService {
     
-    // Mendaftarkan tenant baru dan inisialisasi data default
-    TenantResponse registerTenant(TenantRequest request);
-    
-    // Verifikasi subdomain saat login terisolasi
-    TenantLookupResponse lookupTenant(String subdomain);
-    
     // Mendapatkan list semua tenant (untuk dashboard Master Admin)
     List<TenantResponse> getAllTenants();
     
     // Kirim email peringatan jatuh tempo manual/otomatis
     void triggerExpiryAlert(Long id);
-
-    // Verifikasi email konfirmasi untuk aktivasi tenant baru
-    void confirmEmail(String subdomain, String token);
 }

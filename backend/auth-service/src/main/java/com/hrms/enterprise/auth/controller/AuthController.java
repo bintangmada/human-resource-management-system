@@ -1,13 +1,13 @@
-package com.hrms.enterprise.employee.controller;
+package com.hrms.enterprise.auth.controller;
 
-import com.hrms.enterprise.employee.dto.ApiResponse;
-import com.hrms.enterprise.employee.dto.AuthResponse;
-import com.hrms.enterprise.employee.dto.LoginRequest;
-import com.hrms.enterprise.employee.entity.Employee;
-import com.hrms.enterprise.employee.exception.BadRequestException;
-import com.hrms.enterprise.employee.exception.ResourceNotFoundException;
-import com.hrms.enterprise.employee.repository.EmployeeRepository;
-import com.hrms.enterprise.employee.security.JwtTokenProvider;
+import com.hrms.enterprise.auth.dto.ApiResponse;
+import com.hrms.enterprise.auth.dto.AuthResponse;
+import com.hrms.enterprise.auth.dto.LoginRequest;
+import com.hrms.enterprise.auth.entity.Employee;
+import com.hrms.enterprise.auth.exception.BadRequestException;
+import com.hrms.enterprise.auth.exception.ResourceNotFoundException;
+import com.hrms.enterprise.auth.repository.EmployeeRepository;
+import com.hrms.enterprise.auth.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import com.hrms.enterprise.employee.entity.Tenant;
-import com.hrms.enterprise.employee.repository.TenantRepository;
+import com.hrms.enterprise.auth.entity.Tenant;
+import com.hrms.enterprise.auth.repository.TenantRepository;
 
 /**
  * AuthController:

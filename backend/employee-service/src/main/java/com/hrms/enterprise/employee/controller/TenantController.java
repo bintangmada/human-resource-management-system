@@ -1,11 +1,8 @@
 package com.hrms.enterprise.employee.controller;
 
 import com.hrms.enterprise.employee.dto.ApiResponse;
-import com.hrms.enterprise.employee.dto.TenantLookupResponse;
-import com.hrms.enterprise.employee.dto.TenantRequest;
 import com.hrms.enterprise.employee.dto.TenantResponse;
 import com.hrms.enterprise.employee.service.TenantService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,25 +24,6 @@ public class TenantController {
     }
 
     /**
-      * Endpoint Publik: Mendaftarkan Tenant (Perusahaan Klien) baru di portal SaaS.
-      */
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<TenantResponse>> registerTenant(@RequestBody TenantRequest request) {
-        TenantResponse response = tenantService.registerTenant(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Tenant registered successfully and default settings initialized!", response));
-    }
-
-    /**
-      * Endpoint Publik: Mengecek keabsahan subdomain saat memuat login screen terisolasi.
-      */
-    @GetMapping("/lookup")
-    public ResponseEntity<ApiResponse<TenantLookupResponse>> lookupTenant(@RequestParam String subdomain) {
-        TenantLookupResponse response = tenantService.lookupTenant(subdomain);
-        return ResponseEntity.ok(ApiResponse.success("Tenant subdomain is valid.", response));
-    }
-
-    /**
       * Endpoint Master Admin: Mendapatkan seluruh daftar tenant aktif di ekosistem SaaS.
       */
     @GetMapping
@@ -61,14 +39,5 @@ public class TenantController {
     public ResponseEntity<ApiResponse<Void>> triggerExpiryAlert(@PathVariable Long id) {
         tenantService.triggerExpiryAlert(id);
         return ResponseEntity.ok(ApiResponse.success("Billing expiry alert triggered successfully.", null));
-    }
-
-    /**
-      * Endpoint Publik: Memverifikasi email registrasi tenant baru.
-      */
-    @GetMapping("/confirm")
-    public ResponseEntity<ApiResponse<Void>> confirmEmail(@RequestParam String subdomain, @RequestParam String token) {
-        tenantService.confirmEmail(subdomain, token);
-        return ResponseEntity.ok(ApiResponse.success("Email verified successfully! Your tenant workspace is now active.", null));
     }
 }
