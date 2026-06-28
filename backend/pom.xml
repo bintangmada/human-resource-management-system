@@ -33,6 +33,7 @@
         <module>auth-service</module>
         <module>employee-service</module>
         <module>attendance-service</module>
+        <module>leave-service</module>
     </modules>
 
     <dependencyManagement>

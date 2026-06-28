@@ -7,9 +7,13 @@ import {
   ApiResponse,
   PaginationMetadata,
   AttendanceResponse,
-  GeofenceSettingResponse
+  GeofenceSettingResponse,
+  LeaveTypeResponse,
+  LeaveBalanceResponse,
+  LeaveRequestResponse
 } from '../types';
 import './Dashboard.css';
+import { LeaveManagement } from './LeaveManagement';
 import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
@@ -154,7 +158,7 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence';
+type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
@@ -975,6 +979,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               </span>
               {!isSidebarCollapsed && <span className="menu-label">{t.attendance}</span>}
             </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'leave' ? 'active' : ''}`}
+              onClick={() => handleTabChange('leave')}
+              title={t.leave}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.leave}</span>}
+            </button>
           </div>
         </div>
 
@@ -1045,8 +1066,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
           )}
         </div>
 
-        {/* Header Halaman Aktif */}
-        <div className="content-header">
+        {activeTab === 'leave' ? (
+          <LeaveManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : (
+          <>
+            {/* Header Halaman Aktif */}
+            <div className="content-header">
           <div className="page-header-info">
             <h1 className="page-header-title">
               {activeTab === 'employees'
@@ -1985,6 +2015,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 

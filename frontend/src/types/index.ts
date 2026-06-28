@@ -72,3 +72,39 @@ export interface GeofenceSettingResponse {
   isActive: boolean;
 }
 
+export interface LeaveTypeResponse {
+  id: number;
+  name: string;
+  defaultEntitlement: number;
+  requiresApproval: boolean;
+}
+
+export interface LeaveBalanceResponse {
+  id: number;
+  employeeId: number;
+  leaveTypeId: number;
+  leaveTypeName: string;
+  year: number;
+  entitlement: number;
+  used: number;
+  pending: number;
+  remaining: number;
+}
+
+export interface LeaveRequestResponse {
+  id: number;
+  employeeId: number;
+  employeeName?: string; // resolved on frontend/backend side
+  leaveTypeId: number;
+  leaveTypeName: string;
+  startDate: string;
+  endDate: string;
+  totalDays: number;
+  reason: string;
+  status: string; // PENDING, APPROVED, REJECTED, CANCELLED
+  approvedBy?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+
