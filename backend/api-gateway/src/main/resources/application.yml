@@ -44,6 +44,12 @@ spring:
           predicates:
             - Path=/api/v1/attendance/**, /api/v1/geofence/**
 
+        # Route to Leave Service
+        - id: leave-service
+          uri: http://localhost:8024
+          predicates:
+            - Path=/api/v1/leave/**
+
 management:
   endpoints:
     web:
