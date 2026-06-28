@@ -120,6 +120,26 @@ export const translations = {
     attendanceDesc: 'Halaman operasional untuk melacak absensi masuk dan keluar karyawan',
     geofenceDesc: 'Pengaturan wilayah radius lokasi absensi kantor',
     officeName: 'Nama Lokasi / Kantor',
+    
+    // Leave Management (id)
+    leave: 'Pengajuan & Kuota Cuti',
+    leaveType: 'Jenis Cuti',
+    leaveRequests: 'Daftar Pengajuan Cuti',
+    leaveBalances: 'Kuota Cuti Karyawan',
+    leaveDesc: 'Manajemen pengajuan cuti, izin ketidakhadiran, sisa kuota cuti tahunan, dan persetujuan (approval)',
+    startDate: 'Tanggal Mulai',
+    endDate: 'Tanggal Selesai',
+    totalDays: 'Total Hari',
+    reason: 'Alasan Cuti',
+    leaveStatus: 'Status Cuti',
+    applyLeave: 'Ajukan Cuti Baru',
+    entitlement: 'Hak Kuota',
+    used: 'Terpakai',
+    pending: 'Pending',
+    remaining: 'Sisa Kuota',
+    approve: 'Setujui',
+    reject: 'Tolak',
+    rejectNotesPlaceholder: 'Tulis alasan penolakan/catatan...',
   },
   en: {
     // Login Page
@@ -240,5 +260,25 @@ export const translations = {
     attendanceDesc: 'Operational page to track employee clock-in and clock-out',
     geofenceDesc: 'Office geofence radius location settings',
     officeName: 'Location Name / Office',
+    
+    // Leave Management (en)
+    leave: 'Leave & Time Off Requests',
+    leaveType: 'Leave Type',
+    leaveRequests: 'Leave Requests list',
+    leaveBalances: 'Employee Leave Entitlements',
+    leaveDesc: 'Manage employee leave requests, time offs, remaining balance entitlements, and approvals',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    totalDays: 'Total Days',
+    reason: 'Leave Reason',
+    leaveStatus: 'Leave Status',
+    applyLeave: 'Apply New Leave',
+    entitlement: 'Entitlement',
+    used: 'Used',
+    pending: 'Pending',
+    remaining: 'Remaining Balance',
+    approve: 'Approve',
+    reject: 'Reject',
+    rejectNotesPlaceholder: 'Write reason for rejection/notes...',
   }
 };
