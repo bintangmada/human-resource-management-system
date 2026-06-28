@@ -41,6 +41,7 @@
         <module>recruitment-service</module>
         <module>asset-service</module>
         <module>notification-service</module>
+        <module>offboarding-service</module>
     </modules>
 
     <dependencyManagement>

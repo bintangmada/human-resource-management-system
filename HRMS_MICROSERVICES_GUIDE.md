@@ -17,8 +17,9 @@ Dokumen ini berisi panduan lengkap untuk seluruh modul mikroservis (backend & ro
 | 7 | **`claim-service`** | `8026` | `hrms_claim` | `/api/v1/claims/**` | Penggantian biaya (reimbursement) medis, bensin, kacamata dll. |
 | 8 | **`loan-service`** | `8027` | `hrms_loan` | `/api/v1/loans/**` | Pengajuan kasbon/pinjaman dengan tabel amortisasi cicilan otomatis. |
 | 9 | **`performance-service`** | `8028` | `hrms_performance` | `/api/v1/performance/**` | Evaluasi kinerja karyawan berdasarkan 5 kriteria KPI core. |
-| 10 | **`recruitment-service`** | `8029` | `hrms_recruitment` | `/api/v1/recruitment/**` | Pemasangan lowongan pekerjaan & pelacakan status seleksi pelamar. |
 | 11 | **`asset-service`** | `8031` | `hrms_asset` | `/api/v1/assets/**` | Pendaftaran aset kantor & pengajuan permohonan inventaris/servis. |
+| 12 | **`notification-service`** | `8032` | `hrms_notification` | `/api/v1/notifications/**` | Pengumuman internal perusahaan & kalender kegiatan kantor. |
+| 13 | **`offboarding-service`** | `8034` | `hrms_offboarding` | `/api/v1/offboarding/**` | Pengajuan resign mandiri & penyelesaian ceklis exit clearance. |
 
 ---
 
@@ -101,6 +102,19 @@ Pencatatan aset sarana prasarana fisik kantor, inventarisasi kepemilikan perangk
   - `POST /api/v1/assets/requests` (Pengajuan peminjaman/perbaikan aset)
   - `PUT /api/v1/assets/requests/{id}/process` (Keputusan alokasi aset oleh HR)
 
+### 1️⃣2️⃣ Announcements & Calendar (`notification-service`)
+Publikasi pengumuman penting perusahaan dan pengelolaan jadwal agenda kalender kegiatan bulanan kantor.
+- **APIs**:
+  - `POST /api/v1/notifications/announcements` (Membuat pengumuman baru)
+  - `GET /api/v1/notifications/events` (Mendapatkan event agenda kalender kantor)
+
+### 1️⃣3️⃣ Resign & Exit Clearance (`offboarding-service`)
+Pengajuan pengunduran diri karyawan mandiri, verifikasi persetujuan HR, dan pelacakan ceklis exit clearance lintas departemen.
+- **APIs**:
+  - `POST /api/v1/offboarding/requests` (Pengajuan resign mandiri)
+  - `PUT /api/v1/offboarding/requests/{id}/process` (Persetujuan HR & inisialisasi clearance)
+  - `PUT /api/v1/offboarding/requests/{requestId}/items/{itemId}` (Update status item ceklis clearance)
+
 ---
 
 ## 🚦 3. Panduan Menjalankan Semua Servis (Lokal)
@@ -116,6 +130,8 @@ CREATE DATABASE hrms_loan;
 CREATE DATABASE hrms_performance;
 CREATE DATABASE hrms_recruitment;
 CREATE DATABASE hrms_asset;
+CREATE DATABASE hrms_notification;
+CREATE DATABASE hrms_offboarding;
 ```
 
 Setelah database siap, Anda dapat menjalankan masing-masing service Spring Boot dari IDE pilihan Anda atau menggunakan Maven CLI:

@@ -92,6 +92,12 @@ spring:
           predicates:
             - Path=/api/v1/notifications/**
 
+        # Route to Offboarding Service
+        - id: offboarding-service
+          uri: http://localhost:8034
+          predicates:
+            - Path=/api/v1/offboarding/**
+
 management:
   endpoints:
     web:
