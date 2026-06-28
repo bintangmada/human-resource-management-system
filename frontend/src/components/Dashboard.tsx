@@ -14,6 +14,13 @@ import {
 } from '../types';
 import './Dashboard.css';
 import { LeaveManagement } from './LeaveManagement';
+import PayrollManagement from './PayrollManagement';
+import { ClaimsManagement } from './ClaimsManagement';
+import { LoansManagement } from './LoansManagement';
+import { PerformanceManagement } from './PerformanceManagement';
+import { RecruitmentManagement } from './RecruitmentManagement';
+import { AssetManagement } from './AssetManagement';
+import { AnnouncementsCalendar } from './AnnouncementsCalendar';
 import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
@@ -158,7 +165,7 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave';
+type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
@@ -996,6 +1003,110 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               </span>
               {!isSidebarCollapsed && <span className="menu-label">{t.leave}</span>}
             </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'payroll' ? 'active' : ''}`}
+              onClick={() => handleTabChange('payroll')}
+              title={t.payroll}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.payroll}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'claims' ? 'active' : ''}`}
+              onClick={() => handleTabChange('claims')}
+              title={t.claims}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.claims}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'loans' ? 'active' : ''}`}
+              onClick={() => handleTabChange('loans')}
+              title={t.loans}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="9" y1="9" x2="15" y2="9"></line>
+                  <line x1="9" y1="13" x2="15" y2="13"></line>
+                  <line x1="9" y1="17" x2="13" y2="17"></line>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.loans}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'performance' ? 'active' : ''}`}
+              onClick={() => handleTabChange('performance')}
+              title={t.performance}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.performance}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'recruitment' ? 'active' : ''}`}
+              onClick={() => handleTabChange('recruitment')}
+              title={t.recruitment}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.recruitment}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'assets' ? 'active' : ''}`}
+              onClick={() => handleTabChange('assets')}
+              title={t.assets}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.assets}</span>}
+            </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'announcements' ? 'active' : ''}`}
+              onClick={() => handleTabChange('announcements')}
+              title={t.announcements}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.announcements}</span>}
+            </button>
           </div>
         </div>
 
@@ -1068,6 +1179,55 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
 
         {activeTab === 'leave' ? (
           <LeaveManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'payroll' ? (
+          <PayrollManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'claims' ? (
+          <ClaimsManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'loans' ? (
+          <LoansManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'performance' ? (
+          <PerformanceManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'recruitment' ? (
+          <RecruitmentManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'assets' ? (
+          <AssetManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'announcements' ? (
+          <AnnouncementsCalendar
             tenantId={tenantId}
             actorEmail={_actorEmail}
             lang={lang}
