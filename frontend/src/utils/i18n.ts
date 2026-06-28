@@ -278,6 +278,20 @@ export const translations = {
     checklistHR: 'Clearance HR (Exit Interview)',
     checklistOM: 'Clearance Fasilitas (Laptop & Kunci)',
     checklistFN: 'Clearance Keuangan (Sisa Gaji/Pajak)',
+
+    // Travel & Expense (id)
+    travel: 'Dinas & Reimbursement',
+    travelDesc: 'Ajukan perjalanan dinas, ajukan persetujuan anggaran taksiran, serta kirim dan setujui klaim nota biaya riil perjalanan dinas (tiket pesawat, hotel, konsumsi, dan transport)',
+    submitTravel: 'Ajukan Perjalanan Dinas',
+    travelDestination: 'Kota / Tempat Tujuan',
+    travelPurpose: 'Tujuan Dinas',
+    travelEstimatedBudget: 'Estimasi Anggaran',
+    travelApprovedBudget: 'Anggaran Disetujui',
+    addReceipt: 'Tambah Nota Pengeluaran',
+    expenseAmount: 'Jumlah Pengeluaran',
+    expenseType: 'Jenis Biaya',
+    receiptLink: 'Link / Upload Nota',
+    processTravel: 'Proses Anggaran Dinas',
   },
   en: {
     // Login Page
@@ -556,5 +570,19 @@ export const translations = {
     checklistHR: 'HR Clearance (Exit Interview)',
     checklistOM: 'Facility Clearance (Laptop & Card)',
     checklistFN: 'Finance Clearance (Settlement)',
+
+    // Travel & Expense (en)
+    travel: 'Travel & Expense',
+    travelDesc: 'Submit business travel requests, request estimated budget approval, and upload/approve real expense receipts (flights, hotels, meals, and transport)',
+    submitTravel: 'Submit Business Travel Request',
+    travelDestination: 'Destination City / Venue',
+    travelPurpose: 'Business Trip Purpose',
+    travelEstimatedBudget: 'Estimated Budget',
+    travelApprovedBudget: 'Approved Budget',
+    addReceipt: 'Add Expense Receipt',
+    expenseAmount: 'Expense Amount',
+    expenseType: 'Expense Type',
+    receiptLink: 'Receipt URL / Link',
+    processTravel: 'Process Travel Budget',
   }
 };

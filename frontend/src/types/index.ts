@@ -345,6 +345,34 @@ export interface OffboardingRequestResponse {
   createdAt: string;
 }
 
+export interface TravelExpenseResponse {
+  id: number;
+  expenseType: 'FLIGHT' | 'HOTEL' | 'MEALS' | 'TRANSPORT' | 'OTHER';
+  amount: number;
+  receiptUrl?: string;
+  description?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface TravelRequestResponse {
+  id: number;
+  tenantId: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  destination: string;
+  purpose: string;
+  startDate: string;
+  endDate: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  estimatedBudget: number;
+  approvedBudget?: number;
+  adminNotes?: string;
+  travelExpenses: TravelExpenseResponse[];
+  createdAt: string;
+}
+
+
 
 
 

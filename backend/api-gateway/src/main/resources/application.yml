@@ -98,6 +98,12 @@ spring:
           predicates:
             - Path=/api/v1/offboarding/**
 
+        # Route to Travel Service
+        - id: travel-service
+          uri: http://localhost:8033
+          predicates:
+            - Path=/api/v1/travel/**
+
 management:
   endpoints:
     web:
