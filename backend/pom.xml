@@ -34,6 +34,13 @@
         <module>employee-service</module>
         <module>attendance-service</module>
         <module>leave-service</module>
+        <module>payroll-service</module>
+        <module>claim-service</module>
+        <module>loan-service</module>
+        <module>performance-service</module>
+        <module>recruitment-service</module>
+        <module>asset-service</module>
+        <module>notification-service</module>
     </modules>
 
     <dependencyManagement>

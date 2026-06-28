@@ -50,6 +50,48 @@ spring:
           predicates:
             - Path=/api/v1/leave/**
 
+        # Route to Payroll Service
+        - id: payroll-service
+          uri: http://localhost:8025
+          predicates:
+            - Path=/api/v1/payroll/**
+
+        # Route to Claim Service
+        - id: claim-service
+          uri: http://localhost:8026
+          predicates:
+            - Path=/api/v1/claims/**
+
+        # Route to Loan Service
+        - id: loan-service
+          uri: http://localhost:8027
+          predicates:
+            - Path=/api/v1/loans/**
+
+        # Route to Performance Service
+        - id: performance-service
+          uri: http://localhost:8028
+          predicates:
+            - Path=/api/v1/performance/**
+
+        # Route to Recruitment Service
+        - id: recruitment-service
+          uri: http://localhost:8029
+          predicates:
+            - Path=/api/v1/recruitment/**
+
+        # Route to Asset Service
+        - id: asset-service
+          uri: http://localhost:8031
+          predicates:
+            - Path=/api/v1/assets/**
+
+        # Route to Notification Service
+        - id: notification-service
+          uri: http://localhost:8032
+          predicates:
+            - Path=/api/v1/notifications/**
+
 management:
   endpoints:
     web:
