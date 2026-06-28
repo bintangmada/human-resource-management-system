@@ -21,6 +21,7 @@ import { PerformanceManagement } from './PerformanceManagement';
 import { RecruitmentManagement } from './RecruitmentManagement';
 import { AssetManagement } from './AssetManagement';
 import { AnnouncementsCalendar } from './AnnouncementsCalendar';
+import { OffboardingManagement } from './OffboardingManagement';
 import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
@@ -165,7 +166,7 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements';
+type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements' | 'offboarding';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
@@ -1107,6 +1108,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               </span>
               {!isSidebarCollapsed && <span className="menu-label">{t.announcements}</span>}
             </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'offboarding' ? 'active' : ''}`}
+              onClick={() => handleTabChange('offboarding')}
+              title={t.offboarding}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.offboarding}</span>}
+            </button>
           </div>
         </div>
 
@@ -1228,6 +1244,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
           />
         ) : activeTab === 'announcements' ? (
           <AnnouncementsCalendar
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'offboarding' ? (
+          <OffboardingManagement
             tenantId={tenantId}
             actorEmail={_actorEmail}
             lang={lang}

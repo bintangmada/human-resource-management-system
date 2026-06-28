@@ -322,5 +322,29 @@ export interface CompanyEventResponse {
   createdAt: string;
 }
 
+export interface ClearanceChecklistResponse {
+  id: number;
+  itemName: string;
+  department: 'IT' | 'HR' | 'FINANCE' | 'OFFICE_MANAGER';
+  status: 'PENDING' | 'COMPLETED';
+  checkedBy?: string;
+  remarks?: string;
+}
+
+export interface OffboardingRequestResponse {
+  id: number;
+  tenantId: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  reason: string;
+  resignationDate: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  adminNotes?: string;
+  clearanceChecklists: ClearanceChecklistResponse[];
+  createdAt: string;
+}
+
+
 
 

@@ -264,6 +264,20 @@ export const translations = {
     eventType: 'Tipe Kegiatan',
     eventLocation: 'Lokasi Kegiatan',
     archiveAnnouncement: 'Arsipkan Pengumuman',
+
+    // Offboarding & Resign (id)
+    offboarding: 'Resign & Offboarding',
+    offboardingDesc: 'Ajukan pengunduran diri karyawan, proses verifikasi persetujuan HR, dan lakukan pelacakan penyelesaian ceklis clearance (IT, HR, Sarana Prasarana, & Keuangan)',
+    submitResignation: 'Ajukan Resign / Offboarding',
+    resignationDate: 'Tanggal Terakhir Kerja',
+    resignationReason: 'Alasan Resign',
+    clearanceChecklist: 'Ceklis Clearance Mandiri',
+    clearanceStatus: 'Status Clearance',
+    processResignation: 'Proses Pengajuan Resign',
+    checklistIT: 'Clearance IT (Akses & Server)',
+    checklistHR: 'Clearance HR (Exit Interview)',
+    checklistOM: 'Clearance Fasilitas (Laptop & Kunci)',
+    checklistFN: 'Clearance Keuangan (Sisa Gaji/Pajak)',
   },
   en: {
     // Login Page
@@ -528,5 +542,19 @@ export const translations = {
     eventType: 'Event Type',
     eventLocation: 'Venue / Location',
     archiveAnnouncement: 'Archive Announcement',
+
+    // Offboarding & Resign (en)
+    offboarding: 'Resign & Offboarding',
+    offboardingDesc: 'Submit resignation requests, review/approve offboarding status, and trace/complete department clearance checklists (IT, HR, Office Manager, & Finance)',
+    submitResignation: 'Submit Resignation / Offboarding',
+    resignationDate: 'Last Working Day',
+    resignationReason: 'Reason for Resigning',
+    clearanceChecklist: 'Clearance Checklist Status',
+    clearanceStatus: 'Clearance Status',
+    processResignation: 'Process Resignation Request',
+    checklistIT: 'IT Clearance (Accounts & VPN)',
+    checklistHR: 'HR Clearance (Exit Interview)',
+    checklistOM: 'Facility Clearance (Laptop & Card)',
+    checklistFN: 'Finance Clearance (Settlement)',
   }
 };
