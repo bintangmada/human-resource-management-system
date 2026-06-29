@@ -155,12 +155,30 @@ CREATE DATABASE hrms_travel;
 CREATE DATABASE hrms_training;
 ```
 
-Setelah database siap, Anda dapat menjalankan masing-masing service Spring Boot dari IDE pilihan Anda atau menggunakan Maven CLI:
+Setelah database siap, Anda dapat mengelola seluruh 15 mikroservis backend sekaligus menggunakan script utilitas `start-all-services.sh` di root project.
+
+### 🚀 Cara Menjalankan Semua Servis Sekaligus:
 ```bash
-mvn spring-boot:run -pl api-gateway
-mvn spring-boot:run -pl auth-service
-# ... dan seterusnya untuk setiap folder service
+# 1. Jalankan semua 15 microservices di background
+./start-all-services.sh start
+
+# 2. Cek status berjalan atau matinya tiap servis
+./start-all-services.sh status
+
+# 3. Untuk mematikan semua servis yang sedang berjalan
+./start-all-services.sh stop
 ```
+
+### 📋 Memantau Log Servis:
+Semua output log dari tiap-tiap servis dialihkan ke folder `backend/logs/`. Anda dapat memantau log secara real-time dengan perintah:
+```bash
+tail -f backend/logs/api-gateway.log
+tail -f backend/logs/employee-service.log
+# ... (sesuaikan dengan nama servis yang ingin dipantau)
+```
+
+---
+
 Lalu jalankan frontend React (Vite):
 ```bash
 cd frontend

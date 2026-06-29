@@ -1,225 +1,124 @@
-# Enterprise HRIS Architecture & Scalable System Design
+# Enterprise HRIS Architecture & Multi-Tenant Microservices
 
 [![Java Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.x-brightgreen?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/Frontend--Web-React.js%20(Vite)-blue?logo=react&logoColor=white)](https://react.dev/)
-[![React Native](https://img.shields.io/badge/Frontend--Mobile-React%20Native-61DAFB?logo=react&logoColor=white)](https://reactnative.dev/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Caching-Redis%20Cluster-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![Apache Kafka](https://img.shields.io/badge/Messaging-Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![CI/CD](https://img.shields.io/badge/Pipeline-Jenkins%20Declarative-D24939?logo=jenkins&logoColor=white)](https://www.jenkins.io/)
 
-A brand-neutral, cloud-native, and highly scalable **Enterprise Human Resource Information System (HRIS)** blueprint designed to support **millions of active users** with high write throughput, zero-downtime deployments, and complex relational workflows (Payroll, Tax compliance, Loans, Claims, and OKRs).
+A cloud-native, highly scalable **Enterprise Human Resource Information System (HRIS)** blueprint designed to support **millions of active users** with strict multi-tenant logical data isolation, robust event-driven workflows, and a glassmorphic dashboard frontend.
 
 ---
 
 ## 📌 Table of Contents
-1. [System Topology & Architecture](#-system-topology--architecture)
-2. [Database Schema (42 Tables ERD)](#-database-schema-42-tables-erd)
-3. [Key Scalability & Resilience Design Patterns](#-key-scalability--resilience-design-patterns)
+1. [System Topology & Port Mapping](#-system-topology--port-mapping)
+2. [Logical Isolation & Multi-Tenancy](#-logical-isolation--multi-tenancy)
+3. [Monorepo Directory Structure](#-monorepo-directory-structure)
 4. [Enterprise Core Modules](#-enterprise-core-modules)
-5. [Monorepo Directory Structure](#-monorepo-directory-structure)
-6. [CI/CD Pipeline Workflow (Jenkins)](#-cicd-pipeline-workflow-jenkins)
-7. [Getting Started (Local Development)](#-getting-started-local-development)
+5. [Getting Started (Local Development)](#-getting-started-local-development)
+6. [Managing Services](#-managing-services)
 
 ---
 
-## 🏗 System Topology & Architecture
+## 🏗 System Topology & Port Mapping
 
-This architecture implements a containerized, decoupled **Microservices Pattern** powered by **Spring Cloud Gateway** and **Keycloak** to handle high traffic and avoid the bottlenecks of legacy monolithic setups.
+This architecture implements a containerized, decoupled **Microservices Pattern** powered by **Spring Cloud Gateway** and independent PostgreSQL databases for each service to ensure strict boundaries.
 
-```mermaid
-graph TD
-    %% Clients
-    Client[Web Client & Mobile ESS] -->|HTTPS / WSS| LB[Cloud Load Balancer]
-    
-    %% Gateway
-    LB -->|Ingress Traffic| APIGW[API Gateway / Spring Cloud Gateway]
-    
-    %% Services
-    APIGW -->|Routing & Auth| AuthService[1. Auth & Identity Service - Keycloak/OAuth2]
-    APIGW -->|CRUD & Info| HRBaseService[2. Employee Core Service]
-    APIGW -->|High-Write Logs| AttendanceService[3. Attendance Service]
-    APIGW -->|Heavy Compute| PayrollService[4. Payroll & Loans Service]
-    APIGW -->|Async Alerts| NotificationService[5. Notification Service]
-    
-    %% Caching & Message Queue
-    AttendanceService -->|1. Publish Check-In Request| MQ[Message Queue - Apache Kafka]
-    MQ -->|2. Async Processing| AttendanceWorker[Attendance DB Worker]
-    
-    %% Databases
-    AuthService --> DB_Auth[(PostgreSQL Master - Auth)]
-    HRBaseService --> DB_HR[(PostgreSQL Master - HR)]
-    AttendanceWorker --> DB_Attend[(NoSQL Cassandra / TimescaleDB)]
-    PayrollService --> DB_Payroll[(PostgreSQL Master - Payroll)]
-    
-    %% Read-Write Splitting (Core HR Example)
-    DB_HR -->|Replication| DB_HR_Replica[(PostgreSQL Read Replicas)]
-    HRBaseService -.->|Reads| DB_HR_Replica
-    
-    %% Global Cache
-    Redis[(Redis Cluster Cache & Session)] <--> APIGW
-    Redis <--> AttendanceService
-    Redis <--> HRBaseService
-```
+| No | Microservice | Port | PostgreSQL Database | Main Endpoint (via Gateway) | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | **`api-gateway`** | `8020` | *None* | `http://localhost:8020/` | Main gateway routing and JWT context propagation. |
+| 2 | **`auth-service`** | `8021` | `hrms_auth` | `/api/v1/auth/**` | Keycloak/JWT authentication and tenant registration. |
+| 3 | **`employee-service`**| `8022` | `hrms_employee` | `/api/v1/employees/**` | Core employee profile directory and org structure. |
+| 4 | **`attendance-service`**| `8023` | `hrms_attendance`| `/api/v1/attendance/**` | Coordinate-based geofenced clock-in/out logs. |
+| 5 | **`leave-service`** | `8024` | `hrms_leave` | `/api/v1/leaves/**` | Time-off requests and annual quota calculations. |
+| 6 | **`payroll-service`** | `8025` | `hrms_payroll` | `/api/v1/payroll/**` | Monthly payslip generator with BPJS and tax engine. |
+| 7 | **`claim-service`** | `8026` | `hrms_claim` | `/api/v1/claims/**` | Medical and transport expense reimbursement. |
+| 8 | **`loan-service`** | `8027` | `hrms_loan` | `/api/v1/loans/**` | Emergency cash advances with flat amortization tables. |
+| 9 | **`performance-service`**| `8028` | `hrms_performance`| `/api/v1/performance/**` | Employee KPI evaluations and rating gauges. |
+| 10| **`recruitment-service`**| `8029` | `hrms_recruitment`| `/api/v1/recruitment/**` | ATS recruitment pipeline and job board. |
+| 11| **`training-service`**| `8030` | `hrms_training` | `/api/v1/training/**` | Learning & Development program enrollments. |
+| 12| **`asset-service`** | `8031` | `hrms_asset` | `/api/v1/assets/**` | Office inventory listing and maintenance ticket tracking. |
+| 13| **`notification-service`**| `8032` | `hrms_notification`| `/api/v1/notifications/**`| Corporate announcement tickers and calendar schedules. |
+| 14| **`travel-service`** | `8033` | `hrms_travel` | `/api/v1/travel/**` | Business travel requests and receipt claims. |
+| 15| **`offboarding-service`**| `8034` | `hrms_offboarding` | `/api/v1/offboarding/**`| Resignation clearance workflow checklist. |
 
 ---
 
-## 📊 Database Schema (42 Tables ERD)
+## 🔑 Logical Isolation & Multi-Tenancy
 
-To support the massive structural breadth of an enterprise HRIS, the database schema is divided into **42 highly structured tables** ensuring data consistency and strict optionality/cardinality constraints.
-
-```mermaid
-erDiagram
-    %% Core HR Base & Auth
-    USERS }o--|| ROLES : "has role"
-    EMPLOYEE ||--o| USERS : "has login account"
-    EMPLOYEE }o--|| DEPARTMENTS : "belongs to"
-    EMPLOYEE }o--|| JOBS : "holds position"
-    EMPLOYEE ||--o{ EMPLOYEE_SALARY_HISTORY : "has salary changes"
-    EMPLOYEE ||--o| EMPLOYEE_BANK_DETAILS : "has payout account"
-    EMPLOYEE ||--o{ EMPLOYEE_DOCUMENTS : "submits verification"
-    
-    %% Core Operations, Geofencing, & Shifts
-    EMPLOYEE ||--o{ ATTENDANCES : "records clock-in/out"
-    ATTENDANCES }o--|| ATTENDANCE_LOCATIONS : "validated at"
-    EMPLOYEE ||--o{ WORK_SCHEDULES : "has allocated"
-    SHIFTS ||--o{ WORK_SCHEDULES : "defines shift for"
-    EMPLOYEE ||--o{ LEAVE_REQUESTS : "submits time-off"
-    EMPLOYEE ||--o{ LEAVE_BALANCES : "has quota"
-    EMPLOYEE ||--o{ PAYROLLS : "receives monthly"
-    PAYROLLS ||--o{ PAYROLL_DETAILS : "contains breakdown"
-    
-    %% System Utilities & Workflows
-    EMPLOYEE ||--o{ AUDIT_LOGS : "generates"
-    EMPLOYEE ||--o{ NOTIFICATIONS : "receives"
-    APPROVAL_ROUTES ||--o{ APPROVAL_LOGS : "guides"
-    EMPLOYEE ||--o{ APPROVAL_LOGS : "acts as approver/requester"
-    
-    %% Loans Module
-    EMPLOYEE ||--o{ LOAN_REQUESTS : "submits"
-    LOAN_REQUESTS ||--o{ LOAN_INSTALLMENTS : "has schedule"
-    LOAN_INSTALLMENTS }o--o| PAYROLLS : "deducted in"
-    
-    %% Claims Module
-    EMPLOYEE ||--o{ CLAIM_REQUESTS : "submits receipt"
-    CLAIM_CATEGORIES ||--o{ CLAIM_REQUESTS : "categorizes"
-    EMPLOYEE ||--o{ CLAIM_BALANCES : "has allocation"
-    CLAIM_CATEGORIES ||--o{ CLAIM_BALANCES : "defines limit for"
-    
-    %% Attendance Correction (ESS)
-    EMPLOYEE ||--o{ ATTENDANCE_CHANGE_REQUESTS : "requests correction"
-    
-    %% OKRs Module
-    EMPLOYEE ||--o{ OKR_OBJECTIVES : "owns target"
-    OKR_OBJECTIVES ||--o{ OKR_KEY_RESULTS : "contains measurable"
-    
-    %% Project Management
-    PROJECTS ||--o{ PROJECT_MEMBERS : "allocates"
-    EMPLOYEE ||--o{ PROJECT_MEMBERS : "participates"
-    PROJECTS ||--o{ PROJECT_TASKS : "contains project"
-    PROJECT_TASKS ||--o| EMPLOYEE : "assigned to"
-    
-    %% Performance Reviews
-    EMPLOYEE ||--o{ PERFORMANCE_REVIEWS : "evaluated in"
-    
-    %% Recruitment & Manpower Planning
-    DEPARTMENTS ||--o{ MANPOWER_REQUISITIONS : "requests headcount"
-    JOBS ||--o{ JOB_POSTINGS : "recruiting for"
-    JOB_POSTINGS ||--o{ APPLICANTS : "receives CV from"
-    APPLICANTS ||--o{ RECRUITMENT_STAGES : "passes through"
-    
-    %% L&D Training
-    TRAINING_COURSES ||--o{ EMPLOYEE_TRAININGS : "offers course"
-    EMPLOYEE ||--o{ EMPLOYEE_TRAININGS : "attends"
-```
-
----
-
-## ⚡ Key Scalability & Resilience Design Patterns
-
-### 1. Asynchronous Write-Behind Caching (Apache Kafka)
-*   **The Problem**: During morning clock-in peaks (07:30 - 08:30 AM), millions of concurrent database writes lock standard relational databases.
-*   **Our Solution**: The `attendance-service` validates coordinate metrics via Redis, immediately issues a `200 OK` (within **20ms**) back to the mobile client, and pushes a `clockin` event to **Apache Kafka**. A background database worker processes events asynchronously in batches, protecting the database from traffic spikes.
-
-### 2. High-Performance Caching (Redis Cluster)
-*   Active user session states (JWT blocklist), geofencing office coordinates, and system configurations are cached with a **volatile-lru** eviction policy. This reduces primary database read queries by **up to 90%**.
-
-### 3. Database Partitioning (Polyglot Persistence)
-*   **Transactional Core**: Powered by **PostgreSQL** to maintain strict **ACID compliance** for salary distributions and loan contracts.
-*   **Append-Only Logs**: High-volume log data (`attendances`, `audit_logs`) is routed to **TimescaleDB** (time-series extension) to sustain high write rates without impacting core transactions.
-
-### 4. Zero-Downtime Deployment
-*   Supports rolling updates and **Blue-Green Deployments** on **Kubernetes (K8s)** using horizontal pod autoscaling (HPA) to scale replicas dynamically when CPU utilization exceeds **70%**.
-
----
-
-## 📦 Enterprise Core Modules
-1.  **HR Base & Auth**: Core biodata, organizational hierarchies, multi-tenant roles, and security audit trails.
-2.  **Payroll & Tax Engine**: Automated calculation of base salaries, variable allowances, loan amortization deductions, BPJS, and PPh 21 progressive income taxes.
-3.  **Attendance & Geofencing**: Real-time geolocation check-in/out validated within custom geofence radii.
-4.  **Workflows & Approvals**: Hierarchical, multi-level route approvals for claims, loans, and leaves.
-5.  **Employee Loans**: Comprehensive amortization schedules with automatic payroll deductions.
-6.  **Reimbursements & Claims**: Automated balance tracking per category with receipt validation workflows.
-7.  **OKR Tracker**: Align individual Key Results with company-wide Objectives.
-8.  **Project Management**: Employee workload monitoring, project assignment, and task progress tracking.
-9.  **Recruitment (ATS)**: Manpower planning, job board postings, CV applications, and recruitment stage tracking.
-10. **Learning & Development (L&D)**: Professional development courses, training sessions, and grading metrics.
+Every request entering the gateway is authenticated using standard **JSON Web Tokens (JWT)**.
+- **Tenant Context**: The gateway forwards the validated user context to downstream microservices via the `X-Tenant-ID` header.
+- **Data Safety**: A Spring-based filter wrapper intercepts incoming SQL queries and JpaRepositories to filter records against the target `tenantId`, preventing cross-company data leakage.
 
 ---
 
 ## 📂 Monorepo Directory Structure
 
-This project uses a clean monorepo architecture to keep backend services, web portals, mobile application, and deployments synchronized.
-
 ```text
 human-resource-management-system/
-├── backend/                        # Java Spring Boot Microservices
-│   ├── pom.xml                     # Maven Parent configuration
-│   ├── api-gateway/                # Spring Cloud API Gateway (Port 8000)
-│   ├── tenant-service/             # SaaS Control Plane & Subscription Management (Port 8005)
-│   ├── auth-service/               # Keycloak Security Integration (Port 8010)
-│   ├── employee-service/           # Core Employee & Org service (Port 8020)
-│   ├── attendance-service/         # Geofencing Clock-in/out engine (Port 8030)
-│   ├── payroll-service/            # Payroll calculation & tax engine (Port 8040)
-│   └── notification-service/       # Event-driven mail & push notifier (Port 8050)
-├── frontend-web/                   # Web Dashboard (React.js + Vite)
-├── frontend-mobile/                # Mobile App (React Native or Flutter)
-├── docker/                         # Docker Compose configuration files
-│   └── docker-compose.yml          # Local orchestration of all services
-├── docs/                           # Comprehensive System Analysis
-│   ├── ANALYSIS_HRIS_ENTERPRISE.md # Database relational detailed specs
-│   └── SCALABLE_ARCHITECTURE_DESIGN.md # Multi-cluster, caching, and queue specs
-└── Jenkinsfile                     # Declarative CI/CD pipeline script
+├── backend/                       # Java Spring Boot 3.x Microservices
+│   ├── pom.xml                    # Maven parent project definition
+│   ├── api-gateway/               # Spring Cloud Gateway (Port 8020)
+│   ├── auth-service/              # Identity manager (Port 8021)
+│   ├── employee-service/          # Core directory (Port 8022)
+│   ├── attendance-service/        # Clocking & geofencing (Port 8023)
+│   ├── leave-service/             # Cuti/time-off planner (Port 8024)
+│   ├── payroll-service/           # Tax & payslip generator (Port 8025)
+│   ├── claim-service/             # Reimbursement processor (Port 8026)
+│   ├── loan-service/              # Salary advance schedules (Port 8027)
+│   ├── performance-service/       # OKR & KPI evaluations (Port 8028)
+│   ├── recruitment-service/       # Applicant tracker ATS (Port 8029)
+│   ├── training-service/          # Learning & Development L&D (Port 8030)
+│   ├── asset-service/             # Inventory tracker (Port 8031)
+│   ├── notification-service/      # Calendars & bulletins (Port 8032)
+│   ├── travel-service/            # Business trip expense logs (Port 8033)
+│   └── offboarding-service/       # Exit clearance items (Port 8034)
+├── frontend/                      # Web Dashboard built on React.js (Vite)
+├── docker/                        # Compose files for postgres, timescale, redis, and kafka
+├── create-all-db.sql              # Inductive database generation SQL script
+└── start-all-services.sh          # Concurrent microservices bash manager
 ```
 
 ---
 
-## 🚀 Getting Started (Local Development)
+## ⚡ Getting Started (Local Development)
 
 ### Prerequisites
-*   [Docker & Docker Compose](https://docs.docker.com/engine/install/)
-*   [Java 17 JDK](https://openjdk.org/projects/jdk/17/) (For backend compiles)
-*   [Node.js 18+](https://nodejs.org/) (For frontend compilation)
+- Docker & Docker Compose
+- Java JDK 17
+- Node.js 18+
 
-### Run Infrastructure Stack
-Initialize all microservices, databases (PostgreSQL, TimescaleDB), Redis, and Apache Kafka in one command:
+### Step 1: Run Infrastructure Stack
+Start database servers, TimescaleDB, Redis caches, and Apache Kafka brokers:
 ```bash
-# Clone the repository
-git clone https://github.com/bintangmada/human-resource-management-system.git
-cd human-resource-management-system
-
-# Start database, cache, broker, and microservices
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-### Validate Deployment Status
-Check if all microservices and databases are up and running:
+### Step 2: Initialize Databases
+Provision all 14 isolated schemas within your PostgreSQL container:
 ```bash
-docker compose -f docker/docker-compose.yml ps
+psql -U postgres -h localhost -p 5434 -f create-all-db.sql
 ```
-The API Gateway will be accessible at `http://localhost:8000` and React Web Dashboard at `http://localhost:3000`.
+
+---
+
+## 🛠 Managing Services
+
+We provide a custom utility script to manage starting and stopping all 15 microservices concurrently:
+
+```bash
+# Start all Spring Boot services in the background
+./start-all-services.sh start
+
+# Monitor execution status of all services
+./start-all-services.sh status
+
+# Stop all background services
+./start-all-services.sh stop
+```
+
+Log outputs for each service are piped directly to `backend/logs/<service-name>.log`.
 
 ---
 

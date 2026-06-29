@@ -24,6 +24,7 @@ import { AnnouncementsCalendar } from './AnnouncementsCalendar';
 import { OffboardingManagement } from './OffboardingManagement';
 import { TravelManagement } from './TravelManagement';
 import { TrainingManagement } from './TrainingManagement';
+import { Overview } from './Overview';
 import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
@@ -168,7 +169,7 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements' | 'offboarding' | 'travel' | 'training';
+type ActiveTab = 'overview' | 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements' | 'offboarding' | 'travel' | 'training';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
@@ -198,7 +199,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
 
   // 1. STATE UNTUK TAB AKTIF
   // Menentukan tab mana yang sedang dibuka (default: employees/karyawan)
-  const [activeTab, setActiveTab] = useState<ActiveTab>('employees');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
 
   // 2. STATE UNTUK DATA LIST DARI BACKEND
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
@@ -924,6 +925,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
         </div>
 
         <div className="sidebar-menu">
+          {/* Kelompok Menu: Utama */}
+          <div className="menu-group">
+            <div className="menu-group-title">{lang === 'id' ? 'BERANDA' : 'HOME'}</div>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => handleTabChange('overview')}
+              title={lang === 'id' ? 'Beranda' : 'Overview'}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{lang === 'id' ? 'Beranda' : 'Overview'}</span>}
+            </button>
+          </div>
+
           {/* Kelompok Menu: Konfigurasi Data Master */}
           <div className="menu-group">
             <div className="menu-group-title">{lang === 'id' ? 'KONFIGURASI DATA MASTER' : 'MASTER DATA CONFIGURATION'}</div>
@@ -1298,6 +1318,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
             actorEmail={_actorEmail}
             lang={lang}
             theme={theme}
+          />
+        ) : activeTab === 'overview' ? (
+          <Overview
+            tenantName={tenantName}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+            onNavigate={(tab) => handleTabChange(tab)}
           />
         ) : (
           <>
