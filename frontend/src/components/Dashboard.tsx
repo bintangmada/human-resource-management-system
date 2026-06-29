@@ -23,6 +23,7 @@ import { AssetManagement } from './AssetManagement';
 import { AnnouncementsCalendar } from './AnnouncementsCalendar';
 import { OffboardingManagement } from './OffboardingManagement';
 import { TravelManagement } from './TravelManagement';
+import { TrainingManagement } from './TrainingManagement';
 import { Language, translations } from '../utils/i18n';
 
 // Inline SVG Flat Icons for premium consistent aesthetics
@@ -167,7 +168,7 @@ interface DashboardProps {
 }
 
 // Menentukan tipe data tab yang didukung
-type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements' | 'offboarding' | 'travel';
+type ActiveTab = 'employees' | 'departments' | 'jobs' | 'attendance' | 'geofence' | 'leave' | 'payroll' | 'claims' | 'loans' | 'performance' | 'recruitment' | 'assets' | 'announcements' | 'offboarding' | 'travel' | 'training';
 
 export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _actorEmail, onLogout, lang, changeLang, theme, setTheme }) => {
 
@@ -1138,6 +1139,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
               </span>
               {!isSidebarCollapsed && <span className="menu-label">{t.travel}</span>}
             </button>
+            <button
+              type="button"
+              className={`menu-item-btn ${activeTab === 'training' ? 'active' : ''}`}
+              onClick={() => handleTabChange('training')}
+              title={t.training}
+            >
+              <span className="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+              </span>
+              {!isSidebarCollapsed && <span className="menu-label">{t.training}</span>}
+            </button>
           </div>
         </div>
 
@@ -1273,6 +1287,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ tenantId, actorEmail: _act
           />
         ) : activeTab === 'travel' ? (
           <TravelManagement
+            tenantId={tenantId}
+            actorEmail={_actorEmail}
+            lang={lang}
+            theme={theme}
+          />
+        ) : activeTab === 'training' ? (
+          <TrainingManagement
             tenantId={tenantId}
             actorEmail={_actorEmail}
             lang={lang}

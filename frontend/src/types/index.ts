@@ -372,6 +372,32 @@ export interface TravelRequestResponse {
   createdAt: string;
 }
 
+export interface TrainingEnrollmentResponse {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  enrollmentDate: string;
+  status: 'ENROLLED' | 'COMPLETED' | 'CANCELLED';
+  certificateUrl?: string;
+  feedback?: string;
+}
+
+export interface TrainingResponse {
+  id: number;
+  tenantId: number;
+  title: string;
+  description?: string;
+  trainer: string;
+  scheduleDate: string;
+  durationHours: number;
+  capacity: number;
+  status: 'UPCOMING' | 'ONGOING' | 'COMPLETED';
+  enrollments: TrainingEnrollmentResponse[];
+  createdAt: string;
+}
+
+
 
 
 

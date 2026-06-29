@@ -292,6 +292,19 @@ export const translations = {
     expenseType: 'Jenis Biaya',
     receiptLink: 'Link / Upload Nota',
     processTravel: 'Proses Anggaran Dinas',
+
+    // Learning & Development (id)
+    training: 'Pelatihan & L&D',
+    trainingDesc: 'Kelola program pelatihan internal/eksternal karyawan, jadwalkan materi baru, lakukan pendaftaran mandiri oleh karyawan, serta unggah sertifikat bukti kelulusan pelatihan',
+    createTraining: 'Buat Program Pelatihan',
+    trainingTitle: 'Judul Pelatihan',
+    trainingTrainer: 'Nama Pengajar / Trainer',
+    trainingCapacity: 'Kapasitas Peserta',
+    trainingDuration: 'Durasi (Jam)',
+    enrollTraining: 'Daftar Pelatihan',
+    trainingFeedback: 'Kritik & Saran Peserta',
+    uploadCertificate: 'Unggah Sertifikat Kelulusan',
+    certificateLink: 'Link Sertifikat',
   },
   en: {
     // Login Page
@@ -584,5 +597,18 @@ export const translations = {
     expenseType: 'Expense Type',
     receiptLink: 'Receipt URL / Link',
     processTravel: 'Process Travel Budget',
+
+    // Learning & Development (en)
+    training: 'Learning & Development',
+    trainingDesc: 'Manage internal/external employee training programs, schedule new courses, enable self-service enrollment, and upload completion certificates once done',
+    createTraining: 'Create Training Program',
+    trainingTitle: 'Training Title',
+    trainingTrainer: 'Trainer / Instructor Name',
+    trainingCapacity: 'Max Participants Capacity',
+    trainingDuration: 'Duration (Hours)',
+    enrollTraining: 'Enroll in Course',
+    trainingFeedback: 'Participant Feedback / Remarks',
+    uploadCertificate: 'Upload Course Certificate',
+    certificateLink: 'Certificate Link / URL',
   }
 };
