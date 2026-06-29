@@ -345,6 +345,60 @@ export interface OffboardingRequestResponse {
   createdAt: string;
 }
 
+export interface TravelExpenseResponse {
+  id: number;
+  expenseType: 'FLIGHT' | 'HOTEL' | 'MEALS' | 'TRANSPORT' | 'OTHER';
+  amount: number;
+  receiptUrl?: string;
+  description?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface TravelRequestResponse {
+  id: number;
+  tenantId: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  destination: string;
+  purpose: string;
+  startDate: string;
+  endDate: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  estimatedBudget: number;
+  approvedBudget?: number;
+  adminNotes?: string;
+  travelExpenses: TravelExpenseResponse[];
+  createdAt: string;
+}
+
+export interface TrainingEnrollmentResponse {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  enrollmentDate: string;
+  status: 'ENROLLED' | 'COMPLETED' | 'CANCELLED';
+  certificateUrl?: string;
+  feedback?: string;
+}
+
+export interface TrainingResponse {
+  id: number;
+  tenantId: number;
+  title: string;
+  description?: string;
+  trainer: string;
+  scheduleDate: string;
+  durationHours: number;
+  capacity: number;
+  status: 'UPCOMING' | 'ONGOING' | 'COMPLETED';
+  enrollments: TrainingEnrollmentResponse[];
+  createdAt: string;
+}
+
+
+
 
 
 

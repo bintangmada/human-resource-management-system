@@ -42,6 +42,8 @@
         <module>asset-service</module>
         <module>notification-service</module>
         <module>offboarding-service</module>
+        <module>travel-service</module>
+        <module>training-service</module>
     </modules>
 
     <dependencyManagement>

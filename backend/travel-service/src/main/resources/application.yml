@@ -1,0 +1,45 @@
+server:
+  port: 8033
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: travel-service
+
+  # Database Connection Configuration (Separate database schema for business travel logs)
+  datasource:
+    url: jdbc:postgresql://${HRMS_DB_HOST:localhost}:${HRMS_DB_PORT:5434}/${HRMS_DB_NAME_TRAVEL:hrms_travel}
+    username: ${HRMS_DB_USERNAME:postgres}
+    password: ${HRMS_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HRMS_DB_POOL_MAX:20}
+      minimum-idle: ${HRMS_DB_POOL_MIN:5}
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 20000
+
+  # JPA & Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: ${HRMS_JPA_DDL_AUTO:update}
+    show-sql: ${HRMS_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Springdoc OpenAPI Swagger Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    default-models-expand-depth: -1
+  api-docs:
+    path: /v3/api-docs
+  paths-to-match: /api/v1/**
+
+app:
+  jwt:
+    secret: ${HRMS_JWT_SECRET:hrms_super_secure_jwt_secret_key_2026_portfolio_application}
+    expiration-ms: 86400000

@@ -20,6 +20,8 @@ Dokumen ini berisi panduan lengkap untuk seluruh modul mikroservis (backend & ro
 | 11 | **`asset-service`** | `8031` | `hrms_asset` | `/api/v1/assets/**` | Pendaftaran aset kantor & pengajuan permohonan inventaris/servis. |
 | 12 | **`notification-service`** | `8032` | `hrms_notification` | `/api/v1/notifications/**` | Pengumuman internal perusahaan & kalender kegiatan kantor. |
 | 13 | **`offboarding-service`** | `8034` | `hrms_offboarding` | `/api/v1/offboarding/**` | Pengajuan resign mandiri & penyelesaian ceklis exit clearance. |
+| 14 | **`travel-service`** | `8033` | `hrms_travel` | `/api/v1/travel/**` | Pengajuan dinas & reimbursement perjalanan dinas. |
+| 15 | **`training-service`** | `8030` | `hrms_training` | `/api/v1/training/**` | Pembelajaran & pengembangan program pelatihan karyawan (L&D). |
 
 ---
 
@@ -115,6 +117,23 @@ Pengajuan pengunduran diri karyawan mandiri, verifikasi persetujuan HR, dan pela
   - `PUT /api/v1/offboarding/requests/{id}/process` (Persetujuan HR & inisialisasi clearance)
   - `PUT /api/v1/offboarding/requests/{requestId}/items/{itemId}` (Update status item ceklis clearance)
 
+### 1️⃣4️⃣ Business Travel & Expense (`travel-service`)
+Pengajuan dinas perjalanan bisnis karyawan, budget approval oleh HR, dan penyerahan klaim reimbursable nota/kuitansi.
+- **APIs**:
+  - `POST /api/v1/travel/requests` (Pengajuan perjalanan dinas baru)
+  - `PUT /api/v1/travel/requests/{id}/process` (Review & penetapan anggaran)
+  - `POST /api/v1/travel/requests/{id}/expenses` (Upload nota klaim baru)
+  - `PUT /api/v1/travel/requests/{reqId}/expenses/{expId}/process` (Approval/Rejection biaya nota)
+
+### 1️⃣5️⃣ Learning & Development (`training-service`)
+Penyusunan jadwal program kelas pelatihan, pendaftaran mandiri oleh karyawan, serta pelaporan sertifikat kelulusan.
+- **APIs**:
+  - `POST /api/v1/training` (Membuat program pelatihan baru)
+  - `GET /api/v1/training` (Daftar program pelatihan aktif)
+  - `PUT /api/v1/training/{id}/process` (Edit status: ONGOING/COMPLETED)
+  - `POST /api/v1/training/{id}/enroll` (Pendaftaran mandiri peserta)
+  - `PUT /api/v1/training/{id}/enrollments/{enrollmentId}` (Unggah sertifikat & feedback kelulusan)
+
 ---
 
 ## 🚦 3. Panduan Menjalankan Semua Servis (Lokal)
@@ -132,6 +151,8 @@ CREATE DATABASE hrms_recruitment;
 CREATE DATABASE hrms_asset;
 CREATE DATABASE hrms_notification;
 CREATE DATABASE hrms_offboarding;
+CREATE DATABASE hrms_travel;
+CREATE DATABASE hrms_training;
 ```
 
 Setelah database siap, Anda dapat menjalankan masing-masing service Spring Boot dari IDE pilihan Anda atau menggunakan Maven CLI:
