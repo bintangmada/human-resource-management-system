@@ -130,7 +130,7 @@ public class PayrollServiceImpl implements PayrollService {
 
         if (existingOpt.isPresent()) {
             Payroll existing = existingOpt.get();
-            if (!"DRAFT".equals(existing.getStatus())) {
+            if (!"DRAFT".equals(existing.getPayrollStatus())) {
                 throw new BadRequestException("Payroll already processed and locked (APPROVED/PAID) for employee "
                         + setting.getEmployeeName() + " in period " + request.getMonth() + "/" + request.getYear());
             }
@@ -165,7 +165,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .add(taxRes.bpjsJhtCompany)
                 .add(taxRes.bpjsJpCompany)
                 .add(taxRes.bpjsJkkCompany)
-                .add(taxRes.bpjsJmCompany);
+                .add(taxRes.bpjsJkmCompany);
 
         BigDecimal totalDeductions = lateDeductions.add(otherDeductions);
 
@@ -190,7 +190,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .bpjsCompany(bpjsCompanyTotal)
                 .taxPPh21(taxRes.taxPPh21Monthly)
                 .netSalary(netSalary)
-                .status("DRAFT")
+                .payrollStatus("DRAFT")
                 .processedBy(actorEmail)
                 .processedAt(LocalDateTime.now())
                 .createdBy(actorEmail)
@@ -260,7 +260,7 @@ public class PayrollServiceImpl implements PayrollService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Payroll> payrollPage;
         if (status != null && !status.trim().isEmpty()) {
-            payrollPage = payrollRepository.findByTenantIdAndStatus(tenantId, status, pageable);
+            payrollPage = payrollRepository.findByTenantIdAndPayrollStatus(tenantId, status, pageable);
         } else {
             payrollPage = payrollRepository.findByTenantId(tenantId, pageable);
         }
@@ -291,11 +291,11 @@ public class PayrollServiceImpl implements PayrollService {
         Payroll payroll = payrollRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException(getMsg("payroll.not.found")));
 
-        if (!"DRAFT".equals(payroll.getStatus())) {
+        if (!"DRAFT".equals(payroll.getPayrollStatus())) {
             throw new BadRequestException("Only DRAFT payrolls can be approved.");
         }
 
-        payroll.setStatus("APPROVED");
+        payroll.setPayrollStatus("APPROVED");
         payroll.setUpdatedBy(actorEmail);
         return mapToPayrollResponse(payrollRepository.save(payroll));
     }
@@ -305,11 +305,11 @@ public class PayrollServiceImpl implements PayrollService {
         Payroll payroll = payrollRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException(getMsg("payroll.not.found")));
 
-        if (!"APPROVED".equals(payroll.getStatus())) {
+        if (!"APPROVED".equals(payroll.getPayrollStatus())) {
             throw new BadRequestException("Only APPROVED payrolls can be marked as PAID.");
         }
 
-        payroll.setStatus("PAID");
+        payroll.setPayrollStatus("PAID");
         payroll.setUpdatedBy(actorEmail);
         return mapToPayrollResponse(payrollRepository.save(payroll));
     }
@@ -319,7 +319,7 @@ public class PayrollServiceImpl implements PayrollService {
         Payroll payroll = payrollRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException(getMsg("payroll.not.found")));
 
-        if (!"DRAFT".equals(payroll.getStatus())) {
+        if (!"DRAFT".equals(payroll.getPayrollStatus())) {
             throw new BadRequestException("Only DRAFT payrolls can be deleted.");
         }
 
@@ -366,7 +366,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .bpjsCompany(payroll.getBpjsCompany())
                 .taxPPh21(payroll.getTaxPPh21())
                 .netSalary(payroll.getNetSalary())
-                .status(payroll.getStatus())
+                .status(payroll.getPayrollStatus())
                 .processedBy(payroll.getProcessedBy())
                 .processedAt(payroll.getProcessedAt())
                 .details(detailResponses)

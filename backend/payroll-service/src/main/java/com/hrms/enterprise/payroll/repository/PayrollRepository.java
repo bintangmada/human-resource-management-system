@@ -11,9 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface PayrollRepository extends JpaRepository<Payroll, Long> {
-    Page<Payroll> findByTenantIdAndStatus(Long tenantId, String status, Pageable pageable);
+    Page<Payroll> findByTenantIdAndPayrollStatus(Long tenantId, String payrollStatus, Pageable pageable);
     Page<Payroll> findByTenantId(Long tenantId, Pageable pageable);
-    List<Payroll> findByTenantIdAndEmployeeIdAndStatus(Long tenantId, Long employeeId, Integer status);
     Page<Payroll> findByTenantIdAndEmployeeId(Long tenantId, Long employeeId, Pageable pageable);
     Optional<Payroll> findByTenantIdAndEmployeeIdAndMonthAndYearAndDeletedStatus(Long tenantId, Long employeeId, Integer month, Integer year, Integer deletedStatus);
     Optional<Payroll> findByIdAndTenantId(Long id, Long tenantId);
