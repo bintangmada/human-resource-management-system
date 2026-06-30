@@ -64,8 +64,8 @@ public class Payroll extends BaseEntity {
     @Column(name = "net_salary", nullable = false)
     private BigDecimal netSalary;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status = "DRAFT"; // DRAFT, APPROVED, PAID
+    @Column(name = "payroll_status", nullable = false, length = 20)
+    private String payrollStatus = "DRAFT"; // DRAFT, APPROVED, PAID
 
     @Column(name = "processed_by")
     private String processedBy;
